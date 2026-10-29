@@ -174,6 +174,67 @@ export function sendToBack() {
   s.commit([...els.filter((e) => ids.has(e.id)), ...els.filter((e) => !ids.has(e.id))])
 }
 
+/* ---------- Align & distribute ---------- */
+
+export type AlignMode = 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom'
+
+/** Selected items that can be aligned. Connected arrows follow their shapes instead. */
+function alignable(els: El[]) {
+  return els.filter((e) => !((e.type === 'arrow' || e.type === 'line') && (e.start || e.end)))
+}
+
+export function alignSelection(mode: AlignMode) {
+  const s = S()
+  const items = alignable(selectedElements(s))
+  if (items.length < 2) return
+  const all = geometricBounds(items)!
+  const moves = new Map<string, [number, number]>()
+  for (const el of items) {
+    const b = geometricBounds([el])!
+    let dx = 0
+    let dy = 0
+    if (mode === 'left') dx = all.minX - b.minX
+    if (mode === 'right') dx = all.maxX - b.maxX
+    if (mode === 'hcenter') dx = (all.minX + all.maxX) / 2 - (b.minX + b.maxX) / 2
+    if (mode === 'top') dy = all.minY - b.minY
+    if (mode === 'bottom') dy = all.maxY - b.maxY
+    if (mode === 'vcenter') dy = (all.minY + all.maxY) / 2 - (b.minY + b.maxY) / 2
+    if (Math.abs(dx) > 0.001 || Math.abs(dy) > 0.001) moves.set(el.id, [dx, dy])
+  }
+  if (!moves.size) return
+  s.commit(s.doc.elements.map((e) => (moves.has(e.id) ? translateEl(e, ...moves.get(e.id)!) : e)))
+}
+
+/** Even gaps between items, keeping the first and last in place. */
+export function distributeSelection(axis: 'x' | 'y') {
+  const s = S()
+  const items = alignable(selectedElements(s))
+  if (items.length < 3) return
+  const boxes = items.map((el) => ({ el, b: geometricBounds([el])! }))
+  const lo = (b: (typeof boxes)[0]['b']) => (axis === 'x' ? b.minX : b.minY)
+  const hi = (b: (typeof boxes)[0]['b']) => (axis === 'x' ? b.maxX : b.maxY)
+  boxes.sort((a, b) => lo(a.b) + hi(a.b) - (lo(b.b) + hi(b.b)))
+  const start = lo(boxes[0].b)
+  const end = Math.max(...boxes.map((x) => hi(x.b)))
+  const sizes = boxes.reduce((sum, x) => sum + hi(x.b) - lo(x.b), 0)
+  const gap = (end - start - sizes) / (boxes.length - 1)
+  const moves = new Map<string, number>()
+  let cursor = start
+  for (const { el, b } of boxes) {
+    const d = cursor - lo(b)
+    if (Math.abs(d) > 0.001) moves.set(el.id, d)
+    cursor += hi(b) - lo(b) + gap
+  }
+  if (!moves.size) return
+  s.commit(
+    s.doc.elements.map((e) => {
+      const d = moves.get(e.id)
+      if (d === undefined) return e
+      return axis === 'x' ? translateEl(e, d, 0) : translateEl(e, 0, d)
+    }),
+  )
+}
+
 /* ---------- Clipboard ---------- */
 
 const CLIP_MARK = 'canvas-board/elements'

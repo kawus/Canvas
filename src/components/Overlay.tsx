@@ -17,6 +17,7 @@ export function Overlay() {
   const v = useStore((s) => s.viewport)
   const marquee = useStore((s) => s.marquee)
   const penMode = useStore((s) => s.penMode)
+  const guides = useStore((s) => s.guides)
 
   const sel = selectedElements({ doc, selectedIds })
   const hovered = hoveredId ? doc.elements.find((e) => e.id === hoveredId) : null
@@ -71,6 +72,12 @@ export function Overlay() {
           />
         ),
       )}
+
+      {guides.map((g, i) => {
+        const [ax, ay] = g.axis === 'x' ? toScreen(v, g.at, g.from) : toScreen(v, g.from, g.at)
+        const [bx, by] = g.axis === 'x' ? toScreen(v, g.at, g.to) : toScreen(v, g.to, g.at)
+        return <line key={i} className="ov-guide" x1={ax} y1={ay} x2={bx} y2={by} />
+      })}
 
       {marquee &&
         (() => {

@@ -164,6 +164,11 @@ svg.lucide {
   stroke-width: 1.5;
   filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.18));
 }
+.ov-guide {
+  stroke: #ff2d55;
+  stroke-width: 1;
+  shape-rendering: crispEdges;
+}
 .ov-marquee {
   fill: var(--accent);
   fill-opacity: 0.06;
@@ -956,4 +961,30 @@ button:focus:not(:focus-visible) {
 }
 :root[data-theme='dark'] .sticky-paper {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
+
+/* Align popover above the style bar */
+.style-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  max-width: 100%;
+}
+.align-pop {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 12px;
+  background: var(--panel-solid);
+  border: 0.5px solid var(--border-strong);
+  box-shadow: var(--shadow-lg);
+  animation: rise 0.14s ease-out;
+  z-index: 30;
+}
+.menu-check {
+  margin-left: auto;
+  color: var(--accent-ink);
 }

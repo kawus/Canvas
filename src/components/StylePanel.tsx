@@ -1,9 +1,23 @@
-import { BringToFront, Copy, SendToBack, Trash2 } from 'lucide-react'
-import { bringToFront, duplicateSelection, sendToBack } from '../actions'
+import {
+  AlignCenterHorizontal,
+  AlignCenterVertical,
+  AlignEndHorizontal,
+  AlignEndVertical,
+  AlignHorizontalSpaceAround,
+  AlignStartHorizontal,
+  AlignStartVertical,
+  AlignVerticalSpaceAround,
+  BringToFront,
+  Copy,
+  SendToBack,
+  Trash2,
+} from 'lucide-react'
+import type { ReactNode } from 'react'
+import { alignSelection, bringToFront, distributeSelection, duplicateSelection, sendToBack, type AlignMode } from '../actions'
 import { COLOR_KEYS, COLOR_NAMES, FONT_SIZE, STICKY_FILL, type Palette } from '../constants'
 import { selectedElements, useStore } from '../store'
 import type { ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
-import { IconButton } from './ui'
+import { IconButton, usePopover } from './ui'
 
 const SIZES: { key: SizeKey; label: string; dot: number }[] = [
   { key: 's', label: 'Thin', dot: 4 },
@@ -20,6 +34,15 @@ const FONTS: { key: FontSizeKey; label: string }[] = [
   { key: 'm', label: 'M' },
   { key: 'l', label: 'L' },
   { key: 'xl', label: 'XL' },
+]
+
+const ALIGN: { mode: AlignMode; label: string; kbd: string; icon: ReactNode }[] = [
+  { mode: 'left', label: 'Align left', kbd: '⌥A', icon: <AlignStartVertical /> },
+  { mode: 'hcenter', label: 'Align centre', kbd: '⌥H', icon: <AlignCenterVertical /> },
+  { mode: 'right', label: 'Align right', kbd: '⌥D', icon: <AlignEndVertical /> },
+  { mode: 'top', label: 'Align top', kbd: '⌥W', icon: <AlignStartHorizontal /> },
+  { mode: 'vcenter', label: 'Align middle', kbd: '⌥V', icon: <AlignCenterHorizontal /> },
+  { mode: 'bottom', label: 'Align bottom', kbd: '⌥S', icon: <AlignEndHorizontal /> },
 ]
 
 const TOOL_TYPE: Partial<Record<string, ElType>> = {
@@ -40,6 +63,7 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const selectedIds = useStore((s) => s.selectedIds)
   const editingId = useStore((s) => s.editingId)
   const deleteSelected = useStore((s) => s.deleteSelected)
+  const { open: alignOpen, setOpen: setAlignOpen, ref: alignRef } = usePopover()
   const busy = useStore((s) => !!s.draft || !!s.marquee)
 
   const sel = selectedElements({ doc, selectedIds })
@@ -73,10 +97,43 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const showFill = types.some((t) => t === 'rect' || t === 'ellipse')
   const showFont = types.includes('text') || types.includes('sticky') || hasLabel
   const showActions = sel.length > 0
+  // connected arrows follow their shapes, so they don't count as alignable
+  const alignable = sel.filter((e) => !((e.type === 'arrow' || e.type === 'line') && (e.start || e.end))).length
   const swatch = stickyOnly ? STICKY_FILL : palette
   const activeColor = stickyOnly ? current.stickyColor : current.color
 
   return (
+    <div className="style-wrap" ref={alignRef}>
+      {alignOpen && alignable >= 2 && (
+        <div className="align-pop" role="toolbar" aria-label="Align" data-testid="align-pop">
+          {ALIGN.map((a) => (
+            <IconButton key={a.mode} label={a.label} kbd={a.kbd} onClick={() => alignSelection(a.mode)} className="small" testId={`align-${a.mode}`}>
+              {a.icon}
+            </IconButton>
+          ))}
+          <span className="sep" />
+          <IconButton
+            label="Space evenly across"
+            kbd="⇧⌥H"
+            disabled={alignable < 3}
+            onClick={() => distributeSelection('x')}
+            className="small"
+            testId="distribute-x"
+          >
+            <AlignHorizontalSpaceAround />
+          </IconButton>
+          <IconButton
+            label="Space evenly down"
+            kbd="⇧⌥V"
+            disabled={alignable < 3}
+            onClick={() => distributeSelection('y')}
+            className="small"
+            testId="distribute-y"
+          >
+            <AlignVerticalSpaceAround />
+          </IconButton>
+        </div>
+      )}
     <div className="style-panel panel" data-testid="style-panel" onPointerDown={(e) => e.preventDefault()}>
       {showColor && (
       <div className="swatches" role="radiogroup" aria-label="Color">
@@ -167,6 +224,17 @@ export function StylePanel({ palette }: { palette: Palette }) {
         <>
           {showColor && <span className="sep" />}
           <div className="seg">
+            {alignable >= 2 && (
+              <IconButton
+                label="Align"
+                active={alignOpen}
+                onClick={() => setAlignOpen(!alignOpen)}
+                className="small"
+                testId="align"
+              >
+                <AlignCenterVertical />
+              </IconButton>
+            )}
             <IconButton label="Duplicate" kbd="⌘D" onClick={duplicateSelection} className="small">
               <Copy />
             </IconButton>
@@ -182,6 +250,7 @@ export function StylePanel({ palette }: { palette: Palette }) {
           </div>
         </>
       )}
+    </div>
     </div>
   )
 }

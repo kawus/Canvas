@@ -9,6 +9,7 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Labels in shapes:** double-click (or double-tap, or press Enter on) a rectangle or ellipse to type inside it.
 - **Connected arrows:** start or end an arrow on a shape, sticky, image or text and it attaches; move the shape and the arrow follows.
 - **Images:** paste, drag in, or pick from Photos/Files (toolbar or I). Images are resized and stored separately so boards stay quick to sync.
+- **Auto alignment:** while moving, resizing or drawing, objects snap to the edges and centres of nearby objects and a pink guide shows the match. Hold ⌘/Ctrl to place freely, or turn it off with **Snap to objects** in the board menu. With 2+ items selected, **Align** lines them up (left / centre / right / top / middle / bottom) or spaces them evenly.
 - **Style:** 8 colors (Apple system palette), 3 stroke weights, outline/tint/solid fill and 4 text sizes. When something is selected, a style bar appears above the toolbar.
 - **Editing:** move, resize (Shift keeps proportions), duplicate (⌘D or Alt-drag), copy/paste, layer order, undo/redo and arrow-key nudging.
 - **iPad + Apple Pencil:** pressure-sensitive ink. Once the Pencil is detected, your finger pans the board and a resting palm is ignored. Pinch with two fingers to zoom. Tapping with the Text tool opens the keyboard (Scribble works too).
@@ -29,6 +30,8 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 | A / L | Arrow / Line | ⇧1 / ⇧0 | Zoom to fit / 100% |
 | N | Sticky note | Enter | Edit selected text / label |
 | I | Insert image | ⌥ + drag | Duplicate while dragging |
+| ⌥A / ⌥H / ⌥D | Align left / centre / right | ⌥W / ⌥V / ⌥S | Align top / middle / bottom |
+| ⇧⌥H / ⇧⌥V | Space evenly across / down | ⌘ while dragging | Don't snap |
 | T | Text (or double-click canvas) | ⌘ + scroll / pinch | Zoom |
 
 ## Run it locally
@@ -88,6 +91,7 @@ src/
   images.ts       image import: paste, drop, picker, downscaling
   layout.ts       wrapping / auto-fitting text in stickies and shapes
   bindings.ts     arrows attached to shapes
+  snap.ts         smart guides (snapping to other objects)
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
   store.ts        app state (zustand) with undo/redo
   components/     toolbar, style bar, menus, overlays

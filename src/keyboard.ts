@@ -1,5 +1,8 @@
 import {
+  alignSelection,
   bringToFront,
+  distributeSelection,
+  type AlignMode,
   copySelection,
   duplicateSelection,
   isEditable,
@@ -71,7 +74,18 @@ export function startKeyboard() {
       }
       return
     }
-    if (e.altKey) return
+    if (e.altKey) {
+      // Figma-style align shortcuts; e.code because ⌥ changes e.key on macOS
+      const modes: Record<string, AlignMode> = { KeyA: 'left', KeyH: 'hcenter', KeyD: 'right', KeyW: 'top', KeyV: 'vcenter', KeyS: 'bottom' }
+      if (e.shiftKey && (e.code === 'KeyH' || e.code === 'KeyV')) {
+        e.preventDefault()
+        distributeSelection(e.code === 'KeyH' ? 'x' : 'y')
+      } else if (modes[e.code] && s.selectedIds.length > 1) {
+        e.preventDefault()
+        alignSelection(modes[e.code])
+      }
+      return
+    }
 
     switch (e.key) {
       case 'Backspace':

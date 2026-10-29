@@ -11,6 +11,7 @@ import {
   Image,
   Link2,
   LoaderCircle,
+  Magnet,
   Monitor,
   Moon,
   Plus,
@@ -85,6 +86,8 @@ export function BoardMenu() {
   const theme = useStore((s) => s.theme)
   const setTheme = useStore((s) => s.setTheme)
   const cloud = useStore((s) => s.cloud)
+  const snap = useStore((s) => s.snap)
+  const setSnap = useStore((s) => s.setSnap)
   const { open, setOpen, ref } = usePopover()
   const [boards, setBoards] = useState<BoardMeta[]>([])
 
@@ -180,6 +183,15 @@ export function BoardMenu() {
             }}
           >
             Delete board
+          </MenuItem>
+          <div className="menu-sep" />
+          <MenuItem
+            icon={<Magnet />}
+            onClick={() => setSnap(!snap)}
+            hint={snap ? <Check className="menu-check" /> : undefined}
+            testId="snap-toggle"
+          >
+            Snap to objects
           </MenuItem>
           <div className="menu-sep" />
           <div className="theme-row" role="radiogroup" aria-label="Appearance">

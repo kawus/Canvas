@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { resolveBindings } from './bindings'
 import { FONT_SIZE, MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, unionBounds } from './geometry'
+import type { Guide } from './snap'
 import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
 
@@ -28,6 +29,10 @@ interface State {
   /** ids marked by the eraser during a drag */
   erasing: string[]
   marquee: Box | null
+  /** smart-guide lines shown while dragging (world coordinates) */
+  guides: Guide[]
+  /** snap to other objects while moving / resizing / drawing */
+  snap: boolean
   /** set once an Apple Pencil / stylus is seen: fingers then pan instead of draw */
   penMode: boolean
   theme: ThemePref
@@ -54,6 +59,8 @@ interface State {
   setDraft: (el: El | null) => void
   setErasing: (ids: string[]) => void
   setMarquee: (b: Box | null) => void
+  setGuides: (g: Guide[]) => void
+  setSnap: (on: boolean) => void
   setViewport: (v: Viewport) => void
   zoomTo: (zoom: number, anchor?: [number, number]) => void
   zoomToFit: () => void
@@ -88,6 +95,14 @@ function readStyle(): Style {
   return fallback
 }
 
+function readSnap() {
+  try {
+    return localStorage.getItem('canvas-snap') !== '0'
+  } catch {
+    return true
+  }
+}
+
 let toastSeq = 0
 
 export const useStore = create<State>((set, get) => ({
@@ -102,6 +117,8 @@ export const useStore = create<State>((set, get) => ({
   draft: null,
   erasing: [],
   marquee: null,
+  guides: [],
+  snap: readSnap(),
   penMode: false,
   theme: readTheme(),
   toast: null,
@@ -122,6 +139,7 @@ export const useStore = create<State>((set, get) => ({
       draft: null,
       erasing: [],
       marquee: null,
+      guides: [],
     }),
 
   setTitle: (title) => set((s) => ({ doc: { ...s.doc, title, updatedAt: Date.now() } })),
@@ -208,6 +226,17 @@ export const useStore = create<State>((set, get) => ({
   setDraft: (draft) => set({ draft }),
   setErasing: (erasing) => set({ erasing }),
   setMarquee: (marquee) => set({ marquee }),
+  setGuides: (guides) => {
+    if (guides.length || get().guides.length) set({ guides })
+  },
+  setSnap: (snap) => {
+    try {
+      localStorage.setItem('canvas-snap', snap ? '1' : '0')
+    } catch {
+      /* ignore */
+    }
+    set({ snap })
+  },
   setViewport: (viewport) => set({ viewport }),
 
   zoomTo: (zoom, anchor) => {
