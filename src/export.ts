@@ -1,3 +1,4 @@
+import { loadAsset } from './assets'
 import fontWoff2Url from './assets/fonts/Geist-Variable.woff2?url'
 import fontTtfUrl from './assets/fonts/Geist-Regular.ttf?url'
 import { FONT_FAMILY, PALETTE_LIGHT } from './constants'
@@ -6,6 +7,9 @@ import { elementPrims, primToMarkup } from './render'
 import type { El } from './types'
 
 const PAD = 32
+
+/** Free text, sticky notes and shape labels all need the font embedded. */
+const hasText = (els: El[]) => els.some((e) => 'text' in e && !!e.text)
 
 async function fetchBase64(url: string) {
   const buf = await (await fetch(url)).arrayBuffer()
@@ -24,14 +28,20 @@ export async function buildSvg(elements: El[], opts: { embedFont: boolean; backg
   const y = b.minY - PAD
   const width = Math.ceil(b.maxX - b.minX + PAD * 2)
   const height = Math.ceil(b.maxY - b.minY + PAD * 2)
-  const hasText = elements.some((e) => e.type === 'text')
   let defs = ''
-  if (opts.embedFont && hasText) {
+  if (opts.embedFont && hasText(elements)) {
     const data = await fetchBase64(fontWoff2Url)
     defs = `<defs><style>@font-face{font-family:'${FONT_FAMILY}';src:url(data:font/woff2;base64,${data}) format('woff2');font-weight:100 900;}</style></defs>`
   }
+  const assets = new Map<string, string>()
+  for (const el of elements) {
+    if (el.type === 'image' && !assets.has(el.asset)) {
+      const url = await loadAsset(el.asset)
+      if (url) assets.set(el.asset, url)
+    }
+  }
   const body = elements
-    .flatMap((el) => elementPrims(el, PALETTE_LIGHT))
+    .flatMap((el) => elementPrims(el, PALETTE_LIGHT, (h) => assets.get(h)))
     .map((p) => {
       if (p.tag === 'text') p.attrs.fontFamily = FONT_FAMILY
       return primToMarkup(p)
@@ -97,7 +107,7 @@ export async function exportPdf(elements: El[], title: string) {
   const ph = height * k
   const pdf = new jsPDF({ unit: 'pt', format: [pw, ph], orientation: pw >= ph ? 'landscape' : 'portrait', compress: true })
   pdf.setProperties({ title, creator: 'Canvas' })
-  if (elements.some((e) => e.type === 'text')) {
+  if (hasText(elements)) {
     const ttf = await fetchBase64(fontTtfUrl)
     pdf.addFileToVFS('Geist-Regular.ttf', ttf)
     pdf.addFont('Geist-Regular.ttf', FONT_FAMILY, 'normal')

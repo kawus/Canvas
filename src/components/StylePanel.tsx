@@ -1,6 +1,6 @@
 import { BringToFront, Copy, SendToBack, Trash2 } from 'lucide-react'
 import { bringToFront, duplicateSelection, sendToBack } from '../actions'
-import { COLOR_KEYS, COLOR_NAMES, FONT_SIZE, type Palette } from '../constants'
+import { COLOR_KEYS, COLOR_NAMES, FONT_SIZE, STICKY_FILL, type Palette } from '../constants'
 import { selectedElements, useStore } from '../store'
 import type { ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
 import { IconButton } from './ui'
@@ -29,6 +29,7 @@ const TOOL_TYPE: Partial<Record<string, ElType>> = {
   arrow: 'arrow',
   line: 'line',
   text: 'text',
+  sticky: 'sticky',
 }
 
 export function StylePanel({ palette }: { palette: Palette }) {
@@ -44,17 +45,19 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const sel = selectedElements({ doc, selectedIds })
   let types: ElType[]
   let current: Style = style
+  let hasLabel = false
   if (sel.length) {
     types = [...new Set(sel.map((e) => e.type))]
-    const first = sel[0]
-    const fontKey = (Object.keys(FONT_SIZE) as FontSizeKey[]).find(
-      (k) => first.type === 'text' && FONT_SIZE[k] === first.fontSize,
-    )
+    hasLabel = sel.some((e) => (e.type === 'rect' || e.type === 'ellipse') && !!e.text)
+    const first = sel.find((e) => e.type !== 'image') ?? sel[0]
+    const firstFont = 'fontSize' in first ? first.fontSize : undefined
+    const fontKey = (Object.keys(FONT_SIZE) as FontSizeKey[]).find((k) => FONT_SIZE[k] === firstFont)
     current = {
       color: first.color,
+      stickyColor: first.color,
       size: 'size' in first ? first.size : style.size,
       fill: first.type === 'rect' || first.type === 'ellipse' ? first.fill : style.fill,
-      fontSize: fontKey ?? (first.type === 'text' ? ('' as FontSizeKey) : style.fontSize),
+      fontSize: fontKey ?? (firstFont ? ('' as FontSizeKey) : style.fontSize),
     }
   } else if (TOOL_TYPE[tool]) {
     types = [TOOL_TYPE[tool]!]
@@ -63,29 +66,36 @@ export function StylePanel({ palette }: { palette: Palette }) {
   }
   if (busy || editingId) return null
 
-  const showSize = types.some((t) => t !== 'text')
+  // Sticky notes use paper colours; everything else uses ink colours.
+  const stickyOnly = types.every((t) => t === 'sticky')
+  const showColor = types.some((t) => t !== 'image')
+  const showSize = types.some((t) => t === 'freedraw' || t === 'rect' || t === 'ellipse' || t === 'arrow' || t === 'line')
   const showFill = types.some((t) => t === 'rect' || t === 'ellipse')
-  const showFont = types.includes('text')
+  const showFont = types.includes('text') || types.includes('sticky') || hasLabel
   const showActions = sel.length > 0
+  const swatch = stickyOnly ? STICKY_FILL : palette
+  const activeColor = stickyOnly ? current.stickyColor : current.color
 
   return (
     <div className="style-panel panel" data-testid="style-panel" onPointerDown={(e) => e.preventDefault()}>
+      {showColor && (
       <div className="swatches" role="radiogroup" aria-label="Color">
         {COLOR_KEYS.map((c) => (
           <button
             key={c}
             type="button"
             role="radio"
-            aria-checked={current.color === c}
+            aria-checked={activeColor === c}
             aria-label={COLOR_NAMES[c]}
             title={COLOR_NAMES[c]}
-            className={`swatch ${current.color === c ? 'is-active' : ''}`}
-            style={{ ['--swatch' as string]: palette[c] }}
-            onClick={() => setStyle({ color: c })}
+            className={`swatch ${activeColor === c ? 'is-active' : ''}`}
+            style={{ ['--swatch' as string]: swatch[c] }}
+            onClick={() => setStyle(stickyOnly ? { stickyColor: c } : { color: c })}
             data-testid={`color-${c}`}
           />
         ))}
       </div>
+      )}
 
       {showSize && (
         <>
@@ -155,7 +165,7 @@ export function StylePanel({ palette }: { palette: Palette }) {
 
       {showActions && (
         <>
-          <span className="sep" />
+          {showColor && <span className="sep" />}
           <div className="seg">
             <IconButton label="Duplicate" kbd="⌘D" onClick={duplicateSelection} className="small">
               <Copy />

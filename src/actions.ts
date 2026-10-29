@@ -1,10 +1,10 @@
 import { flushSync } from 'react-dom'
-import { FONT_SIZE, LINE_HEIGHT } from './constants'
+import { FONT_SIZE, LINE_HEIGHT, STICKY_SIZE } from './constants'
 import { center, geometricBounds, translateEl } from './geometry'
 import { toWorld } from './handles'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
-import type { El, TextEl } from './types'
+import type { BoxEl, El, StickyEl, TextEl } from './types'
 
 const S = () => useStore.getState()
 
@@ -54,26 +54,58 @@ export function createTextAt(x: number, y: number) {
   startEditing(el.id, before)
 }
 
+export function createStickyAt(x: number, y: number) {
+  const s = S()
+  const el: StickyEl = {
+    id: newElementId(),
+    type: 'sticky',
+    color: s.style.stickyColor,
+    x: x - STICKY_SIZE / 2,
+    y: y - STICKY_SIZE / 2,
+    w: STICKY_SIZE,
+    h: STICKY_SIZE,
+    text: '',
+    fontSize: FONT_SIZE[s.style.fontSize],
+  }
+  const before = s.doc.elements
+  s.setElementsLive([...before, el])
+  startEditing(el.id, before)
+}
+
+/** Elements whose text is edited in place: free text, stickies and shape labels. */
+export function isEditable(el: El | null | undefined): el is TextEl | StickyEl | BoxEl {
+  return !!el && (el.type === 'text' || el.type === 'sticky' || el.type === 'rect' || el.type === 'ellipse')
+}
+
 export function finishEditing() {
   const s = S()
   const id = s.editingId
   if (!id) return
   const before = session?.before ?? s.doc.elements
   session = null
-  const el = s.doc.elements.find((e) => e.id === id) as TextEl | undefined
-  const text = el?.text.replace(/\s+$/, '') ?? ''
-  if (!el || !text.trim()) {
+  const el = s.doc.elements.find((e) => e.id === id)
+  const prev = before.find((e) => e.id === id)
+  if (!isEditable(el)) {
+    s.setEditing(null)
+    return
+  }
+  const text = (el.text ?? '').replace(/\s+$/, '')
+
+  // Free text disappears when emptied; stickies and shapes stay.
+  if (el.type === 'text' && !text.trim()) {
     const without = s.doc.elements.filter((e) => e.id !== id)
-    const existed = before.some((e) => e.id === id)
-    if (existed) s.commit(without, before)
+    if (prev) s.commit(without, before)
     else s.setElementsLive(without)
     s.setEditing(null)
     if (s.tool === 'text') s.setTool('select')
     return
   }
-  const elements = s.doc.elements.map((e) => (e.id === id ? { ...el, text } : e))
-  const prev = before.find((e) => e.id === id) as TextEl | undefined
-  if (!prev || prev.text !== text) s.commit(elements, before)
+
+  const updated = { ...el, text } as El
+  if (el.type !== 'text' && !text) delete (updated as BoxEl).text
+  const elements = s.doc.elements.map((e) => (e.id === id ? updated : e))
+  const prevText = prev && isEditable(prev) ? (prev.text ?? '') : null
+  if (prevText === null || prevText !== text) s.commit(elements, before)
   else s.setElementsLive(elements)
   s.setEditing(null)
   s.setTool('select')
@@ -84,13 +116,24 @@ export function updateEditingText(text: string) {
   const s = S()
   const id = s.editingId
   if (!id) return
-  s.setElementsLive(s.doc.elements.map((e) => (e.id === id && e.type === 'text' ? { ...e, text } : e)))
+  s.setElementsLive(s.doc.elements.map((e) => (e.id === id && isEditable(e) ? ({ ...e, text } as El) : e)))
 }
 
 /* ---------- Selection actions ---------- */
 
-export function cloneWithNewIds(els: El[], dx: number, dy: number) {
-  return els.map((e) => ({ ...translateEl(e, dx, dy), id: newElementId() }))
+export function cloneWithNewIds(els: El[], dx: number, dy: number): El[] {
+  const ids = new Map(els.map((e) => [e.id, newElementId()]))
+  return els.map((e) => {
+    const c = { ...translateEl(e, dx, dy), id: ids.get(e.id)! }
+    if (c.type === 'arrow' || c.type === 'line') {
+      // keep connections inside the copied group, drop ones that point outside it
+      if (c.start) c.start = ids.get(c.start)
+      if (c.end) c.end = ids.get(c.end)
+      if (!c.start) delete c.start
+      if (!c.end) delete c.end
+    }
+    return c
+  })
 }
 
 export function duplicateSelection() {

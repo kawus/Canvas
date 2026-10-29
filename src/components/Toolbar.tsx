@@ -1,4 +1,5 @@
-import { Circle, Eraser, Hand, Minus, MousePointer2, MoveUpRight, Pencil, Square, Type } from 'lucide-react'
+import { Circle, Eraser, Hand, ImagePlus, Minus, MousePointer2, MoveUpRight, Pencil, Square, StickyNote, Type } from 'lucide-react'
+import { openImagePicker } from '../images'
 import type { ReactNode } from 'react'
 import { useStore } from '../store'
 import type { Tool } from '../types'
@@ -9,6 +10,7 @@ export const TOOLS: { tool: Tool; label: string; key: string; icon: ReactNode }[
   { tool: 'hand', label: 'Hand', key: 'H', icon: <Hand /> },
   { tool: 'pen', label: 'Pen', key: 'P', icon: <Pencil /> },
   { tool: 'eraser', label: 'Eraser', key: 'E', icon: <Eraser /> },
+  { tool: 'sticky', label: 'Sticky note', key: 'N', icon: <StickyNote /> },
   { tool: 'rect', label: 'Rectangle', key: 'R', icon: <Square /> },
   { tool: 'ellipse', label: 'Ellipse', key: 'O', icon: <Circle /> },
   { tool: 'arrow', label: 'Arrow', key: 'A', icon: <MoveUpRight /> },
@@ -16,7 +18,7 @@ export const TOOLS: { tool: Tool; label: string; key: string; icon: ReactNode }[
   { tool: 'text', label: 'Text', key: 'T', icon: <Type /> },
 ]
 
-const GROUPS: Tool[][] = [['select', 'hand'], ['pen', 'eraser'], ['rect', 'ellipse', 'arrow', 'line'], ['text']]
+const GROUPS: Tool[][] = [['select', 'hand'], ['pen', 'eraser'], ['sticky', 'rect', 'ellipse', 'arrow', 'line'], ['text']]
 
 export function Toolbar() {
   const tool = useStore((s) => s.tool)
@@ -41,6 +43,12 @@ export function Toolbar() {
               </IconButton>
             )
           })}
+          {gi === GROUPS.length - 1 && (
+            // not a mode: opens the photo / file picker right away
+            <IconButton label="Image" kbd="I" onClick={openImagePicker} testId="tool-image" className="tool-btn">
+              <ImagePlus />
+            </IconButton>
+          )}
         </div>
       ))}
     </div>

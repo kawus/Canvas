@@ -1,3 +1,4 @@
+import { uploadAssets } from './assets'
 import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { useStore } from './store'
 import {
@@ -98,6 +99,9 @@ async function push(doc: BoardDoc) {
   }
   pushing = true
   if (S().cloud) S().setSync('saving')
+  // images are stored separately; make sure the cloud has them before the board points at them
+  const images = doc.elements.flatMap((e) => (e.type === 'image' ? [e.asset] : []))
+  if (images.length && S().cloud !== false) await uploadAssets(images)
   const r = await pushRemote(doc)
   pushing = false
   noteRemote(r)

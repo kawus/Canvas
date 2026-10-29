@@ -18,7 +18,7 @@ import {
   Sun,
   Trash2,
 } from 'lucide-react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { selectedElements, useStore, type ThemePref } from '../store'
@@ -214,10 +214,7 @@ export function ShareButton() {
 
   // A live link needs cloud storage; without it the link carries a snapshot instead.
   const live = !!cloud && mode === 'live' && sync !== 'too-large'
-  const [snapshot, setSnapshot] = useState('')
-  useEffect(() => {
-    if (open && !live) setSnapshot(shareUrl(doc))
-  }, [open, live, doc])
+  const snapshot = useMemo(() => (open && !live ? shareUrl(doc) : ''), [open, live, doc])
   useEffect(() => {
     if (open) setCopied(false)
   }, [open, mode])

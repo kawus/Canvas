@@ -35,6 +35,10 @@ function lineWidth100(line: string) {
   return w
 }
 
+export function textWidth(line: string, fontSize: number) {
+  return (lineWidth100(line) * fontSize) / 100
+}
+
 export function measureText(text: string, fontSize: number) {
   const lines = text.split('\n')
   let max = 0

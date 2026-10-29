@@ -27,6 +27,23 @@ export const PALETTE_DARK: Palette = {
   violet: '#bf5af2',
 }
 
+/** Pastel paper colors for sticky notes (same in light and dark mode) */
+export const STICKY_FILL: Palette = {
+  ink: '#e8e8ea',
+  gray: '#d5d5da',
+  red: '#ffcdc8',
+  orange: '#ffdcb0',
+  yellow: '#fff2a8',
+  green: '#c9f0d1',
+  blue: '#cfe2ff',
+  violet: '#e9d8fb',
+}
+export const STICKY_INK = '#1d1d1f'
+export const STICKY_SIZE = 200
+export const STICKY_FONT = 22
+/** Default label size inside shapes */
+export const LABEL_FONT = 20
+
 export const COLOR_NAMES: Record<ColorKey, string> = {
   ink: 'Ink',
   gray: 'Gray',

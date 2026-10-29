@@ -1,5 +1,8 @@
 import { createElement, memo, useEffect, useRef } from 'react'
+import { useAsset } from '../assets'
 import { CanvasController } from '../controller'
+import { toWorld } from '../handles'
+import { importImages } from '../images'
 import { elementPrims, type Prim } from '../render'
 import { useStore } from '../store'
 import type { El } from '../types'
@@ -21,20 +24,40 @@ function PrimView({ p }: { p: Prim }) {
   return createElement(p.tag, p.attrs)
 }
 
+function ImageView({ el, palette }: { el: Extract<El, { type: 'image' }>; palette: Palette }) {
+  const url = useAsset(el.asset)
+  return (
+    <>
+      {elementPrims(el, palette, () => url).map((p, i) => (
+        <PrimView key={i} p={p} />
+      ))}
+    </>
+  )
+}
+
 const ElementView = memo(function ElementView({
   el,
   palette,
   faded,
-  hidden,
+  editing,
 }: {
   el: El
   palette: Palette
   faded: boolean
-  hidden: boolean
+  /** while its text is being edited, the text itself is drawn by the editor */
+  editing: boolean
 }) {
-  const prims = elementPrims(el, palette)
+  if (el.type === 'image') {
+    return (
+      <g opacity={faded ? 0.25 : 1}>
+        <ImageView el={el} palette={palette} />
+      </g>
+    )
+  }
+  let prims = elementPrims(el, palette)
+  if (editing) prims = el.type === 'text' ? [] : prims.filter((p) => p.tag !== 'text')
   return (
-    <g opacity={hidden ? 0 : faded ? 0.25 : 1}>
+    <g opacity={faded ? 0.25 : 1}>
       {prims.map((p, i) => (
         <PrimView key={i} p={p} />
       ))}
@@ -63,7 +86,21 @@ export function Canvas({ palette }: { palette: Palette }) {
   const oy = ((viewport.y % gap) + gap) % gap
 
   return (
-    <div ref={ref} className="canvas" data-testid="canvas">
+    <div
+      ref={ref}
+      className="canvas"
+      data-testid="canvas"
+      onDragOver={(e) => {
+        if (e.dataTransfer.types.includes('Files')) e.preventDefault()
+      }}
+      onDrop={(e) => {
+        const files = [...e.dataTransfer.files]
+        if (!files.length) return
+        e.preventDefault()
+        const r = e.currentTarget.getBoundingClientRect()
+        void importImages(files, toWorld(viewport, e.clientX - r.left, e.clientY - r.top))
+      }}
+    >
       <svg className="canvas-svg" width="100%" height="100%">
         <defs>
           <pattern id="dots" width={gap} height={gap} patternUnits="userSpaceOnUse" x={ox} y={oy}>
@@ -78,10 +115,10 @@ export function Canvas({ palette }: { palette: Palette }) {
               el={el}
               palette={palette}
               faded={erasingSet.has(el.id)}
-              hidden={el.id === editingId}
+              editing={el.id === editingId}
             />
           ))}
-          {draft && <ElementView el={draft} palette={palette} faded={false} hidden={false} />}
+          {draft && <ElementView el={draft} palette={palette} faded={false} editing={false} />}
         </g>
       </svg>
       <Overlay />

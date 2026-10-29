@@ -22,6 +22,8 @@ export function getBounds(el: El): Box {
     }
     case 'rect':
     case 'ellipse':
+    case 'sticky':
+    case 'image':
       b = { minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h }
       break
     case 'line':
@@ -46,7 +48,7 @@ export function getBounds(el: El): Box {
 /** Half of the visual stroke thickness, used to pad bounds and hit areas. */
 export function strokeHalf(el: El) {
   if (el.type === 'freedraw') return PEN_SIZE[el.size] / 2
-  if (el.type === 'text') return 0
+  if (el.type === 'text' || el.type === 'sticky' || el.type === 'image') return 0
   return STROKE_WIDTH[el.size] / 2
 }
 
@@ -112,9 +114,11 @@ export function hitTest(el: El, p: Point, tol: number): boolean {
   if (!pointInBox(p, b, pad)) return false
   switch (el.type) {
     case 'text':
+    case 'sticky':
+    case 'image':
       return true
     case 'rect': {
-      if (el.fill !== 'none') return true
+      if (el.fill !== 'none' || el.text) return true
       const inside = pointInBox(p, b, pad)
       const deep = pointInBox(p, { minX: b.minX + pad, minY: b.minY + pad, maxX: b.maxX - pad, maxY: b.maxY - pad })
       return inside && !deep
@@ -128,7 +132,7 @@ export function hitTest(el: El, p: Point, tol: number): boolean {
       const nx = (p[0] - cx) / rx
       const ny = (p[1] - cy) / ry
       const r = Math.hypot(nx, ny)
-      if (el.fill !== 'none' && r <= 1) return true
+      if ((el.fill !== 'none' || el.text) && r <= 1) return true
       return Math.abs(r - 1) * Math.min(rx, ry) <= pad
     }
     case 'line':
@@ -180,7 +184,9 @@ export function scaleEl<T extends El>(el: T, from: Box, to: Box, uniformText: bo
     case 'arrow':
       return { ...el, x1: mx(el.x1), y1: my(el.y1), x2: mx(el.x2), y2: my(el.y2) }
     case 'rect':
-    case 'ellipse': {
+    case 'ellipse':
+    case 'sticky':
+    case 'image': {
       const b = normalizeBox(mx(el.x), my(el.y), mx(el.x + el.w), my(el.y + el.h))
       return { ...el, x: b.minX, y: b.minY, w: b.maxX - b.minX, h: b.maxY - b.minY }
     }

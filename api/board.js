@@ -12,36 +12,11 @@
  * Plain JavaScript (type-checked through JSDoc) so Vercel runs it without a compile step.
  */
 
+import { json, redis, redisConfig } from './_redis.js'
+
 const MAX_BYTES = 4_000_000 // Vercel's request body limit is 4.5 MB
 const TTL_SECONDS = 60 * 60 * 24 * 365 // boards expire after a year without edits
 const ID_RE = /^[a-z0-9]{6,32}$/
-
-function redisConfig() {
-  const env = process.env
-  const url = env.KV_REST_API_URL || env.UPSTASH_REDIS_REST_URL
-  const token = env.KV_REST_API_TOKEN || env.UPSTASH_REDIS_REST_TOKEN
-  return url && token ? { url: url.replace(/\/$/, ''), token } : null
-}
-
-/** @param {(string | number)[]} cmd */
-async function redis(cmd) {
-  const cfg = /** @type {{ url: string, token: string }} */ (redisConfig())
-  const res = await fetch(cfg.url, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${cfg.token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(cmd),
-  })
-  const data = /** @type {{ result?: unknown, error?: string }} */ (await res.json())
-  if (!res.ok || data.error) throw new Error(data.error || `Redis error ${res.status}`)
-  return data.result
-}
-
-/** @param {unknown} body */
-const json = (body, status = 200) =>
-  new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' },
-  })
 
 /** @param {Request} request */
 function boardId(request) {

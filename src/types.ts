@@ -28,6 +28,30 @@ export interface BoxEl extends Base {
   h: number
   size: SizeKey
   fill: FillKey
+  /** optional label, centered and wrapped inside the shape */
+  text?: string
+  /** base label size; shrinks automatically when the label doesn't fit */
+  fontSize?: number
+}
+
+export interface StickyEl extends Base {
+  type: 'sticky'
+  x: number
+  y: number
+  w: number
+  h: number
+  text: string
+  fontSize: number
+}
+
+export interface ImageEl extends Base {
+  type: 'image'
+  x: number
+  y: number
+  w: number
+  h: number
+  /** content hash of the image data, stored separately (see assets.ts) */
+  asset: string
 }
 
 export interface LineEl extends Base {
@@ -37,6 +61,9 @@ export interface LineEl extends Base {
   x2: number
   y2: number
   size: SizeKey
+  /** id of the element the start / end is attached to */
+  start?: string
+  end?: string
 }
 
 export interface TextEl extends Base {
@@ -48,7 +75,9 @@ export interface TextEl extends Base {
   fontSize: number
 }
 
-export type El = FreedrawEl | BoxEl | LineEl | TextEl
+export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl
+/** Elements with a box that can hold a label and that arrows can attach to */
+export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl
 export type ElType = El['type']
 
 export type Tool =
@@ -56,6 +85,7 @@ export type Tool =
   | 'hand'
   | 'pen'
   | 'eraser'
+  | 'sticky'
   | 'rect'
   | 'ellipse'
   | 'arrow'
@@ -81,6 +111,7 @@ export interface Style {
   size: SizeKey
   fill: FillKey
   fontSize: FontSizeKey
+  stickyColor: ColorKey
 }
 
 export interface BoardDoc {

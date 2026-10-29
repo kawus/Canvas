@@ -1,5 +1,16 @@
-import { bringToFront, copySelection, duplicateSelection, nudge, pasteText, selectAll, sendToBack } from './actions'
+import {
+  bringToFront,
+  copySelection,
+  duplicateSelection,
+  isEditable,
+  nudge,
+  pasteText,
+  selectAll,
+  sendToBack,
+  startEditing,
+} from './actions'
 import { isTyping } from './controller'
+import { importImages, openImagePicker } from './images'
 import { useStore } from './store'
 import type { Tool } from './types'
 
@@ -23,6 +34,7 @@ const TOOL_KEYS: Record<string, Tool> = {
   '8': 'line',
   t: 'text',
   '9': 'text',
+  n: 'sticky',
 }
 
 export function startKeyboard() {
@@ -97,6 +109,18 @@ export function startKeyboard() {
         return
     }
     if (e.shiftKey) return
+    if (key === 'i') {
+      openImagePicker()
+      return
+    }
+    if (e.key === 'Enter' && s.selectedIds.length === 1) {
+      const el = s.doc.elements.find((x) => x.id === s.selectedIds[0])
+      if (isEditable(el)) {
+        e.preventDefault()
+        startEditing(el.id)
+      }
+      return
+    }
     const tool = TOOL_KEYS[key]
     if (tool) s.setTool(tool)
   }
@@ -111,6 +135,12 @@ export function startKeyboard() {
   }
   const onPaste = (e: ClipboardEvent) => {
     if (isTyping(e) || useStore.getState().editingId) return
+    const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
+    if (files.length) {
+      e.preventDefault()
+      void importImages(files)
+      return
+    }
     const text = e.clipboardData?.getData('text/plain')
     if (text) {
       e.preventDefault()

@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { resolveBindings } from './bindings'
 import { FONT_SIZE, MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, unionBounds } from './geometry'
 import { emptyBoard } from './storage'
@@ -77,7 +78,7 @@ function readTheme(): ThemePref {
 }
 
 function readStyle(): Style {
-  const fallback: Style = { color: 'ink', size: 'm', fill: 'none', fontSize: 'm' }
+  const fallback: Style = { color: 'ink', size: 'm', fill: 'none', fontSize: 'm', stickyColor: 'yellow' }
   try {
     const s = JSON.parse(localStorage.getItem('canvas-style') || 'null')
     if (s && typeof s === 'object') return { ...fallback, ...s }
@@ -125,10 +126,11 @@ export const useStore = create<State>((set, get) => ({
 
   setTitle: (title) => set((s) => ({ doc: { ...s.doc, title, updatedAt: Date.now() } })),
 
-  setElementsLive: (elements) => set((s) => ({ doc: { ...s.doc, elements } })),
+  setElementsLive: (elements) => set((s) => ({ doc: { ...s.doc, elements: resolveBindings(elements) } })),
 
-  commit: (elements, before) =>
+  commit: (input, before) =>
     set((s) => {
+      const elements = resolveBindings(input)
       const prev = before ?? s.doc.elements
       if (prev === elements) return {}
       const past = [...s.past, prev].slice(-HISTORY_LIMIT)
@@ -185,10 +187,13 @@ export const useStore = create<State>((set, get) => ({
     const elements = s.doc.elements.map((el) => {
       if (!ids.has(el.id)) return el
       const next = { ...el } as El & Record<string, unknown>
-      if (patch.color) next.color = patch.color
+      if (patch.color && el.type !== 'image') next.color = patch.color
+      if (patch.stickyColor && el.type === 'sticky') next.color = patch.stickyColor
       if (patch.size && 'size' in el) next.size = patch.size
       if (patch.fill && (el.type === 'rect' || el.type === 'ellipse')) next.fill = patch.fill
-      if (patch.fontSize && el.type === 'text') next.fontSize = FONT_SIZE[patch.fontSize]
+      if (patch.fontSize && (el.type === 'text' || el.type === 'sticky' || el.type === 'rect' || el.type === 'ellipse')) {
+        next.fontSize = FONT_SIZE[patch.fontSize]
+      }
       changed = true
       return next as El
     })

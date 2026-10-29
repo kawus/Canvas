@@ -1,4 +1,5 @@
-import { cloneWithNewIds, createTextAt, finishEditing, startEditing } from './actions'
+import { cloneWithNewIds, createStickyAt, createTextAt, finishEditing, isEditable, startEditing } from './actions'
+import { bindTarget, resolveDraftLine } from './bindings'
 import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
@@ -9,7 +10,16 @@ import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } 
 type Action =
   | { kind: 'pan'; pointerId: number; sx: number; sy: number; vp: Viewport; touch: boolean; moved: boolean }
   | { kind: 'draw'; pointerId: number; el: FreedrawEl }
-  | { kind: 'shape'; pointerId: number; type: 'rect' | 'ellipse' | 'line' | 'arrow'; start: Point; sx: number; sy: number }
+  | {
+      kind: 'shape'
+      pointerId: number
+      type: 'rect' | 'ellipse' | 'line' | 'arrow'
+      start: Point
+      sx: number
+      sy: number
+      /** element the arrow started on */
+      bind?: string
+    }
   | { kind: 'marquee'; pointerId: number; start: Point; base: string[] }
   | {
       kind: 'move'
@@ -34,7 +44,7 @@ type Action =
       box: Box
       before: El[]
       ids: Set<string>
-      lockText: boolean
+      lockAspect: boolean
     }
   | { kind: 'endpoint'; pointerId: number; which: 1 | 2; id: string; before: El[]; sx: number; sy: number; orig: LineEl }
   | { kind: 'erase'; pointerId: number; last: Point; hits: Set<string> }
@@ -47,7 +57,7 @@ interface PointerInfo {
 
 const S = () => useStore.getState()
 const DRAG_THRESHOLD = 3
-const DRAWING_TOOLS: Tool[] = ['pen', 'eraser', 'rect', 'ellipse', 'arrow', 'line', 'text']
+const DRAWING_TOOLS: Tool[] = ['pen', 'eraser', 'sticky', 'rect', 'ellipse', 'arrow', 'line', 'text']
 
 export function toolCursor(tool: Tool) {
   switch (tool) {
@@ -166,6 +176,7 @@ export class CanvasController {
     const s = S()
     if (a.kind === 'move' || a.kind === 'resize' || a.kind === 'endpoint') s.setElementsLive(a.before)
     if (a.kind === 'draw' || a.kind === 'shape') s.setDraft(null)
+    if (a.kind === 'shape' || a.kind === 'endpoint') s.setHovered(null)
     if (a.kind === 'marquee') {
       s.setMarquee(null)
       s.select(a.base)
@@ -237,17 +248,34 @@ export class CanvasController {
       }
       case 'rect':
       case 'ellipse':
-      case 'line':
-      case 'arrow':
         this.action = { kind: 'shape', pointerId: e.pointerId, type: tool, start: p, sx, sy }
         break
+      case 'line':
+      case 'arrow': {
+        const bind = bindTarget(s.doc.elements, p, this.tolerance(e.pointerType))?.id
+        this.action = { kind: 'shape', pointerId: e.pointerId, type: tool, start: p, sx, sy, bind }
+        break
+      }
+      case 'sticky':
+        createStickyAt(p[0], p[1])
+        break
       case 'text': {
-        const hit = hitTopmost(s.doc.elements, p, this.tolerance(e.pointerType))
-        if (hit?.type === 'text') startEditing(hit.id)
+        const hit = this.editableAt(p, e.pointerType)
+        if (hit) startEditing(hit.id)
         else createTextAt(p[0], p[1])
         break
       }
     }
+  }
+
+  /** Text, sticky or shape whose text should be edited at this point (inside empty shapes counts). */
+  private editableAt(p: Point, pointerType: string) {
+    const els = S().doc.elements
+    const hit = hitTopmost(els, p, this.tolerance(pointerType))
+    if (isEditable(hit)) return hit
+    if (hit) return null
+    const inside = bindTarget(els, p, 0)
+    return isEditable(inside) && inside.type !== 'text' ? inside : null
   }
 
   private startPan(e: PointerEvent, sx: number, sy: number) {
@@ -298,7 +326,7 @@ export class CanvasController {
             box: geometricBounds(sel)!,
             before,
             ids: new Set(sel.map((x) => x.id)),
-            lockText: sel.length === 1 && sel[0].type === 'text',
+            lockAspect: sel.length === 1 && (sel[0].type === 'text' || sel[0].type === 'image'),
           }
         }
         this.updateCursor(h.cursor)
@@ -308,10 +336,11 @@ export class CanvasController {
 
     const hit = hitTopmost(s.doc.elements, p, this.tolerance(e.pointerType))
 
-    // 2. double click / tap: edit text, or create text on empty canvas
+    // 2. double click / tap: edit text or a label, or create text on empty canvas
     if (isDouble) {
-      if (hit?.type === 'text') {
-        startEditing(hit.id)
+      const editable = this.editableAt(p, e.pointerType)
+      if (editable) {
+        startEditing(editable.id)
         return
       }
       if (!hit) {
@@ -424,7 +453,14 @@ export class CanvasController {
       }
       case 'shape': {
         if (Math.hypot(sx - a.sx, sy - a.sy) < DRAG_THRESHOLD) return
-        s.setDraft(this.shapeFromDrag(a.type, a.start, this.world(sx, sy), e.shiftKey))
+        const draft = this.shapeFromDrag(a.type, a.start, this.world(sx, sy), e.shiftKey)
+        if (draft.type === 'line' || draft.type === 'arrow') {
+          const target = bindTarget(s.doc.elements, [draft.x2, draft.y2], this.tolerance(e.pointerType), a.bind)
+          if (a.bind) draft.start = a.bind
+          if (target) draft.end = target.id
+          s.setHovered(target?.id ?? null)
+          s.setDraft(resolveDraftLine(draft, s.doc.elements))
+        } else s.setDraft(draft)
         break
       }
       case 'marquee': {
@@ -445,6 +481,17 @@ export class CanvasController {
         if (!a.moved) {
           if (Math.hypot(sx - a.sx, sy - a.sy) < DRAG_THRESHOLD) return
           a.moved = true
+          // arrows dragged away from what they're attached to let go of it
+          a.base = a.base.map((el) => {
+            if (!a.ids.has(el.id) || (el.type !== 'arrow' && el.type !== 'line')) return el
+            const keepStart = !el.start || a.ids.has(el.start)
+            const keepEnd = !el.end || a.ids.has(el.end)
+            if (keepStart && keepEnd) return el
+            const next = { ...el }
+            if (!keepStart) delete next.start
+            if (!keepEnd) delete next.end
+            return next
+          })
           if (a.alt) {
             // option/alt-drag duplicates the selection and drags the copies
             const originals = a.base.filter((el) => a.ids.has(el.id))
@@ -473,7 +520,7 @@ export class CanvasController {
         if (fy === -1) y0 += dy
         const w = b.maxX - b.minX
         const h = b.maxY - b.minY
-        if ((e.shiftKey || a.lockText) && fx !== 0 && fy !== 0 && w > 0 && h > 0) {
+        if ((e.shiftKey || a.lockAspect) && fx !== 0 && fy !== 0 && w > 0 && h > 0) {
           const scx = (x1 - x0) / w
           const scy = (y1 - y0) / h
           const sc = Math.max(Math.abs(scx), Math.abs(scy))
@@ -485,7 +532,7 @@ export class CanvasController {
           else y0 = y1 - nh
         }
         const to: Box = { minX: x0, minY: y0, maxX: x1, maxY: y1 }
-        s.setElementsLive(a.before.map((el) => (a.ids.has(el.id) ? scaleEl(el, b, to, a.lockText) : el)))
+        s.setElementsLive(a.before.map((el) => (a.ids.has(el.id) ? scaleEl(el, b, to, a.lockAspect) : el)))
         break
       }
       case 'endpoint': {
@@ -497,7 +544,13 @@ export class CanvasController {
           const [ax, ay] = a.which === 1 ? [o.x2, o.y2] : [o.x1, o.y1]
           ;[nx, ny] = snapAngle(ax, ay, nx, ny)
         }
-        const next: LineEl = a.which === 1 ? { ...o, x1: nx, y1: ny } : { ...o, x2: nx, y2: ny }
+        // attach to whatever the end is dropped on (but not the shape the other end holds)
+        const other = a.which === 1 ? o.end : o.start
+        const target = bindTarget(a.before, [nx, ny], this.tolerance(e.pointerType), other)
+        const next: LineEl = a.which === 1 ? { ...o, x1: nx, y1: ny, start: target?.id } : { ...o, x2: nx, y2: ny, end: target?.id }
+        if (!next.start) delete next.start
+        if (!next.end) delete next.end
+        s.setHovered(target?.id ?? null)
         s.setElementsLive(a.before.map((el) => (el.id === a.id ? next : el)))
         break
       }
@@ -543,7 +596,7 @@ export class CanvasController {
     S().setViewport({ zoom, x: cx - wx * zoom, y: cy - wy * zoom })
   }
 
-  private shapeFromDrag(type: 'rect' | 'ellipse' | 'line' | 'arrow', a: Point, b: Point, shift: boolean): El {
+  private shapeFromDrag(type: 'rect' | 'ellipse' | 'line' | 'arrow', a: Point, b: Point, shift: boolean): El & { start?: string; end?: string } {
     const s = S()
     const base = { id: 'draft', color: s.style.color, size: s.style.size }
     if (type === 'line' || type === 'arrow') {
@@ -614,6 +667,7 @@ export class CanvasController {
       this.cancel()
       return
     }
+    if (a.kind === 'shape' || a.kind === 'endpoint') s.setHovered(null)
 
     switch (a.kind) {
       case 'pan':

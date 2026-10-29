@@ -4,7 +4,11 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 
 ## What it does
 
-- **Tools:** Select, Hand, Pen (pressure-sensitive), Eraser, Rectangle, Ellipse, Arrow, Line and Text.
+- **Tools:** Select, Hand, Pen (pressure-sensitive, smoothed even for fast strokes), Eraser, Sticky note, Rectangle, Ellipse, Arrow, Line, Text and Image.
+- **Sticky notes:** tap to place and start typing. Text wraps and shrinks to fit; 8 paper colours.
+- **Labels in shapes:** double-click (or double-tap, or press Enter on) a rectangle or ellipse to type inside it.
+- **Connected arrows:** start or end an arrow on a shape, sticky, image or text and it attaches; move the shape and the arrow follows.
+- **Images:** paste, drag in, or pick from Photos/Files (toolbar or I). Images are resized and stored separately so boards stay quick to sync.
 - **Style:** 8 colors (Apple system palette), 3 stroke weights, outline/tint/solid fill and 4 text sizes. When something is selected, a style bar appears above the toolbar.
 - **Editing:** move, resize (Shift keeps proportions), duplicate (⌘D or Alt-drag), copy/paste, layer order, undo/redo and arrow-key nudging.
 - **iPad + Apple Pencil:** pressure-sensitive ink. Once the Pencil is detected, your finger pans the board and a resting palm is ignored. Pinch with two fingers to zoom. Tapping with the Text tool opens the keyboard (Scribble works too).
@@ -23,6 +27,8 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 | E | Eraser | ⌫ | Delete |
 | R / O | Rectangle / Ellipse | [ / ] | Send back / Bring front |
 | A / L | Arrow / Line | ⇧1 / ⇧0 | Zoom to fit / 100% |
+| N | Sticky note | Enter | Edit selected text / label |
+| I | Insert image | ⌥ + drag | Duplicate while dragging |
 | T | Text (or double-click canvas) | ⌘ + scroll / pinch | Zoom |
 
 ## Run it locally
@@ -78,11 +84,17 @@ src/
   export.ts       PDF / PNG / SVG export
   storage.ts      IndexedDB boards + share-link encoding
   cloud.ts        client for the cloud save endpoint
+  assets.ts       image storage (device + cloud) and loading
+  images.ts       image import: paste, drop, picker, downscaling
+  layout.ts       wrapping / auto-fitting text in stickies and shapes
+  bindings.ts     arrows attached to shapes
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
   store.ts        app state (zustand) with undo/redo
   components/     toolbar, style bar, menus, overlays
 api/
   board.js        Vercel Function: GET / PUT / DELETE a board in Redis
+  asset.js        Vercel Function: images, stored by content hash
+  _redis.js       shared Redis (Upstash REST) helper
 ```
 
 Built with Vite, React, TypeScript, [perfect-freehand](https://github.com/steveruizok/perfect-freehand), [Lucide](https://lucide.dev) icons, [Geist](https://vercel.com/font) (SIL OFL), jsPDF + svg2pdf.js.

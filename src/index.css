@@ -949,3 +949,11 @@ button:focus:not(:focus-visible) {
     max-width: 34vw;
   }
 }
+
+/* Sticky notes get a soft paper shadow on screen (exports stay flat) */
+.sticky-paper {
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+}
+:root[data-theme='dark'] .sticky-paper {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
+}
