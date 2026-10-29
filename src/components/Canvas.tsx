@@ -103,7 +103,8 @@ export function Canvas({ palette }: { palette: Palette }) {
     >
       <svg className="canvas-svg" width="100%" height="100%">
         <defs>
-          <pattern id="dots" width={gap} height={gap} patternUnits="userSpaceOnUse" x={ox} y={oy}>
+          {/* the dot is drawn 1px into its tile, so shift the tile to centre dots on grid points */}
+          <pattern id="dots" width={gap} height={gap} patternUnits="userSpaceOnUse" x={ox - 1} y={oy - 1}>
             <circle cx={1} cy={1} r={1} className="dot" />
           </pattern>
         </defs>

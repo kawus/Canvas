@@ -11,6 +11,7 @@ import {
   Image,
   Link2,
   LoaderCircle,
+  Grid3x3,
   Magnet,
   Monitor,
   Moon,
@@ -88,6 +89,8 @@ export function BoardMenu() {
   const cloud = useStore((s) => s.cloud)
   const snap = useStore((s) => s.snap)
   const setSnap = useStore((s) => s.setSnap)
+  const gridSnap = useStore((s) => s.gridSnap)
+  const setGridSnap = useStore((s) => s.setGridSnap)
   const { open, setOpen, ref } = usePopover()
   const [boards, setBoards] = useState<BoardMeta[]>([])
 
@@ -192,6 +195,14 @@ export function BoardMenu() {
             testId="snap-toggle"
           >
             Snap to objects
+          </MenuItem>
+          <MenuItem
+            icon={<Grid3x3 />}
+            onClick={() => setGridSnap(!gridSnap)}
+            hint={gridSnap ? <Check className="menu-check" /> : undefined}
+            testId="grid-toggle"
+          >
+            Snap to grid
           </MenuItem>
           <div className="menu-sep" />
           <div className="theme-row" role="radiogroup" aria-label="Appearance">

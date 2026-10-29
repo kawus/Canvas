@@ -33,6 +33,8 @@ interface State {
   guides: Guide[]
   /** snap to other objects while moving / resizing / drawing */
   snap: boolean
+  /** snap to the background dot grid */
+  gridSnap: boolean
   /** set once an Apple Pencil / stylus is seen: fingers then pan instead of draw */
   penMode: boolean
   theme: ThemePref
@@ -61,6 +63,7 @@ interface State {
   setMarquee: (b: Box | null) => void
   setGuides: (g: Guide[]) => void
   setSnap: (on: boolean) => void
+  setGridSnap: (on: boolean) => void
   setViewport: (v: Viewport) => void
   zoomTo: (zoom: number, anchor?: [number, number]) => void
   zoomToFit: () => void
@@ -95,11 +98,12 @@ function readStyle(): Style {
   return fallback
 }
 
-function readSnap() {
+function readFlag(key: string, fallback: boolean) {
   try {
-    return localStorage.getItem('canvas-snap') !== '0'
+    const v = localStorage.getItem(key)
+    return v === null ? fallback : v === '1'
   } catch {
-    return true
+    return fallback
   }
 }
 
@@ -118,7 +122,8 @@ export const useStore = create<State>((set, get) => ({
   erasing: [],
   marquee: null,
   guides: [],
-  snap: readSnap(),
+  snap: readFlag('canvas-snap', true),
+  gridSnap: readFlag('canvas-grid', false),
   penMode: false,
   theme: readTheme(),
   toast: null,
@@ -236,6 +241,14 @@ export const useStore = create<State>((set, get) => ({
       /* ignore */
     }
     set({ snap })
+  },
+  setGridSnap: (gridSnap) => {
+    try {
+      localStorage.setItem('canvas-grid', gridSnap ? '1' : '0')
+    } catch {
+      /* ignore */
+    }
+    set({ gridSnap })
   },
   setViewport: (viewport) => set({ viewport }),
 

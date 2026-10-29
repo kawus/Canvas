@@ -3,7 +3,7 @@ import { bindTarget, resolveDraftLine } from './bindings'
 import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
-import { guidesFor, snapMove, snapTargets, snapValues } from './snap'
+import { GRID, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } from './types'
@@ -256,9 +256,10 @@ export class CanvasController {
       case 'rect':
       case 'ellipse': {
         let start = p
-        if (this.snapOn(e)) {
+        const opts = this.snapOpts(e)
+        if (opts) {
           const targets = this.targetsExcluding(new Set())
-          const r = snapValues(p[0], p[1], targets, this.snapTol(e.pointerType))
+          const r = snapValues(p[0], p[1], targets, this.snapTol(e.pointerType), opts)
           start = [p[0] + r.dx, p[1] + r.dy]
           this.action = { kind: 'shape', pointerId: e.pointerId, type: tool, start, sx, sy, targets }
         } else this.action = { kind: 'shape', pointerId: e.pointerId, type: tool, start, sx, sy }
@@ -282,9 +283,11 @@ export class CanvasController {
     }
   }
 
-  /** Smart guides are on unless turned off in the menu, or ⌘/Ctrl is held for a free placement. */
-  private snapOn(e: PointerEvent) {
-    return S().snap && !e.metaKey && !e.ctrlKey
+  /** Snapping per the menu settings; holding ⌘/Ctrl places freely. */
+  private snapOpts(e: PointerEvent): SnapOptions | null {
+    const s = S()
+    if (e.metaKey || e.ctrlKey || (!s.snap && !s.gridSnap)) return null
+    return { objects: s.snap, grid: s.gridSnap ? GRID : null }
   }
 
   private snapTol(pointerType: string) {
@@ -484,12 +487,13 @@ export class CanvasController {
       case 'shape': {
         if (Math.hypot(sx - a.sx, sy - a.sy) < DRAG_THRESHOLD) return
         let end = this.world(sx, sy)
-        if ((a.type === 'rect' || a.type === 'ellipse') && this.snapOn(e) && !e.shiftKey) {
+        const opts = this.snapOpts(e)
+        if ((a.type === 'rect' || a.type === 'ellipse') && opts && !e.shiftKey) {
           a.targets ??= this.targetsExcluding(new Set())
-          const r = snapValues(end[0], end[1], a.targets, this.snapTol(e.pointerType))
+          const r = snapValues(end[0], end[1], a.targets, this.snapTol(e.pointerType), opts)
           end = [end[0] + r.dx, end[1] + r.dy]
           const box = normalizeBox(a.start[0], a.start[1], end[0], end[1])
-          s.setGuides(guidesFor(box, a.targets, { x: [a.start[0], end[0]], y: [a.start[1], end[1]] }))
+          s.setGuides(opts.objects ? guidesFor(box, a.targets, { x: [a.start[0], end[0]], y: [a.start[1], end[1]] }) : [])
         } else s.setGuides([])
         const draft = this.shapeFromDrag(a.type, a.start, end, e.shiftKey)
         if (draft.type === 'line' || draft.type === 'arrow') {
@@ -542,7 +546,8 @@ export class CanvasController {
         const p = this.world(sx, sy)
         let dx = p[0] - a.start[0]
         let dy = p[1] - a.start[1]
-        if (this.snapOn(e)) {
+        const opts = this.snapOpts(e)
+        if (opts) {
           a.targets ??= this.targetsExcluding(a.ids)
           a.box ??= geometricBounds(a.base.filter((el) => a.ids.has(el.id)))!
           const b = a.box
@@ -550,6 +555,7 @@ export class CanvasController {
             { minX: b.minX + dx, minY: b.minY + dy, maxX: b.maxX + dx, maxY: b.maxY + dy },
             a.targets,
             this.snapTol(e.pointerType),
+            opts,
           )
           dx += r.dx
           dy += r.dy
@@ -570,18 +576,19 @@ export class CanvasController {
         if (fy === 1) y1 += dy
         if (fy === -1) y0 += dy
         const locked = e.shiftKey || a.lockAspect
-        if (this.snapOn(e) && !locked) {
-          // snap the edges being dragged to other objects
+        const opts = this.snapOpts(e)
+        if (opts && !locked) {
+          // snap the edges being dragged to other objects (or the grid)
           a.targets ??= this.targetsExcluding(a.ids)
           const ex = fx === 1 ? x1 : fx === -1 ? x0 : null
           const ey = fy === 1 ? y1 : fy === -1 ? y0 : null
-          const r = snapValues(ex, ey, a.targets, this.snapTol(e.pointerType))
+          const r = snapValues(ex, ey, a.targets, this.snapTol(e.pointerType), opts)
           if (fx === 1) x1 += r.dx
           if (fx === -1) x0 += r.dx
           if (fy === 1) y1 += r.dy
           if (fy === -1) y0 += r.dy
           s.setGuides(
-            guidesFor(normalizeBox(x0, y0, x1, y1), a.targets, {
+            !opts.objects ? [] : guidesFor(normalizeBox(x0, y0, x1, y1), a.targets, {
               x: ex === null ? [] : [fx === 1 ? x1 : x0],
               y: ey === null ? [] : [fy === 1 ? y1 : y0],
             }),

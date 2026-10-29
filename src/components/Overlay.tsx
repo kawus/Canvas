@@ -74,9 +74,40 @@ export function Overlay() {
       )}
 
       {guides.map((g, i) => {
-        const [ax, ay] = g.axis === 'x' ? toScreen(v, g.at, g.from) : toScreen(v, g.from, g.at)
-        const [bx, by] = g.axis === 'x' ? toScreen(v, g.at, g.to) : toScreen(v, g.to, g.at)
-        return <line key={i} className="ov-guide" x1={ax} y1={ay} x2={bx} y2={by} />
+        if (g.type === 'line') {
+          const [ax, ay] = g.axis === 'x' ? toScreen(v, g.at, g.from) : toScreen(v, g.from, g.at)
+          const [bx, by] = g.axis === 'x' ? toScreen(v, g.at, g.to) : toScreen(v, g.to, g.at)
+          return <line key={i} className="ov-guide" x1={ax} y1={ay} x2={bx} y2={by} />
+        }
+        // equal-spacing marker: a measured gap with end ticks and its size
+        const horizontal = g.axis === 'x'
+        const [ax, ay] = horizontal ? toScreen(v, g.from, g.at) : toScreen(v, g.at, g.from)
+        const [bx, by] = horizontal ? toScreen(v, g.to, g.at) : toScreen(v, g.at, g.to)
+        const t = 4
+        const label = String(Math.round(g.to - g.from))
+        const lw = label.length * 6 + 8
+        const mx = (ax + bx) / 2
+        const my = (ay + by) / 2
+        return (
+          <g key={i} className="ov-gap">
+            <line x1={ax} y1={ay} x2={bx} y2={by} />
+            {horizontal ? (
+              <>
+                <line x1={ax} y1={ay - t} x2={ax} y2={ay + t} />
+                <line x1={bx} y1={by - t} x2={bx} y2={by + t} />
+              </>
+            ) : (
+              <>
+                <line x1={ax - t} y1={ay} x2={ax + t} y2={ay} />
+                <line x1={bx - t} y1={by} x2={bx + t} y2={by} />
+              </>
+            )}
+            <rect x={mx - lw / 2} y={my - 8} width={lw} height={16} rx={4} />
+            <text x={mx} y={my + 3.5}>
+              {label}
+            </text>
+          </g>
+        )
       })}
 
       {marquee &&

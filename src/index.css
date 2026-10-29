@@ -169,6 +169,20 @@ svg.lucide {
   stroke-width: 1;
   shape-rendering: crispEdges;
 }
+.ov-gap line {
+  stroke: #ff2d55;
+  stroke-width: 1;
+}
+.ov-gap rect {
+  fill: #ff2d55;
+}
+.ov-gap text {
+  fill: #fff;
+  font-size: 10px;
+  font-weight: 600;
+  text-anchor: middle;
+  font-variant-numeric: tabular-nums;
+}
 .ov-marquee {
   fill: var(--accent);
   fill-opacity: 0.06;
