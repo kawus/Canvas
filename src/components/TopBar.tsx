@@ -1,12 +1,16 @@
 import {
   Check,
   ChevronDown,
+  Cloud,
+  CloudAlert,
+  CloudOff,
   Copy,
   Download,
   FileCode,
   FileText,
   Image,
   Link2,
+  LoaderCircle,
   Monitor,
   Moon,
   Plus,
@@ -15,10 +19,10 @@ import {
   Trash2,
 } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
-import { duplicateBoard, newBoard, openBoard, removeCurrentBoard } from '../boards'
+import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { selectedElements, useStore, type ThemePref } from '../store'
-import { listBoards, shareUrl } from '../storage'
+import { boardUrl, listBoards, shareUrl } from '../storage'
 import type { BoardMeta } from '../types'
 import { MenuItem, usePopover } from './ui'
 
@@ -43,12 +47,44 @@ function Logo() {
   )
 }
 
+const SYNC_LABEL = {
+  loading: 'Loading from the cloud…',
+  saving: 'Saving…',
+  saved: 'Saved to the cloud — this link works on any device',
+  offline: 'Offline — saved on this device, will sync when you’re back online',
+  'too-large': 'Too large to sync — saved on this device only',
+  error: 'Couldn’t sync — saved on this device, will retry',
+} as const
+
+function SyncIndicator() {
+  const cloud = useStore((s) => s.cloud)
+  const sync = useStore((s) => s.sync)
+  if (!cloud || sync === 'idle') return null
+  const icon =
+    sync === 'saving' || sync === 'loading' ? (
+      <LoaderCircle className="spin" />
+    ) : sync === 'saved' ? (
+      <Cloud />
+    ) : sync === 'offline' ? (
+      <CloudOff />
+    ) : (
+      <CloudAlert />
+    )
+  return (
+    <span className={`sync sync-${sync} tip-bottom`} aria-label={SYNC_LABEL[sync]} data-testid="sync" data-state={sync}>
+      {icon}
+      <span className="tip">{SYNC_LABEL[sync]}</span>
+    </span>
+  )
+}
+
 export function BoardMenu() {
   const title = useStore((s) => s.doc.title)
   const id = useStore((s) => s.doc.id)
   const setTitle = useStore((s) => s.setTitle)
   const theme = useStore((s) => s.theme)
   const setTheme = useStore((s) => s.setTheme)
+  const cloud = useStore((s) => s.cloud)
   const { open, setOpen, ref } = usePopover()
   const [boards, setBoards] = useState<BoardMeta[]>([])
 
@@ -92,6 +128,7 @@ export function BoardMenu() {
         size={Math.max(4, Math.min(28, title.length + 1))}
         data-testid="title"
       />
+      <SyncIndicator />
       {open && (
         <div className="popover popover-left" role="menu">
           <MenuItem
@@ -136,7 +173,10 @@ export function BoardMenu() {
             danger
             onClick={() => {
               setOpen(false)
-              if (confirm('Delete this board? This can’t be undone.')) void removeCurrentBoard()
+              const msg = cloud
+                ? 'Delete this board for everyone with the link? This can’t be undone.'
+                : 'Delete this board? This can’t be undone.'
+              if (confirm(msg)) void removeCurrentBoard()
             }}
           >
             Delete board
@@ -165,19 +205,27 @@ export function BoardMenu() {
 
 export function ShareButton() {
   const doc = useStore((s) => s.doc)
+  const cloud = useStore((s) => s.cloud)
+  const sync = useStore((s) => s.sync)
   const showToast = useStore((s) => s.showToast)
   const { open, setOpen, ref } = usePopover()
   const [copied, setCopied] = useState(false)
-  const [url, setUrl] = useState('')
+  const [mode, setMode] = useState<'live' | 'copy'>('live')
 
+  // A live link needs cloud storage; without it the link carries a snapshot instead.
+  const live = !!cloud && mode === 'live' && sync !== 'too-large'
+  const [snapshot, setSnapshot] = useState('')
   useEffect(() => {
-    if (open) {
-      setUrl(shareUrl(doc))
-      setCopied(false)
-    }
-  }, [open, doc])
+    if (open && !live) setSnapshot(shareUrl(doc))
+  }, [open, live, doc])
+  useEffect(() => {
+    if (open) setCopied(false)
+  }, [open, mode])
+
+  const url = live ? boardUrl(doc.id) : snapshot
 
   const copy = async () => {
+    if (live) void syncNow()
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -191,7 +239,7 @@ export function ShareButton() {
 
   const canNativeShare = typeof navigator.share === 'function'
   const empty = doc.elements.length === 0
-  const long = url.length > 30000
+  const long = !live && url.length > 30000
 
   return (
     <div className="share-wrap" ref={ref}>
@@ -208,12 +256,45 @@ export function ShareButton() {
       {open && (
         <div className="popover popover-right share-pop" data-testid="share-pop">
           <div className="pop-title">Share this board</div>
+          {cloud && (
+            <div className="theme-row share-modes" role="radiogroup" aria-label="Link type">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={mode === 'live'}
+                className={`theme-btn ${mode === 'live' ? 'is-active' : ''}`}
+                onClick={() => setMode('live')}
+                data-testid="mode-live"
+              >
+                Live board
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={mode === 'copy'}
+                className={`theme-btn ${mode === 'copy' ? 'is-active' : ''}`}
+                onClick={() => setMode('copy')}
+                data-testid="mode-copy"
+              >
+                A copy
+              </button>
+            </div>
+          )}
           <p className="pop-text">
-            Anyone with the link gets their own copy — no sign‑in needed. Your board keeps saving here automatically.
+            {live
+              ? 'Anyone with the link can open and edit this board, on any device. No sign‑in needed.'
+              : 'Anyone with the link gets their own copy to keep. Your board stays as it is. No sign‑in needed.'}
           </p>
           <div className="url-row">
             <Link2 className="url-icon" />
-            <input id="share-url" className="url-input" readOnly value={empty ? 'Draw something first' : url} onFocus={(e) => e.target.select()} />
+            <input
+              id="share-url"
+              className="url-input"
+              readOnly
+              value={empty ? 'Draw something first' : url}
+              onFocus={(e) => e.target.select()}
+              data-testid="share-url"
+            />
           </div>
           <div className="pop-actions">
             {canNativeShare && (
@@ -221,7 +302,10 @@ export function ShareButton() {
                 type="button"
                 className="ghost-btn"
                 disabled={empty}
-                onClick={() => navigator.share({ title: doc.title, url }).catch(() => {})}
+                onClick={() => {
+                  if (live) void syncNow()
+                  navigator.share({ title: doc.title, url }).catch(() => {})
+                }}
               >
                 More…
               </button>
@@ -232,6 +316,9 @@ export function ShareButton() {
             </button>
           </div>
           {long && <p className="pop-note">This board is large, so the link is long. Some chat apps may cut it off — export a PDF instead.</p>}
+          {cloud === false && (
+            <p className="pop-note">Boards are saved in this browser. Turn on cloud saving to get live links that work on every device.</p>
+          )}
         </div>
       )}
     </div>

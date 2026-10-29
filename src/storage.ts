@@ -42,7 +42,7 @@ async function remove(key: string) {
   }
 }
 
-export const newId = customAlphabet('23456789abcdefghjkmnpqrstuvwxyz', 10)
+export const newId = customAlphabet('23456789abcdefghjkmnpqrstuvwxyz', 12)
 export const newElementId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12)
 
 export function emptyBoard(id = newId()): BoardDoc {

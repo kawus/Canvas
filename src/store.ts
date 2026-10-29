@@ -5,6 +5,8 @@ import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
 
 export type ThemePref = 'system' | 'light' | 'dark'
+/** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
+export type SyncStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'offline' | 'too-large' | 'error'
 
 interface Toast {
   id: number
@@ -29,6 +31,9 @@ interface State {
   penMode: boolean
   theme: ThemePref
   toast: Toast | null
+  /** null until we know whether the cloud endpoint exists */
+  cloud: boolean | null
+  sync: SyncStatus
   past: El[][]
   future: El[][]
 
@@ -54,6 +59,8 @@ interface State {
   setPenMode: (on: boolean) => void
   setTheme: (t: ThemePref) => void
   showToast: (message: string) => void
+  setCloud: (cloud: boolean) => void
+  setSync: (sync: SyncStatus) => void
   deleteSelected: () => void
 }
 
@@ -97,6 +104,8 @@ export const useStore = create<State>((set, get) => ({
   penMode: false,
   theme: readTheme(),
   toast: null,
+  cloud: null,
+  sync: 'idle',
   past: [],
   future: [],
 
@@ -242,6 +251,12 @@ export const useStore = create<State>((set, get) => ({
   },
 
   showToast: (message) => set({ toast: { id: ++toastSeq, message } }),
+  setCloud: (cloud) => {
+    if (get().cloud !== cloud) set({ cloud })
+  },
+  setSync: (sync) => {
+    if (get().sync !== sync) set({ sync })
+  },
 
   deleteSelected: () => {
     const s = get()
