@@ -2,6 +2,7 @@ import { useEffect, useSyncExternalStore } from 'react'
 import { routeFromHash, startPersistence } from './boards'
 import { Canvas } from './components/Canvas'
 import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
+import { PeerAvatars, PeerCursors } from './components/Presence'
 import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
@@ -42,12 +43,14 @@ export default function App() {
     <div className={`app ${loaded ? 'is-loaded' : ''}`}>
       <Canvas palette={palette} />
       <TextEditor palette={palette} />
+      <PeerCursors />
       <EmptyHint />
 
       <div className="top-left">
         <BoardMenu />
       </div>
       <div className="top-right">
+        <PeerAvatars />
         <ExportButton />
         <ShareButton />
       </div>

@@ -120,6 +120,8 @@ export interface BoardDoc {
   elements: El[]
   createdAt: number
   updatedAt: number
+  /** set once the board's live link has been shared; shared boards collaborate live */
+  shared?: boolean
 }
 
 export interface BoardMeta {

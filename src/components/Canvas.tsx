@@ -72,6 +72,7 @@ export function Canvas({ palette }: { palette: Palette }) {
   const viewport = useStore((s) => s.viewport)
   const erasing = useStore((s) => s.erasing)
   const editingId = useStore((s) => s.editingId)
+  const peers = useStore((s) => s.collab.peers)
 
   useEffect(() => {
     const c = new CanvasController(ref.current!)
@@ -119,6 +120,9 @@ export function Canvas({ palette }: { palette: Palette }) {
               editing={el.id === editingId}
             />
           ))}
+          {peers.map(
+            (p) => p.draft && <ElementView key={`peer-${p.id}`} el={p.draft} palette={palette} faded={false} editing={false} />,
+          )}
           {draft && <ElementView el={draft} palette={palette} faded={false} editing={false} />}
         </g>
       </svg>

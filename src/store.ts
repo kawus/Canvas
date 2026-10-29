@@ -10,6 +10,32 @@ export type ThemePref = 'system' | 'light' | 'dark'
 /** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
 export type SyncStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'offline' | 'too-large' | 'error'
 
+/** What caused the latest change to the board's elements (used by live collaboration). */
+export type ChangeKind = 'load' | 'live' | 'commit' | 'remote'
+
+/** Another person on the same board, as seen through live collaboration. */
+export interface Peer {
+  id: number
+  name: string
+  color: string
+  cursor: [number, number] | null
+  selection: string[]
+  draft: El | null
+}
+
+export interface CollabState {
+  status: 'off' | 'connecting' | 'live' | 'reconnecting'
+  peers: Peer[]
+  canUndo: boolean
+  canRedo: boolean
+}
+
+/** While collaborating, undo/redo go through the shared room so only your own changes are undone. */
+let historyDelegate: { undo: () => void; redo: () => void } | null = null
+export function setHistoryDelegate(d: typeof historyDelegate) {
+  historyDelegate = d
+}
+
 interface Toast {
   id: number
   message: string
@@ -44,6 +70,10 @@ interface State {
   sync: SyncStatus
   past: El[][]
   future: El[][]
+  change: ChangeKind
+  /** bumped on every commit, even one that changes nothing (ends a gesture) */
+  commitSeq: number
+  collab: CollabState
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -51,6 +81,11 @@ interface State {
   setElementsLive: (elements: El[]) => void
   /** replace elements and record `before` as an undo step */
   commit: (elements: El[], before?: El[]) => void
+  /** apply changes that arrived from other people (no history, not re-sent) */
+  applyRemote: (elements: El[], title: string, updatedAt: number) => void
+  setCollab: (patch: Partial<CollabState>) => void
+  /** the board's live link was shared: from now on it collaborates live */
+  markShared: () => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -131,10 +166,14 @@ export const useStore = create<State>((set, get) => ({
   sync: 'idle',
   past: [],
   future: [],
+  change: 'load',
+  commitSeq: 0,
+  collab: { status: 'off', peers: [], canUndo: false, canRedo: false },
 
   setDoc: (doc) =>
     set({
       doc,
+      change: 'load',
       loaded: true,
       past: [],
       future: [],
@@ -147,20 +186,49 @@ export const useStore = create<State>((set, get) => ({
       guides: [],
     }),
 
-  setTitle: (title) => set((s) => ({ doc: { ...s.doc, title, updatedAt: Date.now() } })),
+  setTitle: (title) =>
+    set((s) => ({ doc: { ...s.doc, title, updatedAt: Date.now() }, change: 'commit', commitSeq: s.commitSeq + 1 })),
 
-  setElementsLive: (elements) => set((s) => ({ doc: { ...s.doc, elements: resolveBindings(elements) } })),
+  setElementsLive: (elements) =>
+    set((s) => ({ doc: { ...s.doc, elements: resolveBindings(elements) }, change: 'live' })),
 
   commit: (input, before) =>
     set((s) => {
       const elements = resolveBindings(input)
       const prev = before ?? s.doc.elements
-      if (prev === elements) return {}
+      if (prev === elements) return { commitSeq: s.commitSeq + 1 }
       const past = [...s.past, prev].slice(-HISTORY_LIMIT)
-      return { doc: { ...s.doc, elements, updatedAt: Date.now() }, past, future: [] }
+      return {
+        doc: { ...s.doc, elements, updatedAt: Date.now() },
+        past,
+        future: [],
+        change: 'commit',
+        commitSeq: s.commitSeq + 1,
+      }
     }),
 
-  undo: () =>
+  applyRemote: (elements, title, updatedAt) =>
+    set((s) => {
+      const ids = new Set(elements.map((e) => e.id))
+      return {
+        doc: { ...s.doc, elements, title, updatedAt: Math.max(updatedAt, s.doc.updatedAt) },
+        change: 'remote',
+        selectedIds: s.selectedIds.some((id) => !ids.has(id)) ? s.selectedIds.filter((id) => ids.has(id)) : s.selectedIds,
+        hoveredId: s.hoveredId && ids.has(s.hoveredId) ? s.hoveredId : null,
+      }
+    }),
+
+  setCollab: (patch) => set((s) => ({ collab: { ...s.collab, ...patch } })),
+
+  markShared: () =>
+    set((s) =>
+      s.doc.shared
+        ? {}
+        : { doc: { ...s.doc, shared: true, updatedAt: Date.now() }, change: 'commit', commitSeq: s.commitSeq + 1 },
+    ),
+
+  undo: () => {
+    if (historyDelegate) return historyDelegate.undo()
     set((s) => {
       if (!s.past.length) return {}
       const prev = s.past[s.past.length - 1]
@@ -171,10 +239,14 @@ export const useStore = create<State>((set, get) => ({
         future: [s.doc.elements, ...s.future],
         selectedIds: s.selectedIds.filter((id) => ids.has(id)),
         editingId: null,
+        change: 'commit',
+        commitSeq: s.commitSeq + 1,
       }
-    }),
+    })
+  },
 
-  redo: () =>
+  redo: () => {
+    if (historyDelegate) return historyDelegate.redo()
     set((s) => {
       if (!s.future.length) return {}
       const next = s.future[0]
@@ -185,8 +257,11 @@ export const useStore = create<State>((set, get) => ({
         future: s.future.slice(1),
         selectedIds: s.selectedIds.filter((id) => ids.has(id)),
         editingId: null,
+        change: 'commit',
+        commitSeq: s.commitSeq + 1,
       }
-    }),
+    })
+  },
 
   setTool: (tool) =>
     set((s) => ({

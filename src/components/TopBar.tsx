@@ -22,6 +22,7 @@ import {
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
+import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { selectedElements, useStore, type ThemePref } from '../store'
 import { boardUrl, listBoards, shareUrl } from '../storage'
@@ -234,6 +235,12 @@ export function ShareButton() {
   const { open, setOpen, ref } = usePopover()
   const [copied, setCopied] = useState(false)
   const [mode, setMode] = useState<'live' | 'copy'>('live')
+  const markShared = useStore((s) => s.markShared)
+  const [collabOn, setCollabOn] = useState(false)
+  const [myName, setName] = useState(() => getMe().name)
+  useEffect(() => {
+    if (open) void collabAvailable().then(setCollabOn)
+  }, [open])
 
   // A live link needs cloud storage; without it the link carries a snapshot instead.
   const live = !!cloud && mode === 'live' && sync !== 'too-large'
@@ -244,8 +251,15 @@ export function ShareButton() {
 
   const url = live ? boardUrl(doc.id) : snapshot
 
+  // Handing out the live link turns on live collaboration for this board
+  const shareLive = () => {
+    if (!live) return
+    markShared()
+    void syncNow()
+  }
+
   const copy = async () => {
-    if (live) void syncNow()
+    shareLive()
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -301,7 +315,9 @@ export function ShareButton() {
             </div>
           )}
           <p className="pop-text">
-            {live
+            {live && collabOn
+              ? 'Anyone with the link can edit this board with you, live — you’ll see each other’s cursors. No sign‑in needed.'
+              : live
               ? 'Anyone with the link can open and edit this board, on any device. No sign‑in needed.'
               : 'Anyone with the link gets their own copy to keep. Your board stays as it is. No sign‑in needed.'}
           </p>
@@ -312,7 +328,10 @@ export function ShareButton() {
               className="url-input"
               readOnly
               value={empty ? 'Draw something first' : url}
-              onFocus={(e) => e.target.select()}
+              onFocus={(e) => {
+                e.target.select()
+                shareLive()
+              }}
               data-testid="share-url"
             />
           </div>
@@ -323,7 +342,7 @@ export function ShareButton() {
                 className="ghost-btn"
                 disabled={empty}
                 onClick={() => {
-                  if (live) void syncNow()
+                  shareLive()
                   navigator.share({ title: doc.title, url }).catch(() => {})
                 }}
               >
@@ -335,6 +354,24 @@ export function ShareButton() {
               <span>{copied ? 'Copied' : 'Copy link'}</span>
             </button>
           </div>
+          {live && collabOn && (
+            <label className="me-row">
+              <span className="me-dot" style={{ background: getMe().color }} />
+              You appear as
+              <input
+                className="me-input"
+                value={myName}
+                maxLength={40}
+                onChange={(e) => setName(e.target.value)}
+                onBlur={() => {
+                  setMyName(myName)
+                  setName(getMe().name)
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                data-testid="my-name"
+              />
+            </label>
+          )}
           {long && <p className="pop-note">This board is large, so the link is long. Some chat apps may cut it off — export a PDF instead.</p>}
           {cloud === false && (
             <p className="pop-note">Boards are saved in this browser. Turn on cloud saving to get live links that work on every device.</p>

@@ -44,7 +44,7 @@ export async function handle(request) {
       case 'PUT': {
         const text = await request.text()
         if (text.length > MAX_BYTES) return json({ error: 'board too large' }, 413)
-        /** @type {{ id?: unknown, title?: unknown, elements?: unknown, createdAt?: unknown, updatedAt?: unknown }} */
+        /** @type {{ id?: unknown, title?: unknown, elements?: unknown, createdAt?: unknown, updatedAt?: unknown, shared?: unknown }} */
         let doc
         try {
           doc = JSON.parse(text)
@@ -60,6 +60,8 @@ export async function handle(request) {
           elements: doc.elements,
           createdAt: typeof doc.createdAt === 'number' ? doc.createdAt : doc.updatedAt,
           updatedAt: doc.updatedAt,
+          // once shared, every device that opens the board joins it live
+          shared: doc.shared === true,
         }
         await redis(['SET', key, JSON.stringify(clean), 'EX', TTL_SECONDS])
         return json({ updatedAt: clean.updatedAt })

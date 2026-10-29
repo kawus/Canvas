@@ -4,8 +4,9 @@ import { useStore } from '../store'
 import { IconButton } from './ui'
 
 export function HistoryControls() {
-  const canUndo = useStore((s) => s.past.length > 0)
-  const canRedo = useStore((s) => s.future.length > 0)
+  // while collaborating live, undo/redo cover only your own changes in the shared room
+  const canUndo = useStore((s) => (s.collab.status !== 'off' ? s.collab.canUndo : s.past.length > 0))
+  const canRedo = useStore((s) => (s.collab.status !== 'off' ? s.collab.canRedo : s.future.length > 0))
   const undo = useStore((s) => s.undo)
   const redo = useStore((s) => s.redo)
   return (

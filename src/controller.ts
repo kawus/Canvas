@@ -30,7 +30,13 @@ type Action =
       sy: number
       start: Point
       before: El[]
-      base: El[]
+      /**
+       * The moving elements as they were when the drag started. Only these are
+       * rewritten while dragging, so edits others make meanwhile are kept.
+       */
+      orig: Map<string, El>
+      /** alt-drag: the moving elements are fresh copies */
+      clones: boolean
       ids: Set<string>
       moved: boolean
       clickedId: string | null
@@ -48,6 +54,7 @@ type Action =
       sy: number
       box: Box
       before: El[]
+      orig: Map<string, El>
       ids: Set<string>
       lockAspect: boolean
       targets?: Box[]
@@ -180,7 +187,12 @@ export class CanvasController {
     const a = this.action
     if (!a) return
     const s = S()
-    if (a.kind === 'move' || a.kind === 'resize' || a.kind === 'endpoint') s.setElementsLive(a.before)
+    // put back only what this gesture touched
+    if (a.kind === 'move' && a.clones) s.setElementsLive(s.doc.elements.filter((el) => !a.ids.has(el.id)))
+    else if (a.kind === 'move' || a.kind === 'resize') {
+      const byId = new Map(a.before.filter((el) => a.ids.has(el.id)).map((el) => [el.id, el]))
+      s.setElementsLive(s.doc.elements.map((el) => byId.get(el.id) ?? el))
+    } else if (a.kind === 'endpoint') s.setElementsLive(s.doc.elements.map((el) => (el.id === a.id ? a.orig : el)))
     if (a.kind === 'draw' || a.kind === 'shape') s.setDraft(null)
     if (a.kind === 'shape' || a.kind === 'endpoint') s.setHovered(null)
     s.setGuides([])
@@ -358,6 +370,7 @@ export class CanvasController {
             sy,
             box: geometricBounds(sel)!,
             before,
+            orig: new Map(sel.map((x) => [x.id, x])),
             ids: new Set(sel.map((x) => x.id)),
             lockAspect: sel.length === 1 && (sel[0].type === 'text' || sel[0].type === 'image'),
           }
@@ -402,7 +415,8 @@ export class CanvasController {
         sy,
         start: p,
         before: s.doc.elements,
-        base: s.doc.elements,
+        orig: new Map(s.doc.elements.filter((el) => ids.includes(el.id)).map((el) => [el.id, el])),
+        clones: false,
         ids: new Set(ids),
         moved: false,
         clickedId: hit?.id ?? null,
@@ -524,22 +538,23 @@ export class CanvasController {
           if (Math.hypot(sx - a.sx, sy - a.sy) < DRAG_THRESHOLD) return
           a.moved = true
           // arrows dragged away from what they're attached to let go of it
-          a.base = a.base.map((el) => {
-            if (!a.ids.has(el.id) || (el.type !== 'arrow' && el.type !== 'line')) return el
+          for (const [id, el] of a.orig) {
+            if (el.type !== 'arrow' && el.type !== 'line') continue
             const keepStart = !el.start || a.ids.has(el.start)
             const keepEnd = !el.end || a.ids.has(el.end)
-            if (keepStart && keepEnd) return el
+            if (keepStart && keepEnd) continue
             const next = { ...el }
             if (!keepStart) delete next.start
             if (!keepEnd) delete next.end
-            return next
-          })
+            a.orig.set(id, next)
+          }
           if (a.alt) {
             // option/alt-drag duplicates the selection and drags the copies
-            const originals = a.base.filter((el) => a.ids.has(el.id))
-            const clones = cloneWithNewIds(originals, 0, 0)
-            a.base = [...a.base, ...clones]
+            const clones = cloneWithNewIds([...a.orig.values()], 0, 0)
+            a.orig = new Map(clones.map((c) => [c.id, c]))
             a.ids = new Set(clones.map((c) => c.id))
+            a.clones = true
+            s.setElementsLive([...s.doc.elements, ...clones])
             s.select([...a.ids])
           }
         }
@@ -549,7 +564,7 @@ export class CanvasController {
         const opts = this.snapOpts(e)
         if (opts) {
           a.targets ??= this.targetsExcluding(a.ids)
-          a.box ??= geometricBounds(a.base.filter((el) => a.ids.has(el.id)))!
+          a.box ??= geometricBounds([...a.orig.values()])!
           const b = a.box
           const r = snapMove(
             { minX: b.minX + dx, minY: b.minY + dy, maxX: b.maxX + dx, maxY: b.maxY + dy },
@@ -561,7 +576,7 @@ export class CanvasController {
           dy += r.dy
           s.setGuides(r.guides)
         } else s.setGuides([])
-        s.setElementsLive(a.base.map((el) => (a.ids.has(el.id) ? translateEl(el, dx, dy) : el)))
+        s.setElementsLive(S().doc.elements.map((el) => (a.ids.has(el.id) ? translateEl(a.orig.get(el.id) ?? el, dx, dy) : el)))
         break
       }
       case 'resize': {
@@ -608,7 +623,9 @@ export class CanvasController {
           else y0 = y1 - nh
         }
         const to: Box = { minX: x0, minY: y0, maxX: x1, maxY: y1 }
-        s.setElementsLive(a.before.map((el) => (a.ids.has(el.id) ? scaleEl(el, b, to, a.lockAspect) : el)))
+        s.setElementsLive(
+          S().doc.elements.map((el) => (a.ids.has(el.id) ? scaleEl(a.orig.get(el.id) ?? el, b, to, a.lockAspect) : el)),
+        )
         break
       }
       case 'endpoint': {
@@ -622,12 +639,12 @@ export class CanvasController {
         }
         // attach to whatever the end is dropped on (but not the shape the other end holds)
         const other = a.which === 1 ? o.end : o.start
-        const target = bindTarget(a.before, [nx, ny], this.tolerance(e.pointerType), other)
+        const target = bindTarget(S().doc.elements, [nx, ny], this.tolerance(e.pointerType), other)
         const next: LineEl = a.which === 1 ? { ...o, x1: nx, y1: ny, start: target?.id } : { ...o, x2: nx, y2: ny, end: target?.id }
         if (!next.start) delete next.start
         if (!next.end) delete next.end
         s.setHovered(target?.id ?? null)
-        s.setElementsLive(a.before.map((el) => (el.id === a.id ? next : el)))
+        s.setElementsLive(S().doc.elements.map((el) => (el.id === a.id ? next : el)))
         break
       }
       case 'erase': {

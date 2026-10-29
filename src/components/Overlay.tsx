@@ -18,6 +18,7 @@ export function Overlay() {
   const marquee = useStore((s) => s.marquee)
   const penMode = useStore((s) => s.penMode)
   const guides = useStore((s) => s.guides)
+  const peers = useStore((s) => s.collab.peers)
 
   const sel = selectedElements({ doc, selectedIds })
   const hovered = hoveredId ? doc.elements.find((e) => e.id === hoveredId) : null
@@ -27,6 +28,17 @@ export function Overlay() {
 
   return (
     <svg className="overlay" width="100%" height="100%">
+      {peers.map((p) =>
+        doc.elements
+          .filter((el) => p.selection.includes(el.id))
+          .map((el) => {
+            const f = elementFrame(el, v)
+            return (
+              <rect key={`${p.id}-${el.id}`} className="ov-peer" x={f.x} y={f.y} width={f.w} height={f.h} rx={3} stroke={p.color} />
+            )
+          }),
+      )}
+
       {hovered && (() => {
         const f = elementFrame(hovered, v)
         return <rect className="ov-hover" x={f.x} y={f.y} width={f.w} height={f.h} rx={4} />

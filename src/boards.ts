@@ -1,5 +1,6 @@
 import { uploadAssets } from './assets'
 import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
+import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
 import { useStore } from './store'
 import {
   decodeShare,
@@ -123,7 +124,8 @@ function hasUnsyncedChanges() {
 /** Pull a newer version of the open board from the cloud (e.g. edited on another device). */
 async function pullIfNewer() {
   const s = S()
-  if (!s.cloud || !s.loaded || hasUnsyncedChanges() || pushing) return
+  // while collaborating live, the room keeps everyone in sync
+  if (!s.cloud || !s.loaded || hasUnsyncedChanges() || pushing || isLive()) return
   const before = s.doc
   const r = await fetchRemote(before.id)
   noteRemote(r)
@@ -216,8 +218,10 @@ export async function removeCurrentBoard() {
   const { doc, cloud } = S()
   clearTimeout(saveTimer)
   persisted = false
+  stopCollab()
   await deleteBoard(doc.id)
   if (cloud) await deleteRemote(doc.id)
+  if (doc.shared) await deleteRoom(doc.id)
   try {
     localStorage.removeItem(vpKey(doc.id))
   } catch {
@@ -290,6 +294,13 @@ export async function syncNow() {
 export function startPersistence() {
   let vpTimer: ReturnType<typeof setTimeout> | undefined
   const unsub = useStore.subscribe((s, p) => {
+    // Live collaboration follows the open board, once it has been shared and cloud saving works
+    const live = s.loaded && !!s.doc.shared && s.cloud === true
+    const wasLive = p.loaded && !!p.doc.shared && p.cloud === true
+    if (s.doc.id !== p.doc.id || live !== wasLive) {
+      if (live) void startCollab(s.doc.id)
+      else stopCollab()
+    }
     if (s.doc !== p.doc && s.loaded && p.loaded && s.doc.id === p.doc.id) {
       clearTimeout(saveTimer)
       saveTimer = setTimeout(() => void flushSave(), 500)

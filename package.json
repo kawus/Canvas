@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@liveblocks/client": "^3.24.5",
     "idb-keyval": "^6.3.0",
     "jspdf": "^4.2.1",
     "lucide-react": "^1.64.0",

@@ -16,6 +16,7 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Export:** PDF (vector, with Geist embedded), PNG and SVG. You can export the whole board or only the selection.
 - **Boards & links:** every board gets its own short link (`/#k3v9x2pq7d4m`) and saves automatically. With cloud saving turned on (see below), that link opens the live board on any device. Recent boards are in the top-left menu.
 - **Share:** "Live board" sends the board itself (anyone with the link can open and edit it). "A copy" sends a snapshot that becomes the recipient's own board. No sign-in either way.
+- **Live collaboration:** once a board's live link is shared, everyone on it edits together in real time: you see each other's cursors (with names), selections and drawings as they happen, plus avatars of who's there. Undo only undoes your own changes. Needs Liveblocks (step 3 below).
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
 
 ## Keyboard shortcuts
@@ -68,6 +69,19 @@ Check it worked: open the app, draw something, and a small cloud icon appears ne
 
 The function accepts either `KV_REST_API_URL` + `KV_REST_API_TOKEN` or `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`, so it works whichever names the integration uses. If the cloud icon doesn't appear, check **Settings → Environment Variables** for one of these pairs.
 
+**3. Turn on live collaboration (about 3 minutes, free tier)**
+
+1. Sign up at [liveblocks.io](https://liveblocks.io) and create a project.
+2. In the Liveblocks dashboard, open **API keys** and copy the **secret key**.
+3. In your Vercel project: **Settings → Environment Variables** → add `LIVEBLOCKS_SECRET_KEY` with that value.
+4. Redeploy: **Deployments → ⋯ → Redeploy**.
+
+(The [Liveblocks integration](https://vercel.com/marketplace/liveblocks) on the Vercel Marketplace can add the key for you instead.)
+
+Check it worked: open a board, click **Share → Copy link**, and open the link in another browser. You'll see each other's cursors.
+
+Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live minutes a month, with a small Liveblocks badge. To save minutes, only boards whose live link has been shared connect, and a board disconnects when its tab has been in the background for a minute.
+
 **Other static hosts** (Netlify, GitHub Pages, …): upload `dist/` after `npm run build`. Everything works except cloud links, which need the `api/` function.
 
 ## How saving works
@@ -75,7 +89,7 @@ The function accepts either `KV_REST_API_URL` + `KV_REST_API_TOKEN` or `UPSTASH_
 - **On the device, always.** Every change is saved in the browser (IndexedDB) right away, so the app works offline and opens instantly.
 - **In the cloud, when it's turned on.** Shortly after you stop drawing, the board is uploaded (`api/board.js` → Redis), keyed by the random id in its link. Opening the link on another device downloads it. When you return to a tab, it picks up edits made elsewhere. The cloud icon next to the title shows the state: saving, saved, or offline (offline changes upload when you're back online).
 - **No accounts.** The 12-character link is the key: anyone with it can open and edit that board. Boards with no edits for a year expire from the cloud.
-- **Not real-time collaboration yet.** If two people edit the same board at the same moment, the last save wins. Live multiplayer editing is a possible next step.
+- **Live collaboration (when set up).** Shared boards also join a Liveblocks room that keeps everyone in sync in real time; changes merge per element, so two people can work on different things at the same time. Without Liveblocks, two people editing at the same moment: the last save wins.
 
 ## Project layout
 
@@ -93,11 +107,13 @@ src/
   bindings.ts     arrows attached to shapes
   snap.ts         smart guides, equal spacing and grid snapping
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
+  collab.ts       live collaboration (Liveblocks room ⇄ local store, presence)
   store.ts        app state (zustand) with undo/redo
   components/     toolbar, style bar, menus, overlays
 api/
   board.js        Vercel Function: GET / PUT / DELETE a board in Redis
   asset.js        Vercel Function: images, stored by content hash
+  collab.js       Vercel Function: Liveblocks sign-in for a board's room
   _redis.js       shared Redis (Upstash REST) helper
 ```
 
