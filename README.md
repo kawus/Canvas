@@ -16,7 +16,8 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Editing:** move, resize (Shift keeps proportions), duplicate (⌘D or Alt-drag), copy/paste, layer order, undo/redo and arrow-key nudging.
 - **iPad + Apple Pencil:** pressure-sensitive ink. Once the Pencil is detected, your finger pans the board and a resting palm is ignored. Pinch with two fingers to zoom. Tapping with the Text tool opens the keyboard (Scribble works too).
 - **Export:** PDF (vector, with Geist embedded), PNG and SVG. You can export the whole board or only the selection.
-- **Boards & links:** every board gets its own short link (`/#k3v9x2pq7d4m`) and saves automatically. With cloud saving turned on (see below), that link opens the live board on any device. Recent boards are in the top-left menu.
+- **Boards & links:** every board gets its own short link (`/#k3v9x2pq7d4m`) and saves automatically. With cloud saving turned on (see below), that link opens the live board on any device. Recent boards are in the top-left menu, and **All boards** lists every board you have (searchable), including ones made on your other devices.
+- **Your boards on every device, no account:** board menu → **Open on another device** shows your private **My Canvas link** (with a QR code to scan with your phone). Open it anywhere and all your boards appear there, with editing rights and your Pro. Save it in your notes or password manager and you can always get your boards back, even if the browser forgets them.
 - **Share (free):** a **view link** lets anyone see the board as it changes and make their own copy. Only you edit, so nobody overwrites anyone. Your private **owner link** (board menu) opens the board with editing rights on your other devices.
 - **Edit together (Pro):** an **edit link** invites people to edit with you in real time: cursors with names, selections and drawings as they happen, avatars of who's there. Undo only undoes your own changes. The owner needs Pro; guests join free.
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
@@ -97,7 +98,7 @@ To take payments:
 
 The app creates the "Canvas Pro" product and its prices in Stripe on first use ($6/month, $48/year). To change them, set `PRO_PRICE_MONTH` / `PRO_PRICE_YEAR` (in cents) and `PRO_CURRENCY` (e.g. `eur`). To take real payments, activate your Stripe account, switch to live mode, replace the key with the live one (`sk_live_…`) and redeploy.
 
-Adding the key ends the smoke test: early-access unlocks stop working and those people see the real offer. There are no accounts: after paying, Pro is stored in the browser, and **board menu → Use Pro on another device** copies a private Pro link that turns Pro on elsewhere. **Manage subscription** opens Stripe's billing page to change or cancel.
+Adding the key ends the smoke test: early-access unlocks stop working and those people see the real offer. There are no accounts: after paying, Pro is stored in the browser, and the **My Canvas link** (board menu → Open on another device) brings it to your other devices along with your boards. **Manage subscription** opens Stripe's billing page to change or cancel.
 
 **Other static hosts** (Netlify, GitHub Pages, …): upload `dist/` after `npm run build`. Everything works except cloud links, which need the `api/` function.
 
@@ -106,6 +107,7 @@ Adding the key ends the smoke test: early-access unlocks stop working and those 
 - **On the device, always.** Every change is saved in the browser (IndexedDB) right away, so the app works offline and opens instantly.
 - **In the cloud, when it's turned on.** Shortly after you stop drawing, the board is uploaded (`api/board.js` → Redis), keyed by the random id in its link. Opening the link on another device downloads it. When you return to a tab, it picks up edits made elsewhere. The cloud icon next to the title shows the state: saving, saved, or offline (offline changes upload when you're back online).
 - **No accounts.** A board's id is enough to view it. Editing needs its edit key, which only the owner / edit link carries (`#id.key`); the server keeps just a hash of it, and the app removes it from the address bar after opening. Boards with no edits for a year expire from the cloud.
+- **My Canvas (your list of boards).** Each browser keeps a list of your boards, with their edit keys and your Pro pass. It's encrypted in the browser with a secret that exists only in your My Canvas link, then backed up (`api/library.js` → Redis), so the server stores it but can't read it. Opening the link on another device brings in the list; boards you add, rename or delete on one device show up on the others. The app also asks the browser to keep its storage, so Safari is less likely to clear it.
 - **Live collaboration (when set up).** Shared boards also join a Liveblocks room that keeps everyone in sync in real time; changes merge per element, so two people can work on different things at the same time. Without Liveblocks, two people editing at the same moment: the last save wins.
 
 ## Project layout
@@ -127,7 +129,8 @@ src/
   placement.ts    finding free space for new items
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
   collab.ts       live collaboration (Liveblocks room ⇄ local store, presence)
-  pro.ts          Canvas Pro on the client (checkout, Pro token and link)
+  pro.ts          Canvas Pro on the client (checkout, Pro token)
+  library.ts      My Canvas: your encrypted list of boards, synced across devices
   store.ts        app state (zustand) with undo/redo
   components/     toolbar, style bar, menus, overlays
 api/
@@ -137,6 +140,7 @@ api/
   pro.js          Vercel Function: Stripe Checkout, Pro status, billing portal
   _pro.js         Stripe helpers and signed Pro tokens
   unfurl.js       Vercel Function: link previews and images from other sites
+  library.js      Vercel Function: stores your encrypted My Canvas list
   _redis.js       shared Redis (Upstash REST) helper
 ```
 

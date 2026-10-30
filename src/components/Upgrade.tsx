@@ -100,7 +100,7 @@ export function UpgradeDialog() {
             <Check /> People you invite join free — only you need Pro
           </li>
           <li>
-            <Check /> Use Pro on all your devices with your private Pro link
+            <Check /> Pro comes along to all your devices with your My Canvas link
           </li>
           <li>
             <Check /> Everything in Free: unlimited boards, view links, exports

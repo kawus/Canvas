@@ -8,10 +8,12 @@ import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
 import { BoardMenu, ExportButton, ShareButton } from './components/TopBar'
 import { InsertDialog } from './components/Insert'
+import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
 import { startKeyboard } from './keyboard'
+import { initLibrary } from './library'
 import { claimFromUrl, refreshPro } from './pro'
 import { useStore } from './store'
 
@@ -43,7 +45,8 @@ export default function App() {
   useEffect(() => {
     const stopPersist = startPersistence()
     const stopKeys = startKeyboard()
-    void routeFromHash()
+    // keep the My Canvas backup in step once the first board is open
+    void routeFromHash().then(initLibrary)
     // back from Stripe Checkout, then learn whether this device has Pro
     void claimFromUrl().then(refreshPro)
     return () => {
@@ -77,6 +80,7 @@ export default function App() {
       </div>
       <UpgradeDialog />
       <InsertDialog />
+      <LibraryDialogs />
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

@@ -1,6 +1,7 @@
 import { uploadAssets } from './assets'
 import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
+import { adoptLibrary, allBoards, forgetKey, keyFor, onLibraryChange } from './library'
 import { activateProLink } from './pro'
 import { useStore } from './store'
 import {
@@ -118,6 +119,7 @@ async function push(doc: BoardDoc) {
   } else if (r.reason === 'forbidden' && S().doc.id === doc.id) {
     // the board is owned by someone else: this device can only view it
     S().dropKey()
+    forgetKey(doc.id)
     S().setSync('idle')
     await saveBoard(S().doc)
     S().showToast('This board is view-only here — open its owner link to edit')
@@ -192,6 +194,8 @@ interface OpenOptions {
 export async function openBoard(id: string, opts: OpenOptions = {}): Promise<boolean> {
   if (opts.save !== false) await flushSave()
   let local = await loadBoard(id)
+  // a board you own on another device: My Canvas knows its edit key
+  if (!opts.key && !local?.key) opts = { ...opts, key: keyFor(id) }
   if (local && opts.key && local.key !== opts.key) {
     // an edit link gives this device edit rights
     local = withKey(local, opts.key)
@@ -357,6 +361,10 @@ async function route() {
     await activateProLink(hash.slice(4))
     hash = ''
   }
+  if (hash.startsWith('me=')) {
+    await openMyCanvas(hash.slice(3))
+    return
+  }
   if (hash.startsWith('share=')) {
     if (await importShare(hash.slice(6))) return
   } else {
@@ -376,6 +384,18 @@ async function route() {
   const lastDoc = last ? await loadBoard(last) : undefined
   if (lastDoc) await openBoard(lastDoc.id)
   else await openBoard(newId(), { fresh: true })
+}
+
+/** Opening a My Canvas link: bring in its boards, open the latest one and show the list. */
+async function openMyCanvas(link: string) {
+  const result = await adoptLibrary(link)
+  if (result === 'invalid') S().showToast('That My Canvas link looks broken')
+  const [latest] = await allBoards()
+  if (latest) await openBoard(latest.id)
+  else await openBoard(newId(), { fresh: true })
+  if (result === 'invalid') return
+  S().showToast(result === 'same' ? 'This is your Canvas' : 'Welcome back — your boards are here')
+  S().setPanel('boards')
 }
 
 /** Make sure the latest version is saved and uploaded (e.g. before copying a live link). */
@@ -426,6 +446,14 @@ export function startPersistence() {
     if (hasUnsyncedChanges()) void flushSave()
   }
   const onHash = () => void routeFromHash()
+  // the open board turned out to be yours (My Canvas knows its edit key from another device)
+  const offLibrary = onLibraryChange(() => {
+    const s = S()
+    const key = s.loaded && !s.doc.key ? keyFor(s.doc.id) : undefined
+    if (!key) return
+    s.setKey(key)
+    s.setTool('select')
+  })
   document.addEventListener('visibilitychange', onVisibility)
   window.addEventListener('pagehide', onVisibility)
   window.addEventListener('focus', onFocus)
@@ -434,6 +462,7 @@ export function startPersistence() {
   return () => {
     clearInterval(poll)
     unsub()
+    offLibrary()
     document.removeEventListener('visibilitychange', onVisibility)
     window.removeEventListener('pagehide', onVisibility)
     window.removeEventListener('focus', onFocus)

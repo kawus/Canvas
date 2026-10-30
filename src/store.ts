@@ -87,6 +87,8 @@ interface State {
   upgradeOpen: boolean
   /** "+" menu dialogs */
   insert: 'link' | 'color' | null
+  /** full-screen dialogs: All boards, My Canvas link */
+  panel: 'boards' | 'me' | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -107,6 +109,7 @@ interface State {
   setPro: (pro: Partial<ProState>) => void
   setUpgradeOpen: (open: boolean) => void
   setInsert: (insert: 'link' | 'color' | null) => void
+  setPanel: (panel: 'boards' | 'me' | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -200,6 +203,7 @@ export const useStore = create<State>((set, get) => ({
   pro: { paywall: null, active: false, config: null },
   upgradeOpen: false,
   insert: null,
+  panel: null,
 
   setDoc: (doc) =>
     set((s) => ({
@@ -264,6 +268,7 @@ export const useStore = create<State>((set, get) => ({
   setPro: (pro) => set((s) => ({ pro: { ...s.pro, ...pro } })),
   setUpgradeOpen: (upgradeOpen) => set({ upgradeOpen }),
   setInsert: (insert) => set({ insert }),
+  setPanel: (panel) => set({ panel }),
 
   markShared: () =>
     set((s) =>

@@ -165,4 +165,8 @@ export interface BoardMeta {
   title: string
   updatedAt: number
   count: number
+  /** edit key, when this device may edit the board */
+  key?: string
+  /** when it was opened again after being removed */
+  seen?: number
 }

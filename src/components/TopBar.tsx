@@ -8,7 +8,9 @@ import {
   CreditCard,
   Eye,
   KeyRound,
+  LayoutGrid,
   Lock,
+  MonitorSmartphone,
   Download,
   FileCode,
   FileText,
@@ -30,13 +32,13 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
-import { openPortal, proLink, track } from '../pro'
+import { allBoards, type BoardRow } from '../library'
+import { openPortal, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
-import { boardUrl, listBoards, shareUrl } from '../storage'
-import type { BoardMeta } from '../types'
+import { boardUrl, shareUrl } from '../storage'
 import { MenuItem, usePopover } from './ui'
 
-function timeAgo(t: number) {
+export function timeAgo(t: number) {
   const s = Math.round((Date.now() - t) / 1000)
   if (s < 60) return 'just now'
   const m = Math.round(s / 60)
@@ -109,13 +111,14 @@ export function BoardMenu() {
       () => showToast(message),
       () => showToast('Couldn’t copy — please try again'),
     )
-  const [boards, setBoards] = useState<BoardMeta[]>([])
+  const setPanel = useStore((s) => s.setPanel)
+  const [boards, setBoards] = useState<BoardRow[]>([])
 
   useEffect(() => {
-    if (open) void listBoards().then(setBoards)
+    if (open) void allBoards().then(setBoards)
   }, [open])
 
-  const others = boards.filter((b) => b.id !== id).slice(0, 8)
+  const others = boards.filter((b) => b.id !== id).slice(0, 4)
   const themes: { key: ThemePref; label: string; icon: ReactNode }[] = [
     { key: 'system', label: 'Auto', icon: <Monitor /> },
     { key: 'light', label: 'Light', icon: <Sun /> },
@@ -182,6 +185,31 @@ export function BoardMenu() {
               ))}
             </>
           )}
+          {boards.length > 1 && (
+            <MenuItem
+              icon={<LayoutGrid />}
+              onClick={() => {
+                setOpen(false)
+                setPanel('boards')
+              }}
+              hint={boards.length}
+              testId="all-boards"
+            >
+              All boards
+            </MenuItem>
+          )}
+          {cloud && (
+            <MenuItem
+              icon={<MonitorSmartphone />}
+              onClick={() => {
+                setOpen(false)
+                setPanel('me')
+              }}
+              testId="my-canvas"
+            >
+              Open on another device
+            </MenuItem>
+          )}
           <div className="menu-sep" />
           <MenuItem
             icon={<Copy />}
@@ -228,16 +256,6 @@ export function BoardMenu() {
                   <div className="menu-heading pro-heading">
                     <Sparkles /> Canvas Pro{pro.config?.mode === 'smoke' ? ' · Early access' : ''}
                   </div>
-                  <MenuItem
-                    icon={<KeyRound />}
-                    onClick={() => {
-                      setOpen(false)
-                      void copyText(proLink(), 'Pro link copied — open it on your other devices. Keep it private.')
-                    }}
-                    testId="pro-link"
-                  >
-                    Use Pro on another device
-                  </MenuItem>
                   {pro.config?.mode === 'live' && (
                   <MenuItem
                     icon={<CreditCard />}

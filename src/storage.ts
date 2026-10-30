@@ -61,13 +61,30 @@ export async function loadBoard(id: string) {
   return read<BoardDoc>(`board:${id}`)
 }
 
+/** Told whenever the board list changes (the "My Canvas" backup listens). */
+let indexListener: (() => void) | null = null
+export function onIndexChange(fn: () => void) {
+  indexListener = fn
+}
+
 export async function saveBoard(doc: BoardDoc) {
   await write(`board:${doc.id}`, doc)
   const index = (await read<BoardMeta[]>('index')) ?? []
   const meta: BoardMeta = { id: doc.id, title: doc.title, updatedAt: doc.updatedAt, count: doc.elements.length }
+  if (doc.key) meta.key = doc.key
+  const prev = index.find((m) => m.id === doc.id)
+  // a board opened again after you removed it comes back to your list
+  const removed = await removedBoards()
+  if (removed[doc.id]) {
+    delete removed[doc.id]
+    await write('removed', removed)
+    meta.seen = Date.now()
+  } else if (prev?.seen) meta.seen = prev.seen
   const next = index.filter((m) => m.id !== doc.id)
   next.push(meta)
   await write('index', next)
+  if (!prev || prev.title !== meta.title || prev.key !== meta.key || prev.updatedAt !== meta.updatedAt || prev.seen !== meta.seen)
+    indexListener?.()
 }
 
 export async function deleteBoard(id: string) {
@@ -77,7 +94,20 @@ export async function deleteBoard(id: string) {
     'index',
     index.filter((m) => m.id !== id),
   )
+  // remember the removal so other devices drop it from their lists too
+  const removed = (await read<Record<string, number>>('removed')) ?? {}
+  removed[id] = Date.now()
+  await write('removed', removed)
+  indexListener?.()
 }
+
+export async function removedBoards() {
+  return (await read<Record<string, number>>('removed')) ?? {}
+}
+
+/** Small key/value settings kept with the boards (e.g. the "My Canvas" link). */
+export const getLocal = read
+export const setLocal = write
 
 export async function lastBoardId() {
   return read<string>('last')

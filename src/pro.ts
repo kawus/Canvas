@@ -3,7 +3,7 @@ import { useStore } from './store'
 
 /**
  * Canvas Pro on the client. There are no accounts: after paying, the browser
- * keeps a signed Pro token, and a private Pro link carries it to other devices.
+ * keeps a signed Pro token, and your My Canvas link carries it to other devices.
  * The server checks with Stripe whether the subscription is active.
  */
 
@@ -26,13 +26,20 @@ export function proToken(): string | null {
   }
 }
 
-function saveToken(token: string | null) {
+/** Told when the Pro token changes (the "My Canvas" backup carries it to other devices). */
+let tokenListener: (() => void) | null = null
+export function onProTokenChange(fn: () => void) {
+  tokenListener = fn
+}
+
+export function saveToken(token: string | null) {
   try {
     if (token) localStorage.setItem(TOKEN_KEY, token)
     else localStorage.removeItem(TOKEN_KEY)
   } catch {
     /* ignore */
   }
+  tokenListener?.()
 }
 
 let configPromise: Promise<ProConfig> | null = null
@@ -125,11 +132,6 @@ export async function activateProLink(token: string) {
   saveToken(token)
   await refreshPro()
   useStore.getState().showToast(useStore.getState().pro.active ? 'Pro is active on this device' : 'That Pro link isn’t active')
-}
-
-export function proLink() {
-  const token = proToken()
-  return token ? `${location.origin}${location.pathname}#pro=${token}` : ''
 }
 
 export function formatPrice(amount: number, currency: string) {
