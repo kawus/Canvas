@@ -13,7 +13,8 @@ import { json } from './_redis.js'
 const PAGE_LIMIT = 600_000
 const IMAGE_LIMIT = 6_000_000
 const TIMEOUT = 7000
-const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15 CanvasLinkPreview/1.0'
+// identify honestly; sites that don't want automated visits just get a plain card
+const UA = 'CanvasLinkPreview/1.0 (+https://github.com/kawus/Canvas)'
 
 /** Refuse anything that isn't a public web address. @param {string} raw */
 function publicUrl(raw) {
