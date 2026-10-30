@@ -6,10 +6,44 @@
  *   POST /api/pro?action=checkout  { interval, returnUrl }        → { url }  (Stripe Checkout)
  *   POST /api/pro?action=claim     { session }                    → { token } after paying
  *   POST /api/pro?action=portal    (X-Pro-Token) { returnUrl }    → { url }  (manage / cancel)
+ *
+ * Smoke test (no Stripe key yet):
+ *   POST /api/pro?action=track     { event, device }              count interest
+ *   POST /api/pro?action=beta      { interval, device }           → { token } free early access
+ *   GET  /api/pro?action=stats                                    → interest so far
  */
 
-import { isActive, makeToken, paywallEnabled, priceFor, pricing, stripe, verifyToken } from './_pro.js'
-import { json } from './_redis.js'
+import { isActive, makeToken, paywallEnabled, priceFor, pricing, proMode, stripe, verifyToken } from './_pro.js'
+import { json, redis, redisConfig } from './_redis.js'
+
+/* ---------- Smoke-test analytics (counts only; devices are anonymous ids) ---------- */
+
+const EVENTS = ['locked', 'view', 'intent_month', 'intent_year']
+const DEVICE_RE = /^[a-z0-9]{8,40}$/
+const day = (offset = 0) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10)
+
+/** @param {string} event @param {unknown} device */
+async function track(event, device) {
+  if (!EVENTS.includes(event) || !redisConfig()) return
+  await redis(['INCR', `stats:all:${event}`])
+  await redis(['INCR', `stats:${day()}:${event}`])
+  await redis(['EXPIRE', `stats:${day()}:${event}`, 60 * 60 * 24 * 120])
+  // unique devices, counted with a HyperLogLog (no list of ids is kept)
+  if (typeof device === 'string' && DEVICE_RE.test(device)) await redis(['PFADD', `stats:uniq:${event}`, device])
+}
+
+async function stats() {
+  /** @type {Record<string, { total: number, people: number, last7: number }>} */
+  const out = {}
+  const days = Array.from({ length: 7 }, (_, i) => day(i))
+  for (const e of EVENTS) {
+    const total = Number((await redis(['GET', `stats:all:${e}`])) || 0)
+    const people = Number((await redis(['PFCOUNT', `stats:uniq:${e}`])) || 0)
+    const week = /** @type {(string | null)[]} */ (await redis(['MGET', ...days.map((d) => `stats:${d}:${e}`)]))
+    out[e] = { total, people, last7: week.reduce((sum, v) => sum + Number(v || 0), 0) }
+  }
+  return out
+}
 
 /** Only send people back to this app. @param {Request} request @param {unknown} url */
 function safeReturn(request, url) {
@@ -29,10 +63,14 @@ function safeReturn(request, url) {
  */
 export async function handle(request) {
   const action = new URL(request.url).searchParams.get('action')
-  if (action === 'config') return json({ enabled: paywallEnabled(), ...pricing() })
+  if (action === 'config') return json({ enabled: paywallEnabled(), mode: proMode(), ...pricing() })
   if (!paywallEnabled()) return json({ error: 'payments not configured' }, 503)
 
   try {
+    if (action === 'stats') {
+      if (!redisConfig()) return json({ error: 'cloud storage not configured' }, 503)
+      return json({ mode: proMode(), events: await stats() })
+    }
     const token = request.headers.get('x-pro-token')
     if (action === 'status') {
       const customer = await verifyToken(token)
@@ -40,6 +78,22 @@ export async function handle(request) {
     }
     if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405)
     const body = /** @type {Record<string, unknown>} */ (await request.json().catch(() => ({})))
+
+    if (action === 'track') {
+      await track(String(body.event), body.device)
+      return new Response(null, { status: 204 })
+    }
+
+    if (action === 'beta') {
+      // smoke test: count the intent to buy, then unlock early access for free
+      if (proMode() !== 'smoke') return json({ error: 'not available' }, 400)
+      const interval = body.interval === 'year' ? 'year' : 'month'
+      await track(`intent_${interval}`, body.device)
+      const device = typeof body.device === 'string' && DEVICE_RE.test(body.device) ? body.device : 'anon'
+      return json({ token: await makeToken(`beta_${device}`) })
+    }
+
+    if (proMode() !== 'live') return json({ error: 'payments not set up yet' }, 400)
 
     if (action === 'checkout') {
       const interval = body.interval === 'year' ? 'year' : 'month'

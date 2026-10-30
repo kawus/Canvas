@@ -1,3 +1,4 @@
+import { getMe } from './collab'
 import { useStore } from './store'
 
 /**
@@ -10,6 +11,8 @@ const TOKEN_KEY = 'canvas-pro'
 
 export interface ProConfig {
   enabled: boolean
+  /** 'live' = real payments, 'smoke' = offer shown but free early access, 'off' = no paywall */
+  mode: 'live' | 'smoke' | 'off'
   currency: string
   month: number
   year: number
@@ -40,7 +43,7 @@ export function proConfig() {
       if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) throw new Error('no pro api')
       return (await r.json()) as ProConfig
     })
-    .catch(() => ({ enabled: false, currency: 'usd', month: 0, year: 0 }))
+    .catch((): ProConfig => ({ enabled: false, mode: 'off', currency: 'usd', month: 0, year: 0 }))
   return configPromise
 }
 
@@ -75,6 +78,18 @@ export async function refreshPro() {
     }
   }
   useStore.getState().setPro({ paywall: true, active, config: cfg })
+}
+
+/** Smoke test: count interest in the offer (anonymous device id only). */
+export function track(event: 'locked' | 'view') {
+  void post('track', { event, device: getMe().id }).catch(() => {})
+}
+
+/** Smoke test: "buying" records the choice and unlocks free early access. */
+export async function joinEarlyAccess(interval: 'month' | 'year') {
+  const { token } = await post<{ token: string }>('beta', { interval, device: getMe().id })
+  saveToken(token)
+  await refreshPro()
 }
 
 export async function startCheckout(interval: 'month' | 'year') {

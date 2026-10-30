@@ -1,7 +1,7 @@
 import { Check, Eye, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { duplicateBoard } from '../boards'
-import { formatPrice, startCheckout } from '../pro'
+import { formatPrice, joinEarlyAccess, startCheckout, track } from '../pro'
 import { useStore } from '../store'
 
 /** Canvas Pro: what you get and a way to pay (Stripe Checkout). */
@@ -12,6 +12,16 @@ export function UpgradeDialog() {
   const [billing, setBilling] = useState<'month' | 'year'>('year')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
+  const smoke = config?.mode === 'smoke'
+
+  // smoke test: count how many people look at the offer
+  useEffect(() => {
+    if (!open) return
+    setDone(false)
+    setBusy(false)
+    track('view')
+  }, [open])
 
   useEffect(() => {
     if (!open) return
@@ -34,11 +44,39 @@ export function UpgradeDialog() {
     setBusy(true)
     setError('')
     try {
-      await startCheckout(billing)
+      if (smoke) {
+        // no payment yet: record the choice and unlock early access
+        await joinEarlyAccess(billing)
+        setDone(true)
+        setBusy(false)
+      } else await startCheckout(billing)
     } catch {
       setError('Payments are unavailable right now. Please try again.')
       setBusy(false)
     }
+  }
+
+  if (done) {
+    return (
+      <div className="dialog-backdrop" onPointerDown={(e) => e.target === e.currentTarget && setOpen(false)}>
+        <div className="dialog" role="dialog" aria-modal="true" aria-labelledby="early-title" data-testid="early-access">
+          <div className="pro-badge">
+            <Sparkles />
+          </div>
+          <h2 id="early-title" className="dialog-title">
+            You’re in early
+          </h2>
+          <p className="dialog-sub">
+            Canvas Pro is free while it’s in early access, so there’s nothing to pay. Live editing is now unlocked on
+            this device.
+          </p>
+          <button type="button" className="primary-btn dialog-cta" onClick={() => setOpen(false)} data-testid="early-start">
+            Start editing together
+          </button>
+          <p className="dialog-foot">Pro becomes a paid plan later — you’ll see it here first.</p>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -90,10 +128,10 @@ export function UpgradeDialog() {
           </button>
         </div>
         <button type="button" className="primary-btn dialog-cta" onClick={go} disabled={busy} data-testid="checkout">
-          {busy ? 'Opening secure checkout…' : `Continue — ${billing === 'month' ? `${monthly}/month` : `${yearly}/year`}`}
+          {busy ? (smoke ? 'One moment…' : 'Opening secure checkout…') : `Continue — ${billing === 'month' ? `${monthly}/month` : `${yearly}/year`}`}
         </button>
         {error && <p className="dialog-error">{error}</p>}
-        <p className="dialog-foot">Secure payment by Stripe. Cancel anytime.</p>
+        <p className="dialog-foot">{smoke ? 'Cancel anytime.' : 'Secure payment by Stripe. Cancel anytime.'}</p>
       </div>
     </div>
   )

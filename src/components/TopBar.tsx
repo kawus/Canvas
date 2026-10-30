@@ -30,7 +30,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
-import { openPortal, proLink } from '../pro'
+import { openPortal, proLink, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
 import { boardUrl, listBoards, shareUrl } from '../storage'
 import type { BoardMeta } from '../types'
@@ -226,7 +226,7 @@ export function BoardMenu() {
               {pro.active ? (
                 <>
                   <div className="menu-heading pro-heading">
-                    <Sparkles /> Canvas Pro
+                    <Sparkles /> Canvas Pro{pro.config?.mode === 'smoke' ? ' · Early access' : ''}
                   </div>
                   <MenuItem
                     icon={<KeyRound />}
@@ -238,6 +238,7 @@ export function BoardMenu() {
                   >
                     Use Pro on another device
                   </MenuItem>
+                  {pro.config?.mode === 'live' && (
                   <MenuItem
                     icon={<CreditCard />}
                     onClick={() => {
@@ -247,6 +248,7 @@ export function BoardMenu() {
                   >
                     Manage subscription
                   </MenuItem>
+                  )}
                 </>
               ) : (
                 <MenuItem
@@ -327,6 +329,10 @@ export function ShareButton() {
   const editing = showEditTab && tab === 'edit'
   // Inviting editors needs Pro (unless there's no paywall, or the board's owner already has Pro)
   const locked = editing && !!pro.paywall && !pro.active && !doc.pro
+  // smoke test: count how many people hit the locked feature (once per opening)
+  useEffect(() => {
+    if (open && locked) track('locked')
+  }, [open, locked])
   const snapshot = useMemo(() => (open && snapshotOnly ? shareUrl(doc) : ''), [open, snapshotOnly, doc])
   const url = snapshotOnly ? snapshot : editing ? boardUrl(doc.id, doc.key) : boardUrl(doc.id)
   const empty = doc.elements.length === 0

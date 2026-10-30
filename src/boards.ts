@@ -351,6 +351,8 @@ async function migrateKeys() {
 async function route() {
   await migrateKeys()
   let hash = decodeURIComponent(location.hash.slice(1))
+  // the smoke-test results page isn't a board
+  if (hash === 'stats') return
   if (hash.startsWith('pro=')) {
     await activateProLink(hash.slice(4))
     hash = ''

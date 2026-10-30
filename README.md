@@ -82,9 +82,11 @@ Check it worked: open a board, click **Share → Copy link**, and open the link 
 
 Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live minutes a month, with a small Liveblocks badge. To save minutes, only boards whose live link has been shared connect, and a board disconnects when its tab has been in the background for a minute.
 
-**4. Turn on Canvas Pro payments (about 3 minutes)**
+**4. Canvas Pro: smoke test first, real payments later**
 
-Without this, there's no paywall: anyone holding an edit link can collaborate live.
+Until a Stripe key is added, Pro runs as a **smoke test** ("fake door"): people see the real offer (locked "Edit together", pricing, Continue button), but nobody is charged. Choosing a plan records the interest and unlocks free early access on that device. See the results at **`/#stats`** on your site: how many hit the Pro feature, looked at the offer and chose monthly or yearly (counted anonymously, once per device). Set `PRO_MODE=off` in Vercel to switch the paywall off entirely.
+
+To take payments:
 
 1. Create a [Stripe](https://dashboard.stripe.com) account. Keep **Test mode** on while you try it.
 2. **Developers → API keys** → copy the **Secret key** (`sk_test_…`).
@@ -93,7 +95,7 @@ Without this, there's no paywall: anyone holding an edit link can collaborate li
 
 The app creates the "Canvas Pro" product and its prices in Stripe on first use ($6/month, $48/year). To change them, set `PRO_PRICE_MONTH` / `PRO_PRICE_YEAR` (in cents) and `PRO_CURRENCY` (e.g. `eur`). To take real payments, activate your Stripe account, switch to live mode, replace the key with the live one (`sk_live_…`) and redeploy.
 
-There are no accounts: after paying, Pro is stored in the browser, and **board menu → Use Pro on another device** copies a private Pro link that turns Pro on elsewhere. **Manage subscription** opens Stripe's billing page to change or cancel.
+Adding the key ends the smoke test: early-access unlocks stop working and those people see the real offer. There are no accounts: after paying, Pro is stored in the browser, and **board menu → Use Pro on another device** copies a private Pro link that turns Pro on elsewhere. **Manage subscription** opens Stripe's billing page to change or cancel.
 
 **Other static hosts** (Netlify, GitHub Pages, …): upload `dist/` after `npm run build`. Everything works except cloud links, which need the `api/` function.
 

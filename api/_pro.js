@@ -6,7 +6,11 @@
  * customer; whether Pro is active is always checked with Stripe (cached briefly).
  *
  * Only STRIPE_SECRET_KEY is needed: the product and prices are created in
- * Stripe automatically on first use. Without it there is no paywall.
+ * Stripe automatically on first use.
+ *
+ * Without it the paywall runs as a smoke test ("fake door"): the offer is
+ * shown and interest is counted, but nobody is charged — choosing a plan
+ * unlocks free early access (a "beta_" token). Set PRO_MODE=off for no paywall.
  */
 
 import { redis, redisConfig, sha256 } from './_redis.js'
@@ -14,7 +18,9 @@ import { redis, redisConfig, sha256 } from './_redis.js'
 const STRIPE = () => process.env.STRIPE_API_BASE || 'https://api.stripe.com'
 const secret = () => process.env.STRIPE_SECRET_KEY || ''
 
-export const paywallEnabled = () => !!secret()
+/** 'live' = real payments, 'smoke' = offer shown, no charge, 'off' = no paywall */
+export const proMode = () => (secret() ? 'live' : process.env.PRO_MODE === 'off' ? 'off' : 'smoke')
+export const paywallEnabled = () => proMode() !== 'off'
 
 /** Prices in the smallest currency unit; adjustable without code changes. */
 export function pricing() {
@@ -86,7 +92,10 @@ export async function priceFor(interval) {
 const b64url = (/** @type {string} */ s) => Buffer.from(s).toString('base64url')
 
 async function signature(/** @type {string} */ payload) {
-  const keyData = new TextEncoder().encode(await sha256(`canvas-pro:${secret()}`))
+  // early-access tokens stop working by themselves once real payments are set up
+  const keyData = new TextEncoder().encode(
+    await sha256(`canvas-pro:${secret() || process.env.LIVEBLOCKS_SECRET_KEY || 'canvas-early-access'}`),
+  )
   const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
   return Buffer.from(sig).toString('base64url')
@@ -100,12 +109,12 @@ export async function makeToken(customer) {
 
 /** @param {string | null | undefined} token  @returns {Promise<string | null>} customer id */
 export async function verifyToken(token) {
-  if (!token || !secret()) return null
+  if (!token) return null
   const [payload, sig] = token.split('.')
   if (!payload || !sig || (await signature(payload)) !== sig) return null
   try {
     const { c } = JSON.parse(Buffer.from(payload, 'base64url').toString())
-    return typeof c === 'string' && c.startsWith('cus_') ? c : null
+    return typeof c === 'string' && (c.startsWith('cus_') || c.startsWith('beta_')) ? c : null
   } catch {
     return null
   }
@@ -114,6 +123,9 @@ export async function verifyToken(token) {
 /** Is this Stripe customer's subscription active? Cached for 10 minutes. */
 /** @param {string} customer  @param {boolean} [fresh] */
 export async function isActive(customer, fresh = false) {
+  // early access during the smoke test
+  if (customer.startsWith('beta_')) return proMode() === 'smoke'
+  if (!secret()) return false
   const cacheKey = `pro:${customer}`
   if (!fresh && redisConfig()) {
     const cached = await redis(['GET', cacheKey]).catch(() => null)
