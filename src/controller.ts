@@ -70,7 +70,7 @@ interface PointerInfo {
 
 const S = () => useStore.getState()
 const DRAG_THRESHOLD = 3
-const DRAWING_TOOLS: Tool[] = ['pen', 'eraser', 'sticky', 'rect', 'ellipse', 'arrow', 'line', 'text']
+const DRAWING_TOOLS: Tool[] = ['pen', 'highlighter', 'eraser', 'sticky', 'rect', 'ellipse', 'arrow', 'line', 'text']
 
 export function toolCursor(tool: Tool) {
   switch (tool) {
@@ -260,7 +260,8 @@ export class CanvasController {
         this.downSelect(e, sx, sy, p, isDouble, fingerInPenMode)
         break
       case 'pen':
-        this.startDraw(e, p)
+      case 'highlighter':
+        this.startDraw(e, p, tool === 'highlighter')
         break
       case 'eraser': {
         this.action = { kind: 'erase', pointerId: e.pointerId, last: p, hits: new Set() }
@@ -386,6 +387,10 @@ export class CanvasController {
 
     // 2. double click / tap: edit text or a label, or create text on empty canvas
     if (isDouble) {
+      if (hit?.type === 'link') {
+        openLink(hit.url)
+        return
+      }
       const editable = this.editableAt(p, e.pointerType)
       if (editable) {
         startEditing(editable.id)
@@ -438,16 +443,17 @@ export class CanvasController {
     this.action = { kind: 'marquee', pointerId: e.pointerId, start: p, base }
   }
 
-  private startDraw(e: PointerEvent, p: Point) {
+  private startDraw(e: PointerEvent, p: Point, highlight = false) {
     const s = S()
-    const real = e.pointerType === 'pen'
+    const real = e.pointerType === 'pen' && !highlight
     const el: FreedrawEl = {
       id: newElementId(),
       type: 'freedraw',
-      color: s.style.color,
+      color: highlight ? s.style.highlightColor : s.style.color,
       size: s.style.size,
       pressure: real,
       points: [[p[0], p[1], pressureOf(e)]],
+      ...(highlight ? { highlight: true } : {}),
     }
     this.action = { kind: 'draw', pointerId: e.pointerId, el }
     s.setDraft(el)
@@ -768,6 +774,11 @@ export class CanvasController {
     switch (a.kind) {
       case 'pan':
         if (!a.moved && a.touch && s.tool === 'select') s.select([])
+        // on a view-only board, tapping a link card opens it
+        if (!a.moved && !s.doc.key) {
+          const hit = hitTopmost(s.doc.elements, this.world(a.sx, a.sy), this.tolerance(e.pointerType))
+          if (hit?.type === 'link') openLink(hit.url)
+        }
         break
       case 'draw': {
         const el = { ...a.el }
@@ -846,6 +857,10 @@ export class CanvasController {
     }
     s.zoomTo(this.gestureZoom * ge.scale, this.local(ge))
   }
+}
+
+export function openLink(url: string) {
+  if (/^https?:\/\//i.test(url)) window.open(url, '_blank', 'noopener,noreferrer')
 }
 
 function pressureOf(e: PointerEvent) {

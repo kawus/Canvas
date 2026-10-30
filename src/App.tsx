@@ -7,6 +7,7 @@ import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
 import { BoardMenu, ExportButton, ShareButton } from './components/TopBar'
+import { InsertDialog } from './components/Insert'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
@@ -75,6 +76,7 @@ export default function App() {
         {viewOnly ? <ViewBar /> : <Toolbar />}
       </div>
       <UpgradeDialog />
+      <InsertDialog />
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

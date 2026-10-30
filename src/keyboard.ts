@@ -14,6 +14,7 @@ import {
 } from './actions'
 import { isTyping } from './controller'
 import { importImages, openImagePicker } from './images'
+import { addLink, isUrl } from './moodboard'
 import { useStore } from './store'
 import type { Tool } from './types'
 
@@ -164,7 +165,11 @@ export function startKeyboard() {
       return
     }
     const text = e.clipboardData?.getData('text/plain')
-    if (text) {
+    if (text && isUrl(text)) {
+      // a pasted web address becomes a link card (or the image it points to)
+      e.preventDefault()
+      void addLink(text)
+    } else if (text) {
       e.preventDefault()
       pasteText(text)
     }

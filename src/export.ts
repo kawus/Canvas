@@ -9,7 +9,7 @@ import type { El } from './types'
 const PAD = 32
 
 /** Free text, sticky notes and shape labels all need the font embedded. */
-const hasText = (els: El[]) => els.some((e) => 'text' in e && !!e.text)
+const hasText = (els: El[]) => els.some((e) => ('text' in e && !!e.text) || e.type === 'link' || e.type === 'swatch')
 
 async function fetchBase64(url: string) {
   const buf = await (await fetch(url)).arrayBuffer()
@@ -35,9 +35,10 @@ export async function buildSvg(elements: El[], opts: { embedFont: boolean; backg
   }
   const assets = new Map<string, string>()
   for (const el of elements) {
-    if (el.type === 'image' && !assets.has(el.asset)) {
-      const url = await loadAsset(el.asset)
-      if (url) assets.set(el.asset, url)
+    const hash = el.type === 'image' ? el.asset : el.type === 'link' ? el.image : undefined
+    if (hash && !assets.has(hash)) {
+      const url = await loadAsset(hash)
+      if (url) assets.set(hash, url)
     }
   }
   const body = elements

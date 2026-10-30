@@ -85,6 +85,8 @@ interface State {
   collab: CollabState
   pro: ProState
   upgradeOpen: boolean
+  /** "+" menu dialogs */
+  insert: 'link' | 'color' | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -104,6 +106,7 @@ interface State {
   setKey: (key: string) => void
   setPro: (pro: Partial<ProState>) => void
   setUpgradeOpen: (open: boolean) => void
+  setInsert: (insert: 'link' | 'color' | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -141,7 +144,14 @@ function readTheme(): ThemePref {
 }
 
 function readStyle(): Style {
-  const fallback: Style = { color: 'ink', size: 'm', fill: 'none', fontSize: 'm', stickyColor: 'yellow' }
+  const fallback: Style = {
+    color: 'ink',
+    size: 'm',
+    fill: 'none',
+    fontSize: 'm',
+    stickyColor: 'yellow',
+    highlightColor: 'yellow',
+  }
   try {
     const s = JSON.parse(localStorage.getItem('canvas-style') || 'null')
     if (s && typeof s === 'object') return { ...fallback, ...s }
@@ -189,6 +199,7 @@ export const useStore = create<State>((set, get) => ({
   collab: { status: 'off', peers: [], canUndo: false, canRedo: false },
   pro: { paywall: null, active: false, config: null },
   upgradeOpen: false,
+  insert: null,
 
   setDoc: (doc) =>
     set((s) => ({
@@ -252,6 +263,7 @@ export const useStore = create<State>((set, get) => ({
   setKey: (key) => set((s) => ({ doc: { ...s.doc, key }, change: 'load' })),
   setPro: (pro) => set((s) => ({ pro: { ...s.pro, ...pro } })),
   setUpgradeOpen: (upgradeOpen) => set({ upgradeOpen }),
+  setInsert: (insert) => set({ insert }),
 
   markShared: () =>
     set((s) =>
@@ -318,8 +330,9 @@ export const useStore = create<State>((set, get) => ({
     const elements = s.doc.elements.map((el) => {
       if (!ids.has(el.id)) return el
       const next = { ...el } as El & Record<string, unknown>
-      if (patch.color && el.type !== 'image') next.color = patch.color
+      if (patch.color && el.type !== 'image' && el.type !== 'link' && el.type !== 'swatch') next.color = patch.color
       if (patch.stickyColor && el.type === 'sticky') next.color = patch.stickyColor
+      if (patch.highlightColor && el.type === 'freedraw' && el.highlight) next.color = patch.highlightColor
       if (patch.size && 'size' in el) next.size = patch.size
       if (patch.fill && (el.type === 'rect' || el.type === 'ellipse')) next.fill = patch.fill
       if (patch.fontSize && (el.type === 'text' || el.type === 'sticky' || el.type === 'rect' || el.type === 'ellipse')) {

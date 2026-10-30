@@ -3,6 +3,7 @@ import { useAsset } from '../assets'
 import { CanvasController } from '../controller'
 import { toWorld } from '../handles'
 import { importImages } from '../images'
+import { addLink, importImageUrl, isUrl } from '../moodboard'
 import { elementPrims, type Prim } from '../render'
 import { useStore } from '../store'
 import type { El } from '../types'
@@ -24,8 +25,9 @@ function PrimView({ p }: { p: Prim }) {
   return createElement(p.tag, p.attrs)
 }
 
-function ImageView({ el, palette }: { el: Extract<El, { type: 'image' }>; palette: Palette }) {
-  const url = useAsset(el.asset)
+/** Elements that show a stored image: pictures and link cards with a preview. */
+function ImageView({ el, palette, hash }: { el: El; palette: Palette; hash: string }) {
+  const url = useAsset(hash)
   return (
     <>
       {elementPrims(el, palette, () => url).map((p, i) => (
@@ -47,10 +49,11 @@ const ElementView = memo(function ElementView({
   /** while its text is being edited, the text itself is drawn by the editor */
   editing: boolean
 }) {
-  if (el.type === 'image') {
+  const hash = el.type === 'image' ? el.asset : el.type === 'link' ? el.image : undefined
+  if (hash) {
     return (
       <g opacity={faded ? 0.25 : 1}>
-        <ImageView el={el} palette={palette} />
+        <ImageView el={el} palette={palette} hash={hash} />
       </g>
     )
   }
@@ -92,14 +95,30 @@ export function Canvas({ palette }: { palette: Palette }) {
       className="canvas"
       data-testid="canvas"
       onDragOver={(e) => {
-        if (e.dataTransfer.types.includes('Files')) e.preventDefault()
+        const t = e.dataTransfer.types
+        if (t.includes('Files') || t.includes('text/uri-list') || t.includes('text/html')) e.preventDefault()
       }}
       onDrop={(e) => {
-        const files = [...e.dataTransfer.files]
-        if (!files.length || !useStore.getState().doc.key) return
-        e.preventDefault()
+        if (!useStore.getState().doc.key) return
         const r = e.currentTarget.getBoundingClientRect()
-        void importImages(files, toWorld(viewport, e.clientX - r.left, e.clientY - r.top))
+        const at = toWorld(viewport, e.clientX - r.left, e.clientY - r.top)
+        const files = [...e.dataTransfer.files]
+        if (files.length) {
+          e.preventDefault()
+          void importImages(files, at)
+          return
+        }
+        // dragged from a web page: an image, or a link
+        const html = e.dataTransfer.getData('text/html')
+        const src = html.match(/<img[^>]+src=["']([^"']+)["']/i)?.[1]?.replace(/&amp;/g, '&')
+        const uri = (e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain')).split('\n')[0].trim()
+        if (src && /^https?:/i.test(src)) {
+          e.preventDefault()
+          void importImageUrl(src, at)
+        } else if (isUrl(uri)) {
+          e.preventDefault()
+          void addLink(uri, at)
+        }
       }}
     >
       <svg className="canvas-svg" width="100%" height="100%">

@@ -2,6 +2,8 @@ import { getStroke } from 'perfect-freehand'
 import {
   FILL_OPACITY,
   FONT_STACK,
+  HIGHLIGHT_OPACITY,
+  HIGHLIGHT_SCALE,
   LINE_HEIGHT,
   PEN_SIZE,
   STICKY_FILL,
@@ -9,7 +11,7 @@ import {
   STROKE_WIDTH,
   type Palette,
 } from './constants'
-import { boxTextLayout } from './layout'
+import { boxTextLayout, CARD_INSET, linkLayout } from './layout'
 import { firstBaseline } from './textMetrics'
 import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint } from './types'
 
@@ -85,9 +87,11 @@ function catmullRom(p0: StrokePoint, p1: StrokePoint, p2: StrokePoint, p3: Strok
 export function freedrawPath(el: FreedrawEl, complete = true) {
   const cached = pathCache.get(el)
   if (cached !== undefined) return cached
-  const outline = getStroke(smoothPoints(el.points, Math.max(1.5, PEN_SIZE[el.size] * 0.3)), {
-    size: PEN_SIZE[el.size],
-    thinning: el.pressure ? 0.65 : 0.55,
+  const size = PEN_SIZE[el.size] * (el.highlight ? HIGHLIGHT_SCALE : 1)
+  const outline = getStroke(smoothPoints(el.points, Math.max(1.5, size * 0.3)), {
+    size,
+    // a highlighter keeps an even width
+    thinning: el.highlight ? 0 : el.pressure ? 0.65 : 0.55,
     smoothing: 0.55,
     streamline: el.pressure ? 0.35 : 0.5,
     simulatePressure: !el.pressure,
@@ -116,9 +120,75 @@ export function labelColor(el: BoxEl, palette: Palette) {
   return '#ffffff'
 }
 
+/** Card surface for link cards and swatches; light in exports, dark in dark mode. */
+function cardPrim(el: { x: number; y: number; w: number; h: number }, dark: boolean): Prim {
+  return {
+    tag: 'rect',
+    attrs: {
+      className: 'card-paper',
+      x: el.x,
+      y: el.y,
+      width: el.w,
+      height: el.h,
+      rx: 10,
+      ry: 10,
+      fill: dark ? '#2a2a2d' : '#ffffff',
+      stroke: dark ? '#ffffff' : '#000000',
+      strokeOpacity: dark ? 0.1 : 0.08,
+      strokeWidth: 1,
+    },
+  }
+}
+
 export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string) => string | undefined): Prim[] {
-  const color = el.type === 'image' ? '' : palette[el.color]
+  const color = palette[el.color]
+  // ink is near-white only in the dark palette
+  const dark = palette.ink !== STICKY_INK
   switch (el.type) {
+    case 'link': {
+      const l = linkLayout(el)
+      const out: Prim[] = [cardPrim(el, dark)]
+      if (l.image) {
+        const href = el.image ? assetUrl?.(el.image) : undefined
+        out.push(
+          href
+            ? { tag: 'image', attrs: { href, x: l.image.x, y: l.image.y, width: l.image.w, height: l.image.h, preserveAspectRatio: 'xMidYMid slice' } }
+            : { tag: 'rect', attrs: { x: l.image.x, y: l.image.y, width: l.image.w, height: l.image.h, rx: 6, ry: 6, fill: '#8e8e93', fillOpacity: 0.14 } },
+        )
+      }
+      for (const line of l.lines) {
+        out.push({
+          tag: 'text',
+          attrs: { fontFamily: FONT_STACK, fontSize: line.size, fill: line.muted ? palette.gray : palette.ink },
+          lines: [{ text: line.text, x: line.x, y: line.y }],
+        })
+      }
+      return out
+    }
+    case 'swatch': {
+      const labelSize = 13
+      const labelH = 30
+      return [
+        cardPrim(el, dark),
+        {
+          tag: 'rect',
+          attrs: {
+            x: el.x + CARD_INSET,
+            y: el.y + CARD_INSET,
+            width: Math.max(el.w - CARD_INSET * 2, 1),
+            height: Math.max(el.h - CARD_INSET - labelH, 1),
+            rx: 6,
+            ry: 6,
+            fill: el.hex,
+          },
+        },
+        {
+          tag: 'text',
+          attrs: { fontFamily: FONT_STACK, fontSize: labelSize, fill: palette.ink },
+          lines: [{ text: el.hex.toUpperCase(), x: el.x + 10, y: el.y + el.h - labelH / 2 + labelSize * 0.36 }],
+        },
+      ]
+    }
     case 'sticky':
       return [
         {
@@ -160,9 +230,10 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
       const d = freedrawPath(el)
       if (!d) {
         const [x, y] = el.points[0]
-        return [{ tag: 'circle', attrs: { cx: x, cy: y, r: PEN_SIZE[el.size] / 2, fill: color } }]
+        const r = (PEN_SIZE[el.size] * (el.highlight ? HIGHLIGHT_SCALE : 1)) / 2
+        return [{ tag: 'circle', attrs: el.highlight ? { cx: x, cy: y, r, fill: color, fillOpacity: HIGHLIGHT_OPACITY } : { cx: x, cy: y, r, fill: color } }]
       }
-      return [{ tag: 'path', attrs: { d, fill: color } }]
+      return [{ tag: 'path', attrs: el.highlight ? { d, fill: color, fillOpacity: HIGHLIGHT_OPACITY } : { d, fill: color } }]
     }
     case 'rect':
     case 'ellipse': {

@@ -4,11 +4,13 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 
 ## What it does
 
-- **Tools:** Select, Hand, Pen (pressure-sensitive, smoothed even for fast strokes), Eraser, Sticky note, Rectangle, Ellipse, Arrow, Line, Text and Image.
+- **Toolbar (FigJam-style groups):** Move (Select / Hand), Draw (Pen / Highlighter / Eraser), Shapes (Rectangle / Ellipse / Arrow / Line), Sticky note, Text, and **+** (Image / Link / Colour). A group shows the tool used last; tap it again, or press and hold, to pick another. The style bar is compact too: colour, stroke, fill and text size each open a small menu, and **⋯** holds duplicate and layer order — everything fits on an iPhone.
+- **Pen** is pressure-sensitive and smoothed even for fast strokes; the **Highlighter** draws wide, translucent ink.
 - **Sticky notes:** tap to place and start typing. Text wraps and shrinks to fit; 8 paper colours.
 - **Labels in shapes:** double-click (or double-tap, or press Enter on) a rectangle or ellipse to type inside it.
 - **Connected arrows:** start or end an arrow on a shape, sticky, image or text and it attaches; move the shape and the arrow follows.
-- **Images:** paste, drag in, or pick from Photos/Files (toolbar or I). Images are resized and stored separately so boards stay quick to sync.
+- **Images:** paste, drag in (also straight from other websites), or pick from Photos/Files (**+** or I). Images are resized and stored separately so boards stay quick to sync. New items find free space instead of landing on top of each other.
+- **Moodboards:** paste or drop a web address to get a **link card** with the page's preview image, title and site (YouTube and Vimeo included); double-click or tap it to open the page. Add **colour swatches** with their hex code from **+ → Colour**, or select a photo and tap **Palette** to pull its main colours out as swatches.
 - **Auto alignment:** while moving, resizing or drawing, objects snap to the edges and centres of nearby objects (pink guide lines) and to equal spacing with their neighbours (pink markers showing the gap). Optional **Snap to grid** aligns to the background dots. Both are switches in the board menu, and holding ⌘/Ctrl places something freely. With 2+ items selected, **Align** lines them up (left / centre / right / top / middle / bottom) or spaces them evenly.
 - **Style:** 8 colors (Apple system palette), 3 stroke weights, outline/tint/solid fill and 4 text sizes. When something is selected, a style bar appears above the toolbar.
 - **Editing:** move, resize (Shift keeps proportions), duplicate (⌘D or Alt-drag), copy/paste, layer order, undo/redo and arrow-key nudging.
@@ -121,6 +123,8 @@ src/
   layout.ts       wrapping / auto-fitting text in stickies and shapes
   bindings.ts     arrows attached to shapes
   snap.ts         smart guides, equal spacing and grid snapping
+  moodboard.ts    link cards, web images, colour swatches, palettes
+  placement.ts    finding free space for new items
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
   collab.ts       live collaboration (Liveblocks room ⇄ local store, presence)
   pro.ts          Canvas Pro on the client (checkout, Pro token and link)
@@ -132,6 +136,7 @@ api/
   collab.js       Vercel Function: Liveblocks sign-in for a board's room (editors, Pro boards)
   pro.js          Vercel Function: Stripe Checkout, Pro status, billing portal
   _pro.js         Stripe helpers and signed Pro tokens
+  unfurl.js       Vercel Function: link previews and images from other sites
   _redis.js       shared Redis (Upstash REST) helper
 ```
 

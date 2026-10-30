@@ -18,6 +18,8 @@ export interface FreedrawEl extends Base {
   size: SizeKey
   /** true when the input device reported real pressure (Apple Pencil, pen tablets) */
   pressure: boolean
+  /** highlighter: wide, translucent ink */
+  highlight?: boolean
 }
 
 export interface BoxEl extends Base {
@@ -75,15 +77,41 @@ export interface TextEl extends Base {
   fontSize: number
 }
 
-export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl
-/** Elements with a box that can hold a label and that arrows can attach to */
-export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl
+/** A web link shown as a preview card (title, site, image). */
+export interface LinkEl extends Base {
+  type: 'link'
+  x: number
+  y: number
+  w: number
+  h: number
+  url: string
+  title: string
+  description?: string
+  site?: string
+  /** preview image, stored like other images (content hash) */
+  image?: string
+}
+
+/** A colour chip with its hex code, for moodboards. */
+export interface SwatchEl extends Base {
+  type: 'swatch'
+  x: number
+  y: number
+  w: number
+  h: number
+  hex: string
+}
+
+export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl | LinkEl | SwatchEl
+/** Elements with a box that arrows can attach to */
+export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl | LinkEl | SwatchEl
 export type ElType = El['type']
 
 export type Tool =
   | 'select'
   | 'hand'
   | 'pen'
+  | 'highlighter'
   | 'eraser'
   | 'sticky'
   | 'rect'
@@ -112,6 +140,7 @@ export interface Style {
   fill: FillKey
   fontSize: FontSizeKey
   stickyColor: ColorKey
+  highlightColor: ColorKey
 }
 
 export interface BoardDoc {

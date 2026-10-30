@@ -10,7 +10,16 @@ import type { El, FrameEl, LineEl, Point } from './types'
 const GAP = 6
 
 export function isFrame(el: El | undefined): el is FrameEl {
-  return !!el && (el.type === 'rect' || el.type === 'ellipse' || el.type === 'sticky' || el.type === 'image' || el.type === 'text')
+  return (
+    !!el &&
+    (el.type === 'rect' ||
+      el.type === 'ellipse' ||
+      el.type === 'sticky' ||
+      el.type === 'image' ||
+      el.type === 'text' ||
+      el.type === 'link' ||
+      el.type === 'swatch')
+  )
 }
 
 function centerOf(el: FrameEl): Point {

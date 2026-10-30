@@ -59,6 +59,9 @@ export const COLOR_NAMES: Record<ColorKey, string> = {
 export const STROKE_WIDTH: Record<SizeKey, number> = { s: 2, m: 3.5, l: 6 }
 /** Base diameter for freehand strokes */
 export const PEN_SIZE: Record<SizeKey, number> = { s: 3, m: 6, l: 12 }
+/** the highlighter is a wider, translucent pen */
+export const HIGHLIGHT_SCALE = 3
+export const HIGHLIGHT_OPACITY = 0.35
 export const FONT_SIZE: Record<FontSizeKey, number> = { s: 16, m: 24, l: 36, xl: 56 }
 
 export const FILL_OPACITY: Record<FillKey, number> = { none: 0, tint: 0.16, solid: 1 }

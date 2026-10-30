@@ -1,8 +1,8 @@
 import { hashData, saveAsset } from './assets'
-import { toWorld } from './handles'
+import { boxAt, freeSpot } from './placement'
 import { newElementId } from './storage'
 import { useStore } from './store'
-import type { ImageEl, Point } from './types'
+import type { Box, ImageEl, Point } from './types'
 
 const MAX_SIDE = 1600
 const MAX_PIXELS = 2_600_000
@@ -36,16 +36,31 @@ function hasTransparency(ctx: CanvasRenderingContext2D, w: number, h: number) {
 }
 
 /** Downscale and re-encode so boards stay light: JPEG for photos, PNG when transparent. */
-async function prepare(file: Blob) {
+export async function prepareImage(file: Blob, opts: { aspect?: number; maxSide?: number } = {}) {
   const src = await decode(file)
-  const k = Math.min(1, MAX_SIDE / Math.max(src.width, src.height), Math.sqrt(MAX_PIXELS / (src.width * src.height)))
-  const w = Math.max(1, Math.round(src.width * k))
-  const h = Math.max(1, Math.round(src.height * k))
+  // optional centre crop to a width/height ratio (link card previews)
+  let sx = 0
+  let sy = 0
+  let sw = src.width
+  let sh = src.height
+  if (opts.aspect) {
+    if (sw / sh > opts.aspect) {
+      sw = sh * opts.aspect
+      sx = (src.width - sw) / 2
+    } else {
+      sh = sw / opts.aspect
+      sy = (src.height - sh) / 2
+    }
+  }
+  const maxSide = opts.maxSide ?? MAX_SIDE
+  const k = Math.min(1, maxSide / Math.max(sw, sh), Math.sqrt(MAX_PIXELS / (sw * sh)))
+  const w = Math.max(1, Math.round(sw * k))
+  const h = Math.max(1, Math.round(sh * k))
   const canvas = document.createElement('canvas')
   canvas.width = w
   canvas.height = h
   const ctx = canvas.getContext('2d', { willReadFrequently: true })!
-  ctx.drawImage(src, 0, 0, w, h)
+  ctx.drawImage(src, sx, sy, sw, sh, 0, 0, w, h)
   const mayBeTransparent = /png|gif|webp|svg/.test(file.type)
   let url = mayBeTransparent && hasTransparency(ctx, w, h) ? canvas.toDataURL('image/png') : ''
   if (!url || url.length > 3_000_000) {
@@ -62,26 +77,28 @@ async function prepare(file: Blob) {
 export async function importImages(files: Blob[], at?: Point) {
   const images = files.filter((f) => f.type.startsWith('image/'))
   if (!images.length) return
-  const s = useStore.getState()
-  const v = s.viewport
-  const center = at ?? toWorld(v, window.innerWidth / 2, window.innerHeight / 2)
+  const v = useStore.getState().viewport
   const added: ImageEl[] = []
+  const taken: Box[] = []
   for (const [i, file] of images.entries()) {
     try {
-      const { url, w, h } = await prepare(file)
+      const { url, w, h } = await prepareImage(file)
       const hash = await hashData(url)
       await saveAsset(hash, url)
       // fit within half the screen, never upscale
       const fit = Math.min(1, (window.innerWidth * 0.5) / v.zoom / w, (window.innerHeight * 0.5) / v.zoom / h)
       const dw = w * fit
       const dh = h * fit
+      // dropped at a point: stack there; otherwise find free space for each
+      const c: Point = at ? [at[0] + i * 24, at[1] + i * 24] : freeSpot(dw, dh, taken)
+      taken.push(boxAt(c, dw, dh))
       added.push({
         id: newElementId(),
         type: 'image',
         color: 'ink',
         asset: hash,
-        x: center[0] - dw / 2 + i * 24,
-        y: center[1] - dh / 2 + i * 24,
+        x: c[0] - dw / 2,
+        y: c[1] - dh / 2,
         w: dw,
         h: dh,
       })
