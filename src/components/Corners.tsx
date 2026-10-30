@@ -50,7 +50,7 @@ export function ZoomControls() {
 
 export function EmptyHint() {
   const empty = useStore(
-    (s) => s.loaded && s.sync !== 'loading' && s.doc.elements.length === 0 && !s.draft && !s.editingId,
+    (s) => s.loaded && !!s.doc.key && s.sync !== 'loading' && s.doc.elements.length === 0 && !s.draft && !s.editingId,
   )
   const penMode = useStore((s) => s.penMode)
   if (!empty) return null

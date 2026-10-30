@@ -5,14 +5,16 @@
  *   PUT    /api/board?id=<id>   → 200 { updatedAt }      (body: board JSON)
  *   DELETE /api/board?id=<id>   → 204
  *
- * There are no accounts: the random board id in the link is the key, so anyone
- * with the link can open and edit the board. If no database is connected the
- * function answers 503 and the app quietly keeps boards on the device only.
+ * There are no accounts. Anyone with a board's id can view it; changing or
+ * deleting it needs its edit key (X-Edit-Key), which only the owner / edit
+ * link carries. If no database is connected the function answers 503 and the
+ * app quietly keeps boards on the device only.
  *
  * Plain JavaScript (type-checked through JSDoc) so Vercel runs it without a compile step.
  */
 
-import { json, redis, redisConfig } from './_redis.js'
+import { isActive, paywallEnabled, verifyToken } from './_pro.js'
+import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 const MAX_BYTES = 4_000_000 // Vercel's request body limit is 4.5 MB
 const TTL_SECONDS = 60 * 60 * 24 * 365 // boards expire after a year without edits
@@ -25,6 +27,19 @@ function boardId(request) {
 }
 
 /**
+ * Who may change a board: whoever holds its edit key (part of the owner /
+ * edit link). The server keeps only a hash of it. Boards saved before keys
+ * existed are claimed by the first device that saves them with a key.
+ * @param {{ keyHash?: string } | null} record
+ * @param {string | null} key
+ */
+async function canEdit(record, key) {
+  if (!key || key.length < 16) return false
+  if (!record?.keyHash) return true
+  return (await sha256(key)) === record.keyHash
+}
+
+/**
  * @param {Request} request
  * @returns {Promise<Response>}
  */
@@ -33,15 +48,22 @@ export async function handle(request) {
   const id = boardId(request)
   if (!id) return json({ error: 'invalid id' }, 400)
   const key = `board:${id}`
+  const editKey = request.headers.get('x-edit-key')
 
   try {
+    const raw = /** @type {string | null} */ (await redis(['GET', key]))
+    /** @type {any} */
+    const record = raw ? JSON.parse(raw) : null
     switch (request.method) {
       case 'GET': {
-        const raw = /** @type {string | null} */ (await redis(['GET', key]))
-        if (!raw) return json({ error: 'not found' }, 404)
-        return new Response(raw, { headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' } })
+        if (!record) return json({ error: 'not found' }, 404)
+        // never reveal the key hash or who pays; just whether live editing is paid for right now
+        const { keyHash: _k, proCustomer, ...pub } = record
+        const pro = !!proCustomer && (!paywallEnabled() || (await isActive(proCustomer).catch(() => true)))
+        return json({ ...pub, pro })
       }
       case 'PUT': {
+        if (!(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
         const text = await request.text()
         if (text.length > MAX_BYTES) return json({ error: 'board too large' }, 413)
         /** @type {{ id?: unknown, title?: unknown, elements?: unknown, createdAt?: unknown, updatedAt?: unknown, shared?: unknown }} */
@@ -54,19 +76,29 @@ export async function handle(request) {
         if (doc.id !== id || !Array.isArray(doc.elements) || typeof doc.updatedAt !== 'number') {
           return json({ error: 'invalid board' }, 400)
         }
+        // A Pro owner sharing the board pays for live editing on it
+        let proCustomer = record?.proCustomer
+        if (doc.shared === true && !proCustomer) {
+          const customer = await verifyToken(request.headers.get('x-pro-token'))
+          if (customer && (await isActive(customer))) proCustomer = customer
+        }
         const clean = {
           id,
           title: String(doc.title ?? 'Untitled').slice(0, 200),
           elements: doc.elements,
           createdAt: typeof doc.createdAt === 'number' ? doc.createdAt : doc.updatedAt,
           updatedAt: doc.updatedAt,
-          // once shared, every device that opens the board joins it live
+          // once shared, every editor that opens the board joins it live
           shared: doc.shared === true,
+          keyHash: record?.keyHash || (await sha256(/** @type {string} */ (editKey))),
+          ...(proCustomer ? { proCustomer } : {}),
         }
         await redis(['SET', key, JSON.stringify(clean), 'EX', TTL_SECONDS])
-        return json({ updatedAt: clean.updatedAt })
+        return json({ updatedAt: clean.updatedAt, pro: !!proCustomer })
       }
       case 'DELETE':
+        if (!record) return new Response(null, { status: 204 })
+        if (!(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
         await redis(['DEL', key])
         return new Response(null, { status: 204 })
       default:

@@ -8,9 +8,28 @@
  * Needs LIVEBLOCKS_SECRET_KEY (set by the Liveblocks integration on Vercel,
  * or copied from the Liveblocks dashboard). Without it the app works as
  * before, just without live collaboration.
+ *
+ * Only editors (holding the board's edit key) may join, and when payments are
+ * set up (STRIPE_SECRET_KEY) only on boards shared by a Pro owner.
  */
 
-import { json } from './_redis.js'
+/**
+ * @param {string} room  e.g. canvas-<board id>
+ * @param {string} key   the board's edit key
+ * @returns {Promise<string | null>} null when allowed, otherwise the reason
+ */
+async function denied(room, key) {
+  if (!redisConfig()) return 'Cloud saving is not set up'
+  const raw = /** @type {string | null} */ (await redis(['GET', `board:${room.slice('canvas-'.length)}`]))
+  if (!raw) return 'Board not found'
+  const record = JSON.parse(raw)
+  if (!record.keyHash || !key || (await sha256(key)) !== record.keyHash) return 'View only'
+  if (paywallEnabled() && !(record.proCustomer && (await isActive(record.proCustomer)))) return 'pro'
+  return null
+}
+
+import { isActive, paywallEnabled } from './_pro.js'
+import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 const ROOM_RE = /^canvas-[a-z0-9]{6,32}$/
 const USER_RE = /^[a-z0-9]{8,40}$/
@@ -30,6 +49,8 @@ export async function handle(request) {
     // a deleted board takes its live room with it
     const room = new URL(request.url).searchParams.get('room') ?? ''
     if (!secret() || !ROOM_RE.test(room)) return json({ error: 'invalid room' }, 400)
+    const reason = await denied(room, request.headers.get('x-edit-key') ?? '')
+    if (reason && reason !== 'pro') return json({ error: 'forbidden', reason }, 403)
     await fetch(`${baseUrl() || 'https://api.liveblocks.io'}/v2/rooms/${room}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${secret()}` },
@@ -41,13 +62,15 @@ export async function handle(request) {
 
   let body
   try {
-    body = /** @type {{ room?: unknown, userId?: unknown, name?: unknown, color?: unknown }} */ (await request.json())
+    body = /** @type {{ room?: unknown, userId?: unknown, name?: unknown, color?: unknown, key?: unknown }} */ (await request.json())
   } catch {
     return json({ error: 'forbidden', reason: 'Invalid request' }, 403)
   }
   const room = String(body.room ?? '')
   const userId = String(body.userId ?? '')
   if (!ROOM_RE.test(room) || !USER_RE.test(userId)) return json({ error: 'forbidden', reason: 'Invalid room' }, 403)
+  const reason = await denied(room, String(body.key ?? '')).catch(() => 'Could not check access')
+  if (reason) return json({ error: 'forbidden', reason }, 403)
   const name = String(body.name ?? 'Guest').slice(0, 40)
   const color = COLOR_RE.test(String(body.color)) ? String(body.color) : '#0a84ff'
 

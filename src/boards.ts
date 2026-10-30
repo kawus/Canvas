@@ -1,6 +1,7 @@
 import { uploadAssets } from './assets'
 import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
+import { activateProLink } from './pro'
 import { useStore } from './store'
 import {
   decodeShare,
@@ -10,6 +11,7 @@ import {
   listBoards,
   loadBoard,
   newId,
+  newKey,
   saveBoard,
   setLastBoardId,
 } from './storage'
@@ -93,7 +95,8 @@ function noteRemote<T>(r: RemoteResult<T>) {
 }
 
 async function push(doc: BoardDoc) {
-  if (S().cloud === false) return
+  // only the owner and invited editors (who hold the edit key) can save
+  if (S().cloud === false || !doc.key) return
   if (pushing) {
     queued = doc
     return
@@ -107,8 +110,17 @@ async function push(doc: BoardDoc) {
   pushing = false
   noteRemote(r)
   if (r.ok) {
-    if (S().doc.id === doc.id) lastSynced = doc
+    if (S().doc.id === doc.id) {
+      lastSynced = doc
+      S().setDocPro(r.value)
+    }
     if (!queued && S().doc === doc) S().setSync('saved')
+  } else if (r.reason === 'forbidden' && S().doc.id === doc.id) {
+    // the board is owned by someone else: this device can only view it
+    S().dropKey()
+    S().setSync('idle')
+    await saveBoard(S().doc)
+    S().showToast('This board is view-only here — open its owner link to edit')
   }
   if (queued) {
     const next = queued
@@ -131,9 +143,13 @@ async function pullIfNewer() {
   noteRemote(r)
   if (!r.ok || !r.value) return
   // only replace if nothing changed locally while we were fetching
-  if (S().doc !== before || r.value.updatedAt <= before.updatedAt) return
-  await saveBoard(r.value)
-  show(r.value, true, true)
+  if (S().doc !== before) return
+  S().setDocPro(!!r.value.pro)
+  if (r.value.updatedAt <= before.updatedAt) return
+  // the cloud copy never contains the edit key, so keep ours
+  const merged = withKey(r.value, before.key)
+  await saveBoard(merged)
+  show(merged, true, true)
   lastSynced = S().doc
   S().setSync('saved')
 }
@@ -154,36 +170,78 @@ export async function flushSave() {
 
 /* ---------- Opening boards ---------- */
 
+function withKey(doc: BoardDoc, key: string | undefined): BoardDoc {
+  const out = { ...doc }
+  if (key) out.key = key
+  else delete out.key
+  return out
+}
+
+interface OpenOptions {
+  /** add a browser history entry */
+  push?: boolean
+  /** save the current board first */
+  save?: boolean
+  /** edit key from an owner / edit link */
+  key?: string
+  /** a brand-new board of your own */
+  fresh?: boolean
+}
+
 /** Returns false when the board exists neither on this device nor in the cloud. */
-export async function openBoard(id: string, pushHistory = false, saveCurrent = true): Promise<boolean> {
-  if (saveCurrent) await flushSave()
-  const local = await loadBoard(id)
-  setHash(id, pushHistory)
+export async function openBoard(id: string, opts: OpenOptions = {}): Promise<boolean> {
+  if (opts.save !== false) await flushSave()
+  let local = await loadBoard(id)
+  if (local && opts.key && local.key !== opts.key) {
+    // an edit link gives this device edit rights
+    local = withKey(local, opts.key)
+    await saveBoard(local)
+  }
+  setHash(id, !!opts.push)
   lastSynced = null
-  const shown = local ?? emptyBoard(id)
+  const shown = local ?? (opts.fresh ? emptyBoard(id) : withKey(emptyBoard(id), opts.key))
   show(shown, !!local)
-  if (S().cloud === false) return !!local
+  // Boards that live only on this device are always yours
+  const ownIfLocalOnly = () => {
+    if (S().cloud === false && S().doc.id === id && !S().doc.key) S().setKey(newKey())
+  }
+  if (S().cloud === false) {
+    ownIfLocalOnly()
+    return !!local
+  }
 
   if (S().cloud) S().setSync('loading')
   const r = await fetchRemote(id)
   noteRemote(r)
-  if (!r.ok) return !!local
+  if (!r.ok) {
+    ownIfLocalOnly()
+    if (S().sync === 'loading') S().setSync('idle')
+    return !!local
+  }
   const current = S().doc
   if (current.id !== id) return true // user moved on to another board
 
   const remote = r.value
+  if (!remote && !local) {
+    // a board that doesn't exist anywhere yet: it's a new board of yours
+    if (!current.key) S().setKey(newKey())
+    S().setSync('saved')
+    return false
+  }
+  if (remote) S().setDocPro(!!remote.pro)
   if (remote && (!local || remote.updatedAt > local.updatedAt)) {
-    if (current === shown) {
-      await saveBoard(remote)
-      show(remote, true, !!local && !!savedViewport(id))
+    if (current === shown || S().doc.elements === shown.elements) {
+      const merged = withKey({ ...remote, pro: !!remote.pro }, S().doc.key)
+      await saveBoard(merged)
+      show(merged, true, !!local && !!savedViewport(id))
       lastSynced = S().doc
-      S().setSync('saved')
+      S().setSync(merged.key ? 'saved' : 'idle')
     }
     return true
   }
   if (remote && local && remote.updatedAt === local.updatedAt) {
-    lastSynced = current === shown ? current : null
-    S().setSync(current === shown ? 'saved' : 'saving')
+    lastSynced = S().doc.elements === shown.elements ? S().doc : null
+    S().setSync(lastSynced ? 'saved' : 'saving')
     return true
   }
   // The device copy is newer (or the board was never uploaded): upload it.
@@ -193,25 +251,27 @@ export async function openBoard(id: string, pushHistory = false, saveCurrent = t
 }
 
 export async function newBoard() {
-  await openBoard(newId(), true)
+  await openBoard(newId(), { push: true, fresh: true })
 }
 
 export async function duplicateBoard() {
   await flushSave()
   const { doc } = S()
+  // a copy is always your own board: new id, new key, not shared
   const copy: BoardDoc = {
-    ...doc,
     id: newId(),
     title: `${doc.title} (copy)`,
+    elements: doc.elements,
     createdAt: Date.now(),
     updatedAt: Date.now(),
+    key: newKey(),
   }
   await saveBoard(copy)
   setHash(copy.id, true)
   lastSynced = null
   show(copy, true)
   void push(copy)
-  S().showToast('Board duplicated')
+  S().showToast(doc.key ? 'Board duplicated' : 'This copy is yours to edit')
 }
 
 export async function removeCurrentBoard() {
@@ -220,17 +280,20 @@ export async function removeCurrentBoard() {
   persisted = false
   stopCollab()
   await deleteBoard(doc.id)
-  if (cloud) await deleteRemote(doc.id)
-  if (doc.shared) await deleteRoom(doc.id)
+  // only the owner deletes the board itself; a viewer just removes it from their list
+  if (doc.key) {
+    if (doc.shared) await deleteRoom(doc.id, doc.key)
+    if (cloud) await deleteRemote(doc.id, doc.key)
+  }
   try {
     localStorage.removeItem(vpKey(doc.id))
   } catch {
     /* ignore */
   }
   const rest = await listBoards()
-  if (rest.length) await openBoard(rest[0].id, false, false)
-  else await openBoard(newId(), false, false)
-  S().showToast('Board deleted')
+  if (rest.length) await openBoard(rest[0].id, { save: false })
+  else await openBoard(newId(), { save: false, fresh: true })
+  S().showToast(doc.key ? 'Board deleted' : 'Removed from your boards')
 }
 
 async function importShare(data: string) {
@@ -247,6 +310,7 @@ async function importShare(data: string) {
     elements: shared.elements,
     createdAt: now,
     updatedAt: now,
+    key: newKey(),
   }
   await saveBoard(doc)
   setHash(doc.id, false)
@@ -266,24 +330,50 @@ export function routeFromHash() {
   return routing
 }
 
+/** Boards saved before edit keys existed were made on this device: they're yours. */
+async function migrateKeys() {
+  try {
+    if (localStorage.getItem('canvas-keys-v1')) return
+  } catch {
+    return
+  }
+  for (const meta of await listBoards()) {
+    const doc = await loadBoard(meta.id)
+    if (doc && !doc.key) await saveBoard({ ...doc, key: newKey() })
+  }
+  try {
+    localStorage.setItem('canvas-keys-v1', '1')
+  } catch {
+    /* ignore */
+  }
+}
+
 async function route() {
-  const hash = decodeURIComponent(location.hash.slice(1))
+  await migrateKeys()
+  let hash = decodeURIComponent(location.hash.slice(1))
+  if (hash.startsWith('pro=')) {
+    await activateProLink(hash.slice(4))
+    hash = ''
+  }
   if (hash.startsWith('share=')) {
     if (await importShare(hash.slice(6))) return
-  } else if (/^[a-z0-9]{4,32}$/i.test(hash)) {
-    if (hash === S().doc.id && S().loaded) return
-    const found = await openBoard(hash)
-    if (!found && S().doc.id === hash) {
-      S().showToast(
-        S().cloud ? 'This board doesn’t exist yet — it starts empty' : 'This board isn’t saved in this browser — it starts empty',
-      )
+  } else {
+    // #id = view link, #id.key = owner / edit link
+    const m = /^([a-z0-9]{4,32})(?:\.([a-z0-9]{16,64}))?$/i.exec(hash)
+    if (m) {
+      const [, id, key] = m
+      if (id === S().doc.id && S().loaded && (!key || key === S().doc.key)) return
+      const found = await openBoard(id, { key })
+      if (!found && S().doc.id === id && !S().cloud) {
+        S().showToast('This board isn’t saved in this browser — it starts empty')
+      }
+      return
     }
-    return
   }
   const last = await lastBoardId()
   const lastDoc = last ? await loadBoard(last) : undefined
   if (lastDoc) await openBoard(lastDoc.id)
-  else await openBoard(newId())
+  else await openBoard(newId(), { fresh: true })
 }
 
 /** Make sure the latest version is saved and uploaded (e.g. before copying a live link). */
@@ -295,8 +385,11 @@ export function startPersistence() {
   let vpTimer: ReturnType<typeof setTimeout> | undefined
   const unsub = useStore.subscribe((s, p) => {
     // Live collaboration follows the open board, once it has been shared and cloud saving works
-    const live = s.loaded && !!s.doc.shared && s.cloud === true
-    const wasLive = p.loaded && !!p.doc.shared && p.cloud === true
+    // Live collaboration: editors of a shared board, when its owner has Pro (or there's no paywall)
+    const canLive = (x: typeof s) =>
+      x.loaded && !!x.doc.key && !!x.doc.shared && x.cloud === true && (!!x.doc.pro || x.pro.paywall === false)
+    const live = canLive(s)
+    const wasLive = canLive(p)
     if (s.doc.id !== p.doc.id || live !== wasLive) {
       if (live) void startCollab(s.doc.id)
       else stopCollab()
@@ -323,6 +416,10 @@ export function startPersistence() {
     else void pullIfNewer()
   }
   const onFocus = () => void pullIfNewer()
+  // viewers have no live connection: check for the owner's changes now and then
+  const poll = setInterval(() => {
+    if (!S().doc.key && document.visibilityState === 'visible') void pullIfNewer()
+  }, 15_000)
   const onOnline = () => {
     if (hasUnsyncedChanges()) void flushSave()
   }
@@ -333,6 +430,7 @@ export function startPersistence() {
   window.addEventListener('online', onOnline)
   window.addEventListener('hashchange', onHash)
   return () => {
+    clearInterval(poll)
     unsub()
     document.removeEventListener('visibilitychange', onVisibility)
     window.removeEventListener('pagehide', onVisibility)

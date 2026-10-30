@@ -15,8 +15,8 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **iPad + Apple Pencil:** pressure-sensitive ink. Once the Pencil is detected, your finger pans the board and a resting palm is ignored. Pinch with two fingers to zoom. Tapping with the Text tool opens the keyboard (Scribble works too).
 - **Export:** PDF (vector, with Geist embedded), PNG and SVG. You can export the whole board or only the selection.
 - **Boards & links:** every board gets its own short link (`/#k3v9x2pq7d4m`) and saves automatically. With cloud saving turned on (see below), that link opens the live board on any device. Recent boards are in the top-left menu.
-- **Share:** "Live board" sends the board itself (anyone with the link can open and edit it). "A copy" sends a snapshot that becomes the recipient's own board. No sign-in either way.
-- **Live collaboration:** once a board's live link is shared, everyone on it edits together in real time: you see each other's cursors (with names), selections and drawings as they happen, plus avatars of who's there. Undo only undoes your own changes. Needs Liveblocks (step 3 below).
+- **Share (free):** a **view link** lets anyone see the board as it changes and make their own copy. Only you edit, so nobody overwrites anyone. Your private **owner link** (board menu) opens the board with editing rights on your other devices.
+- **Edit together (Pro):** an **edit link** invites people to edit with you in real time: cursors with names, selections and drawings as they happen, avatars of who's there. Undo only undoes your own changes. The owner needs Pro; guests join free.
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
 
 ## Keyboard shortcuts
@@ -82,13 +82,26 @@ Check it worked: open a board, click **Share → Copy link**, and open the link 
 
 Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live minutes a month, with a small Liveblocks badge. To save minutes, only boards whose live link has been shared connect, and a board disconnects when its tab has been in the background for a minute.
 
+**4. Turn on Canvas Pro payments (about 3 minutes)**
+
+Without this, there's no paywall: anyone holding an edit link can collaborate live.
+
+1. Create a [Stripe](https://dashboard.stripe.com) account. Keep **Test mode** on while you try it.
+2. **Developers → API keys** → copy the **Secret key** (`sk_test_…`).
+3. In Vercel: **Settings → Environment Variables** → add `STRIPE_SECRET_KEY`, then **Redeploy**.
+4. Try it: **Share → Edit together → Upgrade to Pro**, and pay with the test card `4242 4242 4242 4242` (any future date, any CVC).
+
+The app creates the "Canvas Pro" product and its prices in Stripe on first use ($6/month, $48/year). To change them, set `PRO_PRICE_MONTH` / `PRO_PRICE_YEAR` (in cents) and `PRO_CURRENCY` (e.g. `eur`). To take real payments, activate your Stripe account, switch to live mode, replace the key with the live one (`sk_live_…`) and redeploy.
+
+There are no accounts: after paying, Pro is stored in the browser, and **board menu → Use Pro on another device** copies a private Pro link that turns Pro on elsewhere. **Manage subscription** opens Stripe's billing page to change or cancel.
+
 **Other static hosts** (Netlify, GitHub Pages, …): upload `dist/` after `npm run build`. Everything works except cloud links, which need the `api/` function.
 
 ## How saving works
 
 - **On the device, always.** Every change is saved in the browser (IndexedDB) right away, so the app works offline and opens instantly.
 - **In the cloud, when it's turned on.** Shortly after you stop drawing, the board is uploaded (`api/board.js` → Redis), keyed by the random id in its link. Opening the link on another device downloads it. When you return to a tab, it picks up edits made elsewhere. The cloud icon next to the title shows the state: saving, saved, or offline (offline changes upload when you're back online).
-- **No accounts.** The 12-character link is the key: anyone with it can open and edit that board. Boards with no edits for a year expire from the cloud.
+- **No accounts.** A board's id is enough to view it. Editing needs its edit key, which only the owner / edit link carries (`#id.key`); the server keeps just a hash of it, and the app removes it from the address bar after opening. Boards with no edits for a year expire from the cloud.
 - **Live collaboration (when set up).** Shared boards also join a Liveblocks room that keeps everyone in sync in real time; changes merge per element, so two people can work on different things at the same time. Without Liveblocks, two people editing at the same moment: the last save wins.
 
 ## Project layout
@@ -108,12 +121,15 @@ src/
   snap.ts         smart guides, equal spacing and grid snapping
   boards.ts       routing by URL, autosave, cloud sync, new/duplicate/delete
   collab.ts       live collaboration (Liveblocks room ⇄ local store, presence)
+  pro.ts          Canvas Pro on the client (checkout, Pro token and link)
   store.ts        app state (zustand) with undo/redo
   components/     toolbar, style bar, menus, overlays
 api/
   board.js        Vercel Function: GET / PUT / DELETE a board in Redis
   asset.js        Vercel Function: images, stored by content hash
-  collab.js       Vercel Function: Liveblocks sign-in for a board's room
+  collab.js       Vercel Function: Liveblocks sign-in for a board's room (editors, Pro boards)
+  pro.js          Vercel Function: Stripe Checkout, Pro status, billing portal
+  _pro.js         Stripe helpers and signed Pro tokens
   _redis.js       shared Redis (Upstash REST) helper
 ```
 

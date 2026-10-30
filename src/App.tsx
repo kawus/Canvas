@@ -7,8 +7,10 @@ import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
 import { BoardMenu, ExportButton, ShareButton } from './components/TopBar'
+import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
 import { startKeyboard } from './keyboard'
+import { claimFromUrl, refreshPro } from './pro'
 import { useStore } from './store'
 
 const darkQuery = window.matchMedia('(prefers-color-scheme: dark)')
@@ -20,6 +22,7 @@ const subscribeDark = (cb: () => void) => {
 export default function App() {
   const theme = useStore((s) => s.theme)
   const loaded = useStore((s) => s.loaded)
+  const viewOnly = useStore((s) => s.loaded && !s.doc.key)
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
   const palette = dark ? PALETTE_DARK : PALETTE_LIGHT
@@ -33,6 +36,8 @@ export default function App() {
     const stopPersist = startPersistence()
     const stopKeys = startKeyboard()
     void routeFromHash()
+    // back from Stripe Checkout, then learn whether this device has Pro
+    void claimFromUrl().then(refreshPro)
     return () => {
       stopPersist()
       stopKeys()
@@ -56,10 +61,11 @@ export default function App() {
       </div>
 
       <div className="bottom">
-        <StylePanel palette={palette} />
+        {!viewOnly && <StylePanel palette={palette} />}
         <Toast />
-        <Toolbar />
+        {viewOnly ? <ViewBar /> : <Toolbar />}
       </div>
+      <UpgradeDialog />
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

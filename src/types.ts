@@ -122,6 +122,13 @@ export interface BoardDoc {
   updatedAt: number
   /** set once the board's live link has been shared; shared boards collaborate live */
   shared?: boolean
+  /**
+   * Edit key: proof that this device may change the board (owner or invited
+   * editor). Boards opened from a view link have none and are read-only.
+   */
+  key?: string
+  /** live editing on this board is paid for by a Pro owner (from the server) */
+  pro?: boolean
 }
 
 export interface BoardMeta {

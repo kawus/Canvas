@@ -1,3 +1,4 @@
+import { proToken } from './pro'
 import type { BoardDoc } from './types'
 
 /**
@@ -6,7 +7,9 @@ import type { BoardDoc } from './types'
  * every call reports 'disabled' and boards simply stay on this device.
  */
 
-export type RemoteResult<T> = { ok: true; value: T } | { ok: false; reason: 'disabled' | 'offline' | 'too-large' | 'error' }
+export type RemoteResult<T> =
+  | { ok: true; value: T }
+  | { ok: false; reason: 'disabled' | 'offline' | 'too-large' | 'forbidden' | 'error' }
 
 const endpoint = (id: string) => `api/board?id=${encodeURIComponent(id)}`
 
@@ -25,6 +28,7 @@ async function request(id: string, init?: RequestInit): Promise<Response | 'offl
 function failure(res: Response | 'offline'): RemoteResult<never> {
   if (res === 'offline') return { ok: false, reason: 'offline' }
   if (res.status === 413) return { ok: false, reason: 'too-large' }
+  if (res.status === 403 && isJson(res)) return { ok: false, reason: 'forbidden' }
   // 503 = no database connected; non-JSON (e.g. index.html from a static host) = no function at all
   if (res.status === 503 || res.status === 404 || res.status === 405 || !isJson(res)) return { ok: false, reason: 'disabled' }
   return { ok: false, reason: 'error' }
@@ -46,16 +50,26 @@ export async function fetchRemote(id: string): Promise<RemoteResult<BoardDoc | n
 
 const round = (_k: string, v: unknown) => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)
 
-export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<number>> {
+/** Saves the board; the value says whether live editing on it is paid for by a Pro owner. */
+export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<boolean>> {
+  // the edit key travels in a header and is never stored with the board
+  const { key, pro: _pro, ...body } = doc
+  const headers: Record<string, string> = { 'Content-Type': 'application/json', 'X-Edit-Key': key ?? '' }
+  const token = proToken()
+  if (token && doc.shared) headers['X-Pro-Token'] = token
   const res = await request(doc.id, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(doc, (k, v) => (k === 'createdAt' || k === 'updatedAt' ? v : round(k, v))),
+    headers,
+    body: JSON.stringify(body, (k, v) => (k === 'createdAt' || k === 'updatedAt' ? v : round(k, v))),
   })
   if (res === 'offline' || !res.ok || !isJson(res)) return failure(res)
-  return { ok: true, value: doc.updatedAt }
+  try {
+    return { ok: true, value: !!((await res.json()) as { pro?: boolean }).pro }
+  } catch {
+    return { ok: true, value: false }
+  }
 }
 
-export async function deleteRemote(id: string) {
-  await request(id, { method: 'DELETE' })
+export async function deleteRemote(id: string, key: string) {
+  await request(id, { method: 'DELETE', headers: { 'X-Edit-Key': key } })
 }

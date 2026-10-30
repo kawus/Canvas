@@ -44,10 +44,12 @@ async function remove(key: string) {
 
 export const newId = customAlphabet('23456789abcdefghjkmnpqrstuvwxyz', 12)
 export const newElementId = customAlphabet('0123456789abcdefghijklmnopqrstuvwxyz', 12)
+export const newKey = customAlphabet('23456789abcdefghjkmnpqrstuvwxyz', 20)
 
+/** A new board you own (it gets its own edit key). */
 export function emptyBoard(id = newId()): BoardDoc {
   const now = Date.now()
-  return { id, title: 'Untitled', elements: [], createdAt: now, updatedAt: now }
+  return { id, title: 'Untitled', elements: [], createdAt: now, updatedAt: now, key: newKey() }
 }
 
 export async function listBoards(): Promise<BoardMeta[]> {
@@ -123,6 +125,7 @@ export function shareUrl(doc: BoardDoc) {
   return `${location.origin}${location.pathname}#share=${encodeShare(doc)}`
 }
 
-export function boardUrl(id: string) {
-  return `${location.origin}${location.pathname}#${id}`
+/** View link (`#id`), or edit / owner link when the key is included (`#id.key`). */
+export function boardUrl(id: string, key?: string) {
+  return `${location.origin}${location.pathname}#${id}${key ? `.${key}` : ''}`
 }

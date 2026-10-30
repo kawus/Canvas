@@ -5,6 +5,10 @@ import {
   CloudAlert,
   CloudOff,
   Copy,
+  CreditCard,
+  Eye,
+  KeyRound,
+  Lock,
   Download,
   FileCode,
   FileText,
@@ -17,13 +21,16 @@ import {
   Moon,
   Plus,
   Share,
+  Sparkles,
   Sun,
+  Users,
   Trash2,
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
+import { openPortal, proLink } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
 import { boardUrl, listBoards, shareUrl } from '../storage'
 import type { BoardMeta } from '../types'
@@ -92,7 +99,16 @@ export function BoardMenu() {
   const setSnap = useStore((s) => s.setSnap)
   const gridSnap = useStore((s) => s.gridSnap)
   const setGridSnap = useStore((s) => s.setGridSnap)
+  const editKey = useStore((s) => s.doc.key)
+  const pro = useStore((s) => s.pro)
+  const setUpgradeOpen = useStore((s) => s.setUpgradeOpen)
+  const showToast = useStore((s) => s.showToast)
   const { open, setOpen, ref } = usePopover()
+  const copyText = (text: string, message: string) =>
+    navigator.clipboard.writeText(text).then(
+      () => showToast(message),
+      () => showToast('Couldn’t copy — please try again'),
+    )
   const [boards, setBoards] = useState<BoardMeta[]>([])
 
   useEffect(() => {
@@ -125,6 +141,7 @@ export function BoardMenu() {
         aria-label="Board name"
         placeholder="Untitled"
         spellCheck={false}
+        readOnly={!editKey}
         onChange={(e) => setTitle(e.target.value)}
         onFocus={(e) => e.target.select()}
         onBlur={(e) => !e.target.value.trim() && setTitle('Untitled')}
@@ -156,7 +173,7 @@ export function BoardMenu() {
                   key={b.id}
                   onClick={() => {
                     setOpen(false)
-                    void openBoard(b.id, true)
+                    void openBoard(b.id, { push: true })
                   }}
                   hint={timeAgo(b.updatedAt)}
                 >
@@ -172,22 +189,79 @@ export function BoardMenu() {
               setOpen(false)
               void duplicateBoard()
             }}
+            testId="duplicate"
           >
-            Duplicate board
+            {editKey ? 'Duplicate board' : 'Make a copy'}
           </MenuItem>
+          {editKey && cloud && (
+            <MenuItem
+              icon={<KeyRound />}
+              onClick={() => {
+                setOpen(false)
+                void copyText(boardUrl(id, editKey), 'Owner link copied — use it to edit on your other devices. Keep it private.')
+              }}
+              testId="owner-link"
+            >
+              Copy owner link
+            </MenuItem>
+          )}
           <MenuItem
             icon={<Trash2 />}
             danger
             onClick={() => {
               setOpen(false)
-              const msg = cloud
-                ? 'Delete this board for everyone with the link? This can’t be undone.'
-                : 'Delete this board? This can’t be undone.'
+              const msg = !editKey
+                ? 'Remove this board from your list?'
+                : cloud
+                  ? 'Delete this board for everyone with the link? This can’t be undone.'
+                  : 'Delete this board? This can’t be undone.'
               if (confirm(msg)) void removeCurrentBoard()
             }}
           >
-            Delete board
+            {editKey ? 'Delete board' : 'Remove from my boards'}
           </MenuItem>
+          {pro.paywall && (
+            <>
+              <div className="menu-sep" />
+              {pro.active ? (
+                <>
+                  <div className="menu-heading pro-heading">
+                    <Sparkles /> Canvas Pro
+                  </div>
+                  <MenuItem
+                    icon={<KeyRound />}
+                    onClick={() => {
+                      setOpen(false)
+                      void copyText(proLink(), 'Pro link copied — open it on your other devices. Keep it private.')
+                    }}
+                    testId="pro-link"
+                  >
+                    Use Pro on another device
+                  </MenuItem>
+                  <MenuItem
+                    icon={<CreditCard />}
+                    onClick={() => {
+                      setOpen(false)
+                      void openPortal().catch(() => showToast('Couldn’t open billing — please try again'))
+                    }}
+                  >
+                    Manage subscription
+                  </MenuItem>
+                </>
+              ) : (
+                <MenuItem
+                  icon={<Sparkles />}
+                  onClick={() => {
+                    setOpen(false)
+                    setUpgradeOpen(true)
+                  }}
+                  testId="upgrade"
+                >
+                  Upgrade to Pro
+                </MenuItem>
+              )}
+            </>
+          )}
           <div className="menu-sep" />
           <MenuItem
             icon={<Magnet />}
@@ -230,36 +304,43 @@ export function BoardMenu() {
 export function ShareButton() {
   const doc = useStore((s) => s.doc)
   const cloud = useStore((s) => s.cloud)
-  const sync = useStore((s) => s.sync)
+  const pro = useStore((s) => s.pro)
   const showToast = useStore((s) => s.showToast)
+  const markShared = useStore((s) => s.markShared)
+  const setUpgradeOpen = useStore((s) => s.setUpgradeOpen)
   const { open, setOpen, ref } = usePopover()
   const [copied, setCopied] = useState(false)
-  const [mode, setMode] = useState<'live' | 'copy'>('live')
-  const markShared = useStore((s) => s.markShared)
+  const [tab, setTab] = useState<'view' | 'edit'>('view')
   const [collabOn, setCollabOn] = useState(false)
   const [myName, setName] = useState(() => getMe().name)
   useEffect(() => {
     if (open) void collabAvailable().then(setCollabOn)
   }, [open])
-
-  // A live link needs cloud storage; without it the link carries a snapshot instead.
-  const live = !!cloud && mode === 'live' && sync !== 'too-large'
-  const snapshot = useMemo(() => (open && !live ? shareUrl(doc) : ''), [open, live, doc])
   useEffect(() => {
     if (open) setCopied(false)
-  }, [open, mode])
+  }, [open, tab])
 
-  const url = live ? boardUrl(doc.id) : snapshot
+  const editable = !!doc.key
+  // Without cloud saving there's nothing to view remotely: the link carries a copy of the board
+  const snapshotOnly = cloud === false
+  const showEditTab = editable && !snapshotOnly && collabOn
+  const editing = showEditTab && tab === 'edit'
+  // Inviting editors needs Pro (unless there's no paywall, or the board's owner already has Pro)
+  const locked = editing && !!pro.paywall && !pro.active && !doc.pro
+  const snapshot = useMemo(() => (open && snapshotOnly ? shareUrl(doc) : ''), [open, snapshotOnly, doc])
+  const url = snapshotOnly ? snapshot : editing ? boardUrl(doc.id, doc.key) : boardUrl(doc.id)
+  const empty = doc.elements.length === 0
 
-  // Handing out the live link turns on live collaboration for this board
-  const shareLive = () => {
-    if (!live) return
+  const shared = () => {
+    if (!editing || locked) return
+    // handing out the edit link turns on live editing for this board
     markShared()
     void syncNow()
   }
 
   const copy = async () => {
-    shareLive()
+    shared()
+    if (!snapshotOnly && editable) void syncNow()
     try {
       await navigator.clipboard.writeText(url)
       setCopied(true)
@@ -272,110 +353,142 @@ export function ShareButton() {
   }
 
   const canNativeShare = typeof navigator.share === 'function'
-  const empty = doc.elements.length === 0
-  const long = !live && url.length > 30000
+  const long = snapshotOnly && url.length > 30000
+
+  let text: string
+  if (snapshotOnly) text = 'Anyone with the link gets their own copy to keep. No sign‑in needed.'
+  else if (editing) text = 'Anyone with this link can edit the board with you, live — you’ll see each other’s cursors.'
+  else if (editable) text = 'Anyone with the link can view this board as it changes, and make their own copy. No sign‑in needed.'
+  else text = 'This board is view-only for you. Share the view link, or make a copy you can edit.'
 
   return (
     <div className="share-wrap" ref={ref}>
-      <button
-        type="button"
-        className="primary-btn"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        data-testid="share"
-      >
+      <button type="button" className="primary-btn" onClick={() => setOpen(!open)} aria-expanded={open} data-testid="share">
         <Share />
         <span>Share</span>
       </button>
       {open && (
         <div className="popover popover-right share-pop" data-testid="share-pop">
           <div className="pop-title">Share this board</div>
-          {cloud && (
-            <div className="theme-row share-modes" role="radiogroup" aria-label="Link type">
+          {showEditTab && (
+            <div className="theme-row share-modes" role="tablist" aria-label="Link type">
               <button
                 type="button"
-                role="radio"
-                aria-checked={mode === 'live'}
-                className={`theme-btn ${mode === 'live' ? 'is-active' : ''}`}
-                onClick={() => setMode('live')}
-                data-testid="mode-live"
+                role="tab"
+                aria-selected={tab === 'view'}
+                className={`theme-btn ${tab === 'view' ? 'is-active' : ''}`}
+                onClick={() => setTab('view')}
+                data-testid="mode-view"
               >
-                Live board
+                <Eye /> View
               </button>
               <button
                 type="button"
-                role="radio"
-                aria-checked={mode === 'copy'}
-                className={`theme-btn ${mode === 'copy' ? 'is-active' : ''}`}
-                onClick={() => setMode('copy')}
-                data-testid="mode-copy"
+                role="tab"
+                aria-selected={tab === 'edit'}
+                className={`theme-btn ${tab === 'edit' ? 'is-active' : ''}`}
+                onClick={() => setTab('edit')}
+                data-testid="mode-edit"
               >
-                A copy
+                <Users /> Edit together
+                {pro.paywall && !pro.active && !doc.pro && <span className="pro-pill">Pro</span>}
               </button>
             </div>
           )}
-          <p className="pop-text">
-            {live && collabOn
-              ? 'Anyone with the link can edit this board with you, live — you’ll see each other’s cursors. No sign‑in needed.'
-              : live
-              ? 'Anyone with the link can open and edit this board, on any device. No sign‑in needed.'
-              : 'Anyone with the link gets their own copy to keep. Your board stays as it is. No sign‑in needed.'}
-          </p>
-          <div className="url-row">
-            <Link2 className="url-icon" />
-            <input
-              id="share-url"
-              className="url-input"
-              readOnly
-              value={empty ? 'Draw something first' : url}
-              onFocus={(e) => {
-                e.target.select()
-                shareLive()
-              }}
-              data-testid="share-url"
-            />
-          </div>
-          <div className="pop-actions">
-            {canNativeShare && (
-              <button
-                type="button"
-                className="ghost-btn"
-                disabled={empty}
-                onClick={() => {
-                  shareLive()
-                  navigator.share({ title: doc.title, url }).catch(() => {})
-                }}
-              >
-                More…
-              </button>
-            )}
-            <button type="button" className="primary-btn" onClick={copy} disabled={empty} data-testid="copy-link">
-              {copied ? <Check /> : <Copy />}
-              <span>{copied ? 'Copied' : 'Copy link'}</span>
-            </button>
-          </div>
-          {live && collabOn && (
-            <label className="me-row">
-              <span className="me-dot" style={{ background: getMe().color }} />
-              You appear as
-              <input
-                className="me-input"
-                value={myName}
-                maxLength={40}
-                onChange={(e) => setName(e.target.value)}
-                onBlur={() => {
-                  setMyName(myName)
-                  setName(getMe().name)
-                }}
-                onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
-                data-testid="my-name"
-              />
-            </label>
+
+          {locked ? (
+            <div className="locked" data-testid="share-locked">
+              <Lock className="locked-icon" />
+              <p className="pop-text">
+                Invite people to draw on this board with you, live — everyone editing at once, with cursors. Part of
+                Canvas Pro; guests join free.
+              </p>
+              <div className="pop-actions">
+                <button
+                  type="button"
+                  className="primary-btn"
+                  onClick={() => {
+                    setOpen(false)
+                    setUpgradeOpen(true)
+                  }}
+                  data-testid="share-upgrade"
+                >
+                  <Sparkles />
+                  <span>Upgrade to Pro</span>
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <p className="pop-text">{text}</p>
+              <div className="url-row">
+                <Link2 className="url-icon" />
+                <input
+                  id="share-url"
+                  className="url-input"
+                  readOnly
+                  value={empty && editable ? 'Draw something first' : url}
+                  onFocus={(e) => {
+                    e.target.select()
+                    shared()
+                  }}
+                  data-testid="share-url"
+                />
+              </div>
+              <div className="pop-actions">
+                {!editable && (
+                  <button
+                    type="button"
+                    className="ghost-btn"
+                    onClick={() => {
+                      setOpen(false)
+                      void duplicateBoard()
+                    }}
+                    data-testid="share-make-copy"
+                  >
+                    Make a copy
+                  </button>
+                )}
+                {canNativeShare && (
+                  <button
+                    type="button"
+                    className="ghost-btn"
+                    disabled={empty && editable}
+                    onClick={() => {
+                      shared()
+                      navigator.share({ title: doc.title, url }).catch(() => {})
+                    }}
+                  >
+                    More…
+                  </button>
+                )}
+                <button type="button" className="primary-btn" onClick={copy} disabled={empty && editable} data-testid="copy-link">
+                  {copied ? <Check /> : <Copy />}
+                  <span>{copied ? 'Copied' : 'Copy link'}</span>
+                </button>
+              </div>
+              {editing && (
+                <label className="me-row">
+                  <span className="me-dot" style={{ background: getMe().color }} />
+                  You appear as
+                  <input
+                    className="me-input"
+                    value={myName}
+                    maxLength={40}
+                    onChange={(e) => setName(e.target.value)}
+                    onBlur={() => {
+                      setMyName(myName)
+                      setName(getMe().name)
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
+                    data-testid="my-name"
+                  />
+                </label>
+              )}
+            </>
           )}
           {long && <p className="pop-note">This board is large, so the link is long. Some chat apps may cut it off — export a PDF instead.</p>}
-          {cloud === false && (
-            <p className="pop-note">Boards are saved in this browser. Turn on cloud saving to get live links that work on every device.</p>
-          )}
+          {snapshotOnly && <p className="pop-note">Turn on cloud saving to share live links that stay up to date.</p>}
         </div>
       )}
     </div>

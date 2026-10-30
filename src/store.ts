@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { resolveBindings } from './bindings'
 import { FONT_SIZE, MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, unionBounds } from './geometry'
+import type { ProConfig } from './pro'
 import type { Guide } from './snap'
 import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
@@ -21,6 +22,14 @@ export interface Peer {
   cursor: [number, number] | null
   selection: string[]
   draft: El | null
+}
+
+export interface ProState {
+  /** null until we know whether payments are set up; false = no paywall */
+  paywall: boolean | null
+  /** this device has an active Pro subscription */
+  active: boolean
+  config: ProConfig | null
 }
 
 export interface CollabState {
@@ -74,6 +83,8 @@ interface State {
   /** bumped on every commit, even one that changes nothing (ends a gesture) */
   commitSeq: number
   collab: CollabState
+  pro: ProState
+  upgradeOpen: boolean
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -86,6 +97,13 @@ interface State {
   setCollab: (patch: Partial<CollabState>) => void
   /** the board's live link was shared: from now on it collaborates live */
   markShared: () => void
+  /** the server says whether live editing on this board is paid for */
+  setDocPro: (pro: boolean) => void
+  /** this device turned out not to be allowed to edit the board */
+  dropKey: () => void
+  setKey: (key: string) => void
+  setPro: (pro: Partial<ProState>) => void
+  setUpgradeOpen: (open: boolean) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -169,10 +187,14 @@ export const useStore = create<State>((set, get) => ({
   change: 'load',
   commitSeq: 0,
   collab: { status: 'off', peers: [], canUndo: false, canRedo: false },
+  pro: { paywall: null, active: false, config: null },
+  upgradeOpen: false,
 
   setDoc: (doc) =>
-    set({
+    set((s) => ({
       doc,
+      // view-only boards open with the hand tool
+      tool: doc.key ? s.tool : 'hand',
       change: 'load',
       loaded: true,
       past: [],
@@ -184,7 +206,7 @@ export const useStore = create<State>((set, get) => ({
       erasing: [],
       marquee: null,
       guides: [],
-    }),
+    })),
 
   setTitle: (title) =>
     set((s) => ({ doc: { ...s.doc, title, updatedAt: Date.now() }, change: 'commit', commitSeq: s.commitSeq + 1 })),
@@ -219,6 +241,17 @@ export const useStore = create<State>((set, get) => ({
     }),
 
   setCollab: (patch) => set((s) => ({ collab: { ...s.collab, ...patch } })),
+
+  setDocPro: (pro) => set((s) => (!!s.doc.pro === pro ? {} : { doc: { ...s.doc, pro } })),
+  dropKey: () =>
+    set((s) => {
+      const doc = { ...s.doc }
+      delete doc.key
+      return { doc, change: 'load', selectedIds: [], editingId: null, tool: 'hand' }
+    }),
+  setKey: (key) => set((s) => ({ doc: { ...s.doc, key }, change: 'load' })),
+  setPro: (pro) => set((s) => ({ pro: { ...s.pro, ...pro } })),
+  setUpgradeOpen: (upgradeOpen) => set({ upgradeOpen }),
 
   markShared: () =>
     set((s) =>

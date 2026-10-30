@@ -248,7 +248,9 @@ export class CanvasController {
     const p = this.world(sx, sy)
     const fingerInPenMode = e.pointerType === 'touch' && s.penMode
 
-    if (e.button === 1 || this.space || tool === 'hand' || (fingerInPenMode && DRAWING_TOOLS.includes(tool))) {
+    // view-only boards can only be looked around
+    const readOnly = !s.doc.key
+    if (readOnly || e.button === 1 || this.space || tool === 'hand' || (fingerInPenMode && DRAWING_TOOLS.includes(tool))) {
       this.startPan(e, sx, sy)
       return
     }
@@ -659,7 +661,7 @@ export class CanvasController {
   private hover(e: PointerEvent, sx: number, sy: number) {
     if (e.pointerType === 'touch') return
     const s = S()
-    if (s.tool !== 'select' || this.space) {
+    if (s.tool !== 'select' || this.space || !s.doc.key) {
       s.setHovered(null)
       return
     }

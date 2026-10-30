@@ -96,7 +96,7 @@ export function Canvas({ palette }: { palette: Palette }) {
       }}
       onDrop={(e) => {
         const files = [...e.dataTransfer.files]
-        if (!files.length) return
+        if (!files.length || !useStore.getState().doc.key) return
         e.preventDefault()
         const r = e.currentTarget.getBoundingClientRect()
         void importImages(files, toWorld(viewport, e.clientX - r.left, e.clientY - r.top))

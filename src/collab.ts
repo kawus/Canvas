@@ -111,9 +111,19 @@ function getClient(baseUrl?: string) {
       const res = await fetch('api/collab', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ room, userId: me.id, name: me.name, color: me.color }),
+        // the edit key proves this person may edit (and so join) the board
+        body: JSON.stringify({ room, userId: me.id, name: me.name, color: me.color, key: S().doc.key }),
       })
-      return res.json()
+      const data = await res.json()
+      if (data?.reason === 'pro') {
+        // the owner's Pro plan ended: carry on editing, just not live
+        queueMicrotask(() => {
+          stopCollab()
+          S().setDocPro(false)
+          S().showToast('Live editing is paused — the board owner’s Pro plan has ended')
+        })
+      }
+      return data
     },
   })
   return client
@@ -383,7 +393,7 @@ function syncOrder(order: LiveList<Lson>, prev: El[], next: El[], prevById: Map<
 }
 
 /** Remove a deleted board's live room for everyone. */
-export async function deleteRoom(boardId: string) {
+export async function deleteRoom(boardId: string, key: string) {
   if (!(await getConfig()).enabled) return
-  await fetch(`api/collab?room=canvas-${boardId}`, { method: 'DELETE' }).catch(() => {})
+  await fetch(`api/collab?room=canvas-${boardId}`, { method: 'DELETE', headers: { 'X-Edit-Key': key } }).catch(() => {})
 }

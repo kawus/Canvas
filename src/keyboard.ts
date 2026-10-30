@@ -47,6 +47,14 @@ export function startKeyboard() {
     if (s.editingId) return
     const mod = e.metaKey || e.ctrlKey
     const key = e.key.toLowerCase()
+    // view-only: just zooming around
+    if (!s.doc.key) {
+      if (mod && (key === '=' || key === '+' || key === '-' || key === '0')) {
+        e.preventDefault()
+        s.zoomTo(key === '-' ? s.viewport.zoom / 1.25 : key === '0' ? 1 : s.viewport.zoom * 1.25)
+      } else if (e.key === '!') s.zoomToFit()
+      return
+    }
 
     if (mod) {
       if (key === 'z') {
@@ -148,7 +156,7 @@ export function startKeyboard() {
     if (copySelection(e)) useStore.getState().deleteSelected()
   }
   const onPaste = (e: ClipboardEvent) => {
-    if (isTyping(e) || useStore.getState().editingId) return
+    if (isTyping(e) || useStore.getState().editingId || !useStore.getState().doc.key) return
     const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length) {
       e.preventDefault()
