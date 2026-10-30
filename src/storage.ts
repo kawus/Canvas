@@ -101,6 +101,21 @@ export async function deleteBoard(id: string) {
   indexListener?.()
 }
 
+/** Boards saved before the list kept edit keys: copy each key into the list (once). */
+export async function fillIndexKeys() {
+  const index = (await read<BoardMeta[]>('index')) ?? []
+  let filled = false
+  for (const meta of index) {
+    if (meta.key) continue
+    const key = (await loadBoard(meta.id))?.key
+    if (key) {
+      meta.key = key
+      filled = true
+    }
+  }
+  if (filled) await write('index', index)
+}
+
 export async function removedBoards() {
   return (await read<Record<string, number>>('removed')) ?? {}
 }

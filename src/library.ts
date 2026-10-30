@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid'
 import { onProTokenChange, proToken, refreshPro, saveToken } from './pro'
-import { getLocal, listBoards, onIndexChange, removedBoards, setLocal } from './storage'
+import { fillIndexKeys, getLocal, listBoards, onIndexChange, removedBoards, setLocal } from './storage'
 
 /**
  * "My Canvas": a private link that brings all your boards back, on any device,
@@ -213,8 +213,12 @@ export async function pull() {
 let pushing: Promise<void> | null = null
 let again = false
 
+/** Done before the first backup, so boards from before My Canvas keep their edit rights. */
+let keysFilled: Promise<void> | null = null
+
 async function pushNow() {
   if (available === false) return
+  await (keysFilled ??= fillIndexKeys())
   const me = await ensureIdentity()
   await pull()
   const entries = merge(remote, await localEntries())
