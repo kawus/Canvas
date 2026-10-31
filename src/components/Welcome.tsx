@@ -228,10 +228,10 @@ function CreateArt() {
         <path d="M0 0 L-1.6 -4.6 L1.4 -4 Z" className="pen-tip" />
       </g>
       <g className="c-sticky">
-        <rect x="150" y="26" width="76" height="68" rx="4" className="sticky-paper" />
-        <rect x="160" y="42" width="52" height="5" rx="2.5" className="sticky-line" />
-        <rect x="160" y="54" width="40" height="5" rx="2.5" className="sticky-line" />
-        <rect x="160" y="66" width="46" height="5" rx="2.5" className="sticky-line" />
+        <rect x="150" y="26" width="76" height="68" rx="4" className="w-paper" />
+        <rect x="160" y="42" width="52" height="5" rx="2.5" className="w-paper-line" />
+        <rect x="160" y="54" width="40" height="5" rx="2.5" className="w-paper-line" />
+        <rect x="160" y="66" width="46" height="5" rx="2.5" className="w-paper-line" />
       </g>
       <line className="c-guide" x1="150" y1="16" x2="150" y2="170" />
       <g className="c-box">
@@ -350,9 +350,9 @@ function TogetherArt() {
   return (
     <svg viewBox="0 0 320 180" className="art art-together">
       <g className="t-sticky">
-        <rect x="34" y="36" width="72" height="64" rx="4" className="sticky-paper" />
-        <rect x="44" y="52" width="48" height="5" rx="2.5" className="sticky-line" />
-        <rect x="44" y="64" width="36" height="5" rx="2.5" className="sticky-line" />
+        <rect x="34" y="36" width="72" height="64" rx="4" className="w-paper" />
+        <rect x="44" y="52" width="48" height="5" rx="2.5" className="w-paper-line" />
+        <rect x="44" y="64" width="36" height="5" rx="2.5" className="w-paper-line" />
       </g>
       <rect x="30" y="32" width="80" height="72" rx="6" className="t-select" />
       <rect x="214" y="96" width="74" height="46" rx="9" className="shape-blue" />
