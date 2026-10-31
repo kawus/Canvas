@@ -1,4 +1,4 @@
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import { routeFromHash, startPersistence } from './boards'
 import { Canvas } from './components/Canvas'
 import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
@@ -11,8 +11,10 @@ import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
+import { Welcome } from './components/Welcome'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
 import { startKeyboard } from './keyboard'
+import { shouldWelcome } from './onboarding'
 import { initLibrary } from './library'
 import { claimFromUrl, refreshPro } from './pro'
 import { useStore } from './store'
@@ -36,6 +38,10 @@ export default function App() {
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
   const palette = dark ? PALETTE_DARK : PALETTE_LIGHT
+  // first run: the welcome tour, once the person's own board is open
+  const [welcomeDone, setWelcomeDone] = useState(false)
+  const ownBoard = useStore((s) => s.loaded && !!s.doc.key)
+  const welcome = shouldWelcome() && ownBoard && !welcomeDone
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
@@ -81,6 +87,7 @@ export default function App() {
       <UpgradeDialog />
       <InsertDialog />
       <LibraryDialogs />
+      {welcome && <Welcome onClose={() => setWelcomeDone(true)} />}
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

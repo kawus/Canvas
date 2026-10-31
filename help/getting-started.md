@@ -41,3 +41,7 @@ Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <
 ## Can I use dark mode?
 
 Yes. Canvas follows your device's light or dark setting. To choose one yourself, open the **board menu** and pick **Auto**, **Light** or **Dark** at the bottom.
+
+## Can I see the welcome tour again?
+
+Yes — [show the welcome tour](app:?tour). It opens Canvas with the short three-step introduction.
