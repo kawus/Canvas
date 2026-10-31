@@ -1,0 +1,194 @@
+<!doctype html>
+<!--
+  The link preview image (public/og.png, 1200 × 630) shown when Canvas links are
+  shared in messaging and social apps. To change it, edit this page and
+  screenshot it at 1200 × 630 (see the README, "Link previews").
+-->
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      @font-face {
+        font-family: 'Geist';
+        src: url('../src/assets/fonts/Geist-Variable.woff2') format('woff2');
+        font-weight: 100 900;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        width: 1200px;
+        height: 630px;
+        overflow: hidden;
+        font-family: 'Geist', sans-serif;
+        color: #111113;
+        background-color: #fbfbfb;
+        background-image: radial-gradient(#d6d6dc 1.6px, transparent 1.8px);
+        background-size: 30px 30px;
+        background-position: 15px 15px;
+        position: relative;
+        -webkit-font-smoothing: antialiased;
+      }
+      .brand {
+        position: absolute;
+        left: 72px;
+        top: 64px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        font-size: 30px;
+        font-weight: 650;
+        letter-spacing: -0.02em;
+      }
+      .brand svg {
+        width: 46px;
+        height: 46px;
+      }
+      h1 {
+        position: absolute;
+        left: 68px;
+        top: 168px;
+        margin: 0;
+        font-size: 104px;
+        font-weight: 650;
+        line-height: 0.95;
+        letter-spacing: -0.06em;
+      }
+      .calm {
+        position: relative;
+        display: inline-block;
+      }
+      .calm svg {
+        position: absolute;
+        left: -2%;
+        bottom: -14px;
+        width: 104%;
+        height: 30px;
+        overflow: visible;
+      }
+      .calm path {
+        fill: none;
+        stroke: #0a84ff;
+        stroke-width: 9;
+        stroke-linecap: round;
+      }
+      .sub {
+        position: absolute;
+        left: 72px;
+        bottom: 70px;
+        font-size: 30px;
+        color: #6e6e73;
+        letter-spacing: -0.015em;
+      }
+      .sticky {
+        position: absolute;
+        right: 92px;
+        top: 70px;
+        width: 210px;
+        height: 210px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 22px;
+        border-radius: 8px;
+        background: #ffe27a;
+        color: #3a2f05;
+        font-size: 27px;
+        font-weight: 600;
+        line-height: 1.15;
+        letter-spacing: -0.02em;
+        text-align: center;
+        transform: rotate(6deg);
+        box-shadow:
+          0 2px 2px rgba(0, 0, 0, 0.05),
+          0 22px 40px -16px rgba(110, 80, 0, 0.5);
+      }
+      .photo {
+        position: absolute;
+        right: 228px;
+        top: 282px;
+        width: 250px;
+        height: 180px;
+        border-radius: 12px;
+        outline: 8px solid #fff;
+        transform: rotate(-5deg);
+        box-shadow: 0 30px 60px -22px rgba(0, 0, 0, 0.4);
+        background:
+          radial-gradient(120% 90% at 20% 110%, #ff7a45 0%, transparent 55%),
+          radial-gradient(90% 80% at 85% 0%, #5e5ce6 0%, transparent 60%),
+          radial-gradient(60% 60% at 60% 60%, #ffb36b 0%, transparent 70%),
+          linear-gradient(160deg, #2b2d6e, #f08a5d);
+      }
+      .swatches {
+        position: absolute;
+        right: 70px;
+        bottom: 64px;
+        display: flex;
+      }
+      .swatches div {
+        width: 92px;
+        padding: 7px 7px 10px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 16px 30px -14px rgba(0, 0, 0, 0.35);
+      }
+      .swatches div + div {
+        margin-left: -16px;
+      }
+      .swatches div:nth-child(1) {
+        transform: rotate(-8deg);
+      }
+      .swatches div:nth-child(3) {
+        transform: rotate(7deg);
+      }
+      .swatches i {
+        display: block;
+        aspect-ratio: 1;
+        border-radius: 7px;
+      }
+      .cursor {
+        position: absolute;
+        right: 176px;
+        top: 252px;
+        display: flex;
+      }
+      .cursor svg {
+        width: 26px;
+        height: 28px;
+        fill: #ff9f0a;
+        stroke: #fff;
+        stroke-width: 1.5;
+        stroke-linejoin: round;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.2));
+      }
+      .cursor span {
+        margin: 20px 0 0 -4px;
+        padding: 4px 12px;
+        border-radius: 999px;
+        background: #ff9f0a;
+        color: #fff;
+        font-size: 17px;
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="brand">
+      <svg viewBox="0 0 24 24"><rect x="1" y="1" width="22" height="22" rx="6.5" fill="#111113" /><path d="M7 15.5c2.2-4.6 4.2-7 6-7 2.4 0-1.6 7 1.2 7 1.1 0 2-1 2.8-2.4" fill="none" stroke="#fbfbfb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" /></svg>
+      Canvas
+    </div>
+    <h1>
+      Think out loud,<br />on a <span class="calm">calm<svg viewBox="0 0 300 40" preserveAspectRatio="none"><path d="M6 26 C 70 10, 140 34, 200 18 S 270 14, 294 22" /></svg></span><br />canvas.
+    </h1>
+    <div class="sub">Sketch, plan and moodboard. No sign-up.</div>
+    <div class="sticky">Ideas worth keeping</div>
+    <div class="photo"></div>
+    <div class="cursor"><svg viewBox="0 0 20 22"><path d="M1 1 L1 18 L5.5 13.6 L9 21 L12 19.7 L8.6 12.6 L15 12.6 Z" /></svg><span>Mia</span></div>
+    <div class="swatches">
+      <div><i style="background: #c56b3e"></i></div>
+      <div><i style="background: #e9d8a6"></i></div>
+      <div><i style="background: #2f4858"></i></div>
+    </div>
+  </body>
+</html>

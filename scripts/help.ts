@@ -19,6 +19,14 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 const SRC = path.join(ROOT, 'help')
 const FONT = path.join(ROOT, 'src/assets/fonts/Geist-Variable.woff2')
 
+/**
+ * The site's address for link previews (messaging and social apps need full
+ * URLs). Vercel provides the production domain at build time; SITE_URL overrides.
+ */
+export const SITE = (
+  process.env.SITE_URL ?? (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : '')
+).replace(/\/$/, '')
+
 interface Topic {
   slug: string
   title: string
@@ -131,7 +139,7 @@ function loadTopics(): Topic[] {
 
 const THEME_SCRIPT = `<script>try{var t=localStorage.getItem('canvas-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>`
 
-function shell({ title, description, depth, body, search = true }: { title: string; description: string; depth: number; body: string; search?: boolean }) {
+function shell({ title, description, depth, body, path, search = true }: { title: string; description: string; depth: number; body: string; path: string; search?: boolean }) {
   const up = '../'.repeat(depth)
   return `<!doctype html>
 <html lang="en">
@@ -141,6 +149,15 @@ function shell({ title, description, depth, body, search = true }: { title: stri
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="Canvas" />
+<meta property="og:title" content="${escape(title)}" />
+<meta property="og:description" content="${escape(description)}" />
+<meta property="og:url" content="${SITE}/${path}" />
+<meta property="og:image" content="${SITE}/og.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#fbfbfb" media="(prefers-color-scheme: light)" />
 <meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)" />
 <link rel="icon" type="image/svg+xml" href="${up}../favicon.svg" />
@@ -207,7 +224,7 @@ function topicPage(topic: Topic, topics: Topic[]): Page {
 </div>`
   return {
     file: `help/${topic.slug}/index.html`,
-    html: shell({ title: `${topic.title} — Canvas Help`, description: topic.description, depth: 1, body }),
+    html: shell({ title: `${topic.title} — Canvas Help`, description: topic.description, depth: 1, body, path: `help/${topic.slug}/` }),
   }
 }
 
@@ -234,7 +251,7 @@ function indexPage(topics: Topic[]): Page {
 </main>`
   return {
     file: 'help/index.html',
-    html: shell({ title: 'Canvas Help', description: data.description ?? 'Answers to your questions about Canvas.', depth: 0, body: page, search: false }),
+    html: shell({ title: 'Canvas Help', description: data.description ?? 'Answers to your questions about Canvas.', depth: 0, body: page, path: 'help/', search: false }),
   }
 }
 

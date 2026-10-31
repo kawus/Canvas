@@ -31,6 +31,12 @@ An animated front page for new visitors lives at **`/intro/`** (e.g. `canvas.kaw
 
 The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
+## Link previews
+
+Links to Canvas show a proper preview in messaging and social apps (iMessage, WhatsApp, Slack, LinkedIn, X…): a title, a description and the image `public/og.png` (1200 × 630). Help pages show their own topic as the title. The tags need the site's full address; Vercel provides the production domain at build time, or set `SITE_URL` (e.g. `https://canvas.kawus.com`) to choose it yourself.
+
+To change the image, edit `scripts/og-image.html`, open it in a browser at 1200 × 630 and save a screenshot as `public/og.png`. Apps cache previews for a while: after a change, a link you already shared may keep the old preview for a few days.
+
 ## Help centre
 
 User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate from the canvas. People reach it from the **?** button (bottom right) and "How this works" links in the device and Pro dialogs. The **?** button also shows shortcuts that fit the device (keyboard shortcuts with Mac or Windows keys, touch and Pencil gestures on iPad, touch gestures on iPhone) and replays the welcome tour. It has a topic page per subject, search, and light/dark mode.
