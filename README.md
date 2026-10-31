@@ -23,6 +23,14 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Welcome tour:** first-time visitors get a short animated welcome and three steps (Create, Everywhere, Together). On iPhone and iPad in Safari, a fourth step shows how to add Canvas to the Home Screen. It's shown once; add `?tour` to the address to see it again.
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
 
+## Front page (optional)
+
+An animated front page for new visitors lives at **`/intro/`** (e.g. `canvas.kawus.com/intro/`): a hero whose headline writes itself in, ink that draws as you scroll, a moodboard that tidies itself, devices in sync and live cursors. It works on phones, in dark mode, and stays still for people who prefer reduced motion. You can always link to it.
+
+**To show it to new visitors automatically:** in Vercel, **Settings → Environment Variables** → add `VITE_FRONT_PAGE` with the value `on`, then **Deployments → ⋯ → Redeploy**. From then on, someone opening Canvas for the first time (no boards yet, not opening a board link) lands on the front page; "Start drawing" takes them into the app, where the welcome tour skips its splash. Returning visitors and board links always go straight to the app. Remove the variable (or set it to anything else) and redeploy to switch it off. It's off by default.
+
+The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
+
 ## Help centre
 
 User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate from the canvas. People reach it from the **?** button (bottom right) and "How this works" links in the device and Pro dialogs. The **?** button also shows shortcuts that fit the device (keyboard shortcuts with Mac or Windows keys, touch and Pencil gestures on iPad, touch gestures on iPhone) and replays the welcome tour. It has a topic page per subject, search, and light/dark mode.
@@ -150,6 +158,7 @@ src/
   help.ts         links to the help centre
   components/     toolbar, style bar, menus, overlays
 help/             help centre: one Markdown file per topic, plus its CSS and search script
+intro/            the optional front page for new visitors (/intro/)
 scripts/help.ts   builds help/*.md into the /help/ pages (a Vite plugin)
 api/
   board.js        Vercel Function: GET / PUT / DELETE a board in Redis

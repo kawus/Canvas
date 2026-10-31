@@ -24,4 +24,16 @@ async function boot() {
   )
 }
 
-void boot()
+/** Nobody has used Canvas in this browser yet, and they didn't open a link to a board. */
+function brandNew() {
+  if (location.hash || location.search) return false
+  try {
+    return !['canvas-keys-v1', 'canvas-welcomed', 'canvas-intro-seen'].some((k) => localStorage.getItem(k))
+  } catch {
+    return false
+  }
+}
+
+// The optional front page: with VITE_FRONT_PAGE=on, brand-new visitors see /intro/ first
+if (import.meta.env.VITE_FRONT_PAGE === 'on' && brandNew()) location.replace('intro/')
+else void boot()

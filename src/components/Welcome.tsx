@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight, Share, SquarePlus } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { inSafariTab } from '../library'
-import { markWelcomed } from '../onboarding'
+import { fromIntro, markWelcomed } from '../onboarding'
 
 /**
  * First-run welcome: an animated splash, then three short steps (Create,
@@ -62,7 +62,7 @@ const STEPS: Step[] = [
 ]
 
 export function Welcome({ onClose }: { onClose: () => void }) {
-  const [step, setStep] = useState(0)
+  const [step, setStep] = useState(fromIntro ? 1 : 0)
   const [dir, setDir] = useState<1 | -1>(1)
   const [leaving, setLeaving] = useState(false)
   const primary = useRef<HTMLButtonElement>(null)

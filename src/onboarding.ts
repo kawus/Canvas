@@ -13,6 +13,16 @@ function readFlag(key: string) {
   }
 }
 
+/** Came from the front page (?from=intro): the tour skips its splash, they've just seen the intro. */
+export const fromIntro = (() => {
+  const params = new URLSearchParams(location.search)
+  if (!params.has('from')) return false
+  params.delete('from')
+  const query = params.toString()
+  history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`)
+  return true
+})()
+
 /** Decided before the app starts, so returning visitors (and My Canvas links) never see it. */
 const firstRun = (() => {
   const params = new URLSearchParams(location.search)

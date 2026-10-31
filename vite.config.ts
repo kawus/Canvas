@@ -1,4 +1,5 @@
 import react from '@vitejs/plugin-react'
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import { helpPages } from './scripts/help.ts'
 
@@ -8,4 +9,10 @@ export default defineConfig({
   base: './',
   // the help centre at /help/, built from help/*.md
   plugins: [react(), helpPages()],
+  // the app, and the optional front page for new visitors at /intro/
+  build: {
+    rollupOptions: {
+      input: { index: resolve(import.meta.dirname, 'index.html'), intro: resolve(import.meta.dirname, 'intro/index.html') },
+    },
+  },
 })
