@@ -298,13 +298,14 @@ const kebab = (k: string) => (k === 'className' ? 'class' : k.replace(/[A-Z]/g, 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
+/** Markup for exports. Boards can come from anyone, so every value is escaped. */
 export function primToMarkup(p: Prim): string {
   const attrs = Object.entries(p.attrs)
     .map(([k, v]) => `${kebab(k)}="${esc(String(v))}"`)
     .join(' ')
   if (p.tag === 'text') {
     const spans = p.lines
-      .map((l) => `<tspan x="${l.x}" y="${l.y}">${esc(l.text) || ' '}</tspan>`)
+      .map((l) => `<tspan x="${esc(String(l.x))}" y="${esc(String(l.y))}">${esc(l.text) || ' '}</tspan>`)
       .join('')
     return `<text ${attrs} xml:space="preserve">${spans}</text>`
   }

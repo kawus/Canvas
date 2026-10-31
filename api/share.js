@@ -37,7 +37,7 @@ function describe(elements) {
 export async function handle(request) {
   const url = new URL(request.url)
   const id = url.searchParams.get('id') ?? ''
-  const site = `${url.protocol}//${request.headers.get('x-forwarded-host') ?? url.host}`
+  const site = escape(`${url.protocol}//${request.headers.get('x-forwarded-host') ?? url.host}`)
   const valid = ID_RE.test(id)
 
   // unknown boards get the general card, so a made-up link reveals nothing

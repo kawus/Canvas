@@ -8,6 +8,8 @@
  * Only public http(s) addresses are fetched, with a size and time limit.
  */
 
+import { lookup } from 'node:dns/promises'
+import { isIP } from 'node:net'
 import { json } from './_redis.js'
 
 const PAGE_LIMIT = 600_000
@@ -15,6 +17,29 @@ const IMAGE_LIMIT = 6_000_000
 const TIMEOUT = 7000
 // identify honestly; sites that don't want automated visits just get a plain card
 const UA = 'CanvasLinkPreview/1.0 (+https://github.com/kawus/Canvas)'
+
+/** An IPv4 or IPv6 address that isn't on the public internet. @param {string} ip */
+function privateIp(ip) {
+  const v4 = /^(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(ip)
+  if (v4) {
+    const [a, b] = [Number(v4[1]), Number(v4[2])]
+    return (
+      a === 0 || a === 10 || a === 127 || a >= 224 ||
+      (a === 100 && b >= 64 && b <= 127) || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) ||
+      (a === 192 && b === 168) || (a === 192 && b === 0) || (a === 198 && (b === 18 || b === 19))
+    )
+  }
+  const v6 = ip.toLowerCase()
+  // IPv4 written as IPv6 (::ffff:127.0.0.1, or ::ffff:7f00:1)
+  const mapped = /^::ffff:(?:0:)?(.+)$/.exec(v6)
+  if (mapped) {
+    const rest = mapped[1]
+    if (rest.includes('.')) return privateIp(rest)
+    const [hi, lo] = rest.split(':').map((h) => parseInt(h, 16))
+    return privateIp([hi >> 8, hi & 255, lo >> 8, lo & 255].join('.'))
+  }
+  return v6 === '::' || v6 === '::1' || /^f[cd]/.test(v6) || /^fe[89ab]/.test(v6) || v6.startsWith('ff') || v6.startsWith('64:ff9b')
+}
 
 /** Refuse anything that isn't a public web address. @param {string} raw */
 function publicUrl(raw) {
@@ -27,13 +52,39 @@ function publicUrl(raw) {
   if (u.protocol !== 'http:' && u.protocol !== 'https:') return null
   const host = u.hostname.toLowerCase().replace(/^\[|\]$/g, '')
   if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local') || host.endsWith('.internal')) return null
-  const v4 = host.match(/^(\d+)\.(\d+)\.(\d+)\.(\d+)$/)
-  if (v4) {
-    const [a, b] = [Number(v4[1]), Number(v4[2])]
-    if (a === 10 || a === 127 || a === 0 || (a === 169 && b === 254) || (a === 172 && b >= 16 && b <= 31) || (a === 192 && b === 168) || (a === 100 && b >= 64 && b <= 127)) return null
-  }
-  if (host.includes(':') && (host === '::1' || host.startsWith('fc') || host.startsWith('fd') || host.startsWith('fe80'))) return null
+  if (isIP(host) && privateIp(host)) return null
   return u
+}
+
+/** Also check what the name points to, so a public-looking name can't lead inside. @param {URL} u */
+async function resolvesPublic(u) {
+  const host = u.hostname.replace(/^\[|\]$/g, '')
+  if (isIP(host)) return !privateIp(host)
+  try {
+    const addrs = await lookup(host, { all: true })
+    return addrs.length > 0 && addrs.every((a) => !privateIp(a.address))
+  } catch {
+    return false
+  }
+}
+
+/**
+ * fetch() that only ever talks to public addresses: every redirect is followed
+ * by hand and checked again (a public page can't bounce us into a private network).
+ * @param {URL} start @param {RequestInit} init
+ */
+async function publicFetch(start, init) {
+  let url = start
+  for (let hop = 0; hop < 5; hop++) {
+    if (!(await resolvesPublic(url))) throw new Error('not a public address')
+    const res = await fetch(url, { ...init, redirect: 'manual' })
+    const next = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
+    if (!next) return { res, url }
+    const target = publicUrl(new URL(next, url).href)
+    if (!target) throw new Error('redirect to a non-public address')
+    url = target
+  }
+  throw new Error('too many redirects')
 }
 
 /** Read at most `limit` bytes of a response body. @param {Response} res @param {number} limit */
@@ -111,14 +162,13 @@ async function preview(url) {
   const embedded = await oembed(url).catch(() => null)
   if (embedded) return embedded
   const empty = { url: url.href, title: '', description: '', site: url.hostname.replace(/^www\./, ''), image: '' }
-  const res = await fetch(url, {
+  const { res, url: landed } = await publicFetch(url, {
     headers: { 'User-Agent': UA, Accept: 'text/html,application/xhtml+xml' },
-    redirect: 'follow',
     signal: AbortSignal.timeout(TIMEOUT),
   })
   // blocked, or bounced to a bot check on another site: fall back to a plain card
   if (!res.ok) return empty
-  let finalUrl = new URL(res.url || url)
+  let finalUrl = landed
   if (finalUrl.hostname.replace(/^www\./, '') !== url.hostname.replace(/^www\./, '') && /sorry|captcha|challenge|login/i.test(finalUrl.pathname)) {
     return empty
   }
@@ -149,7 +199,7 @@ async function preview(url) {
 
 /** @param {URL} url */
 async function imageData(url) {
-  const res = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'image/*' }, signal: AbortSignal.timeout(TIMEOUT) })
+  const { res } = await publicFetch(url, { headers: { 'User-Agent': UA, Accept: 'image/*' }, signal: AbortSignal.timeout(TIMEOUT) })
   const type = (res.headers.get('content-type') || '').split(';')[0].trim()
   if (!res.ok || !/^image\/(png|jpe?g|gif|webp|avif|svg\+xml)$/.test(type)) return null
   const bytes = await readLimited(res, IMAGE_LIMIT + 1)
