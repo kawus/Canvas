@@ -31,6 +31,19 @@ An animated front page for new visitors lives at **`/intro/`** (e.g. `canvas.kaw
 
 The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
+## Security notes
+
+**In place:** edit keys (only their hash is stored) guard every change and deletion; boards saved before edit keys existed can no longer be claimed by anyone (owners can *Make a copy*); My Canvas lists are encrypted in the browser; exports escape everything; link previews only ever reach public addresses (every redirect is checked); security headers stop other sites from framing Canvas; analytics never sees what's after `?` or `#`.
+
+**Fair-use limits** (`api/_limits.js`), so nobody can fill the database or run up costs: each visitor may add about **100 MB of new data a day** (boards, images, My Canvas; re-saving costs nothing) and fetch **200 link previews an hour**. Over the limit, saving pauses ("Couldn't sync — saved on this device, will retry") and resumes the next day; small saves that still fit keep going through. Change them with `LIMIT_STORAGE_MB` and `LIMIT_PREVIEWS_PER_HOUR`. Visitors are told apart by a hashed internet address; nothing identifying is stored and the counters expire within a day.
+
+**For later (from the October 2026 review):**
+
+1. *Before turning on real payments:*
+   - **One-time checkout claims.** Today, anyone who gets hold of a completed checkout's return link (`?pro_session=…`, kept in the buyer's browser history) can claim that buyer's Pro pass — including opening their billing page (invoices, cancel). Fix: remember claimed sessions in Redis and refuse a second claim (or only allow claims within an hour of paying).
+   - **A separate signing secret for Pro passes.** Passes are signed with a key derived from `STRIPE_SECRET_KEY` (or the Liveblocks key in the smoke test). Rotating the Stripe key would sign every paying customer out of Pro. Fix: add `PRO_TOKEN_SECRET` (a long random value in Vercel) and sign with that.
+2. **The stats page is public.** Anyone who finds `/#stats` can read the smoke-test and board-sync numbers, and anyone can inflate those counters (`track`, `usage`). Fix if it matters: require a private key in the address (`/#stats=<key>`, checked against a `STATS_KEY` environment variable), and count interest per device only once.
+
 ## Visitor analytics
 
 [Vercel Web Analytics](https://vercel.com/docs/analytics) counts visits to the app, the front page and the help centre (cookieless). Only the page is sent — everything after `?` or `#` is removed first (`src/analytics.ts`), so board ids, edit keys and My Canvas links never reach it. To start collecting, open the project in Vercel → **Analytics** → **Enable**, then redeploy.

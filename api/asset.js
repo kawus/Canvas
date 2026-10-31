@@ -9,6 +9,7 @@
  * with different content.
  */
 
+import { allowStorage, tooMuch } from './_limits.js'
 import { json, redis, redisConfig } from './_redis.js'
 
 const MAX_BYTES = 4_000_000
@@ -45,6 +46,7 @@ export async function handle(request) {
       if (text.length > MAX_BYTES) return json({ error: 'image too large' }, 413)
       if (!DATA_RE.test(text)) return json({ error: 'not an image' }, 400)
       if ((await hashOf(text)) !== id) return json({ error: 'hash mismatch' }, 400)
+      if (!(await allowStorage(request, text.length))) return tooMuch()
       await redis(['SET', key, text, 'EX', TTL_SECONDS])
       return new Response(null, { status: 204 })
     }

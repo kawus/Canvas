@@ -10,6 +10,7 @@
 
 import { lookup } from 'node:dns/promises'
 import { isIP } from 'node:net'
+import { allowPreview, tooMuch } from './_limits.js'
 import { json } from './_redis.js'
 
 const PAGE_LIMIT = 600_000
@@ -214,6 +215,7 @@ async function imageData(url) {
 export async function handle(request) {
   const params = new URL(request.url).searchParams
   try {
+    if (!(await allowPreview(request))) return tooMuch()
     const page = params.get('url')
     if (page) {
       const url = publicUrl(page)

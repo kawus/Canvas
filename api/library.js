@@ -9,6 +9,7 @@
  * server stores only that ciphertext and a hash of a separate access proof.
  */
 
+import { allowStorage, tooMuch } from './_limits.js'
 import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 const ID_RE = /^[a-z0-9]{10,32}$/
@@ -42,7 +43,9 @@ export async function handle(request) {
       if (text.length > MAX) return json({ error: 'too large' }, 413)
       const body = /** @type {{ data?: unknown, updatedAt?: unknown }} */ (JSON.parse(text))
       if (typeof body.data !== 'string' || typeof body.updatedAt !== 'number') return json({ error: 'invalid' }, 400)
-      await redis(['SET', key, JSON.stringify({ authHash, data: body.data, updatedAt: body.updatedAt }), 'EX', TTL])
+      const stored = JSON.stringify({ authHash, data: body.data, updatedAt: body.updatedAt })
+      if (!(await allowStorage(request, stored.length - (raw?.length ?? 0)))) return tooMuch()
+      await redis(['SET', key, stored, 'EX', TTL])
       return new Response(null, { status: 204 })
     }
     return json({ error: 'method not allowed' }, 405)

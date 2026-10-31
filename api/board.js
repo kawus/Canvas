@@ -14,6 +14,7 @@
  */
 
 import { isActive, paywallEnabled, verifyToken } from './_pro.js'
+import { allowStorage, tooMuch } from './_limits.js'
 import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 const MAX_BYTES = 4_000_000 // Vercel's request body limit is 4.5 MB
@@ -28,14 +29,16 @@ function boardId(request) {
 
 /**
  * Who may change a board: whoever holds its edit key (part of the owner /
- * edit link). The server keeps only a hash of it. Boards saved before keys
- * existed are claimed by the first device that saves them with a key.
+ * edit link). The server keeps only a hash of it. A new board belongs to the
+ * key it's first saved with; a board saved before keys existed can no longer
+ * be claimed by anyone (make a copy to keep editing it).
  * @param {{ keyHash?: string } | null} record
  * @param {string | null} key
  */
 async function canEdit(record, key) {
   if (!key || key.length < 16) return false
-  if (!record?.keyHash) return true
+  if (!record) return true
+  if (!record.keyHash) return false
   return (await sha256(key)) === record.keyHash
 }
 
@@ -96,7 +99,10 @@ export async function handle(request) {
           keyHash: record?.keyHash || (await sha256(/** @type {string} */ (editKey))),
           ...(proCustomer ? { proCustomer } : {}),
         }
-        await redis(['SET', key, JSON.stringify(clean), 'EX', TTL_SECONDS])
+        const stored = JSON.stringify(clean)
+        // only growth counts toward the daily allowance (re-saving a board costs nothing)
+        if (!(await allowStorage(request, stored.length - (raw?.length ?? 0)))) return tooMuch()
+        await redis(['SET', key, stored, 'EX', TTL_SECONDS])
         return json({ updatedAt: clean.updatedAt, pro: !!proCustomer })
       }
       case 'DELETE':
