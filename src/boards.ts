@@ -125,7 +125,7 @@ async function push(doc: BoardDoc) {
     forgetKey(doc.id)
     S().setSync('idle')
     await saveBoard(S().doc)
-    S().showToast('This board is view-only here — open its owner link to edit')
+    S().showToast('This board is view-only here — make a copy to edit it')
   }
   if (queued) {
     const next = queued

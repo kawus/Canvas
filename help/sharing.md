@@ -1,6 +1,6 @@
 ---
 title: Sharing & editing together
-description: View links, owner links, making a copy, and drawing live with others.
+description: View links, making a copy, and drawing live with others.
 icon: Share2
 order: 6
 ---
@@ -25,7 +25,7 @@ When you edit together live, changes are merged item by item, so two people can 
 
 ## How do I edit my own board on another device?
 
-Connect your devices with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device): all your boards come along, with editing rights. For a single board, **board menu → Copy owner link** copies a private link that opens just that board with editing rights. Keep it to yourself.
+Connect your devices with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device) (**board menu → Connect your devices**): all your boards come along, with editing rights, and stay in sync.
 
 ## Someone shared a board with me. Can I change it?
 

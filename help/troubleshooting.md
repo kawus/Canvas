@@ -10,7 +10,6 @@ order: 11
 You opened it with a View link, so you can look but not change it. Usually that's because someone shared it with you. If it's your own board:
 
 - Make sure the device is connected with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device). Your boards then open with editing rights.
-- Or open the board's owner link (on a device where you can edit it: **board menu → Copy owner link**).
 
 Tap **Make a copy** to get your own editable copy of any board.
 

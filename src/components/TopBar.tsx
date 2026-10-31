@@ -7,7 +7,6 @@ import {
   Copy,
   CreditCard,
   Eye,
-  KeyRound,
   LayoutGrid,
   Lock,
   MonitorSmartphone,
@@ -106,11 +105,6 @@ export function BoardMenu() {
   const setUpgradeOpen = useStore((s) => s.setUpgradeOpen)
   const showToast = useStore((s) => s.showToast)
   const { open, setOpen, ref } = usePopover()
-  const copyText = (text: string, message: string) =>
-    navigator.clipboard.writeText(text).then(
-      () => showToast(message),
-      () => showToast('Couldn’t copy — please try again'),
-    )
   const setPanel = useStore((s) => s.setPanel)
   const [boards, setBoards] = useState<BoardRow[]>([])
 
@@ -225,18 +219,6 @@ export function BoardMenu() {
           >
             {editKey ? 'Duplicate board' : 'Make a copy'}
           </MenuItem>
-          {editKey && cloud && (
-            <MenuItem
-              icon={<KeyRound />}
-              onClick={() => {
-                setOpen(false)
-                void copyText(boardUrl(id, editKey), 'Owner link copied — use it to edit on your other devices. Keep it private.')
-              }}
-              testId="owner-link"
-            >
-              Copy owner link
-            </MenuItem>
-          )}
           <MenuItem
             icon={<Trash2 />}
             danger
