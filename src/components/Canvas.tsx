@@ -5,6 +5,7 @@ import { toWorld } from '../handles'
 import { importImages } from '../images'
 import { addLink, importImageUrl, isUrl } from '../moodboard'
 import { elementPrims, type Prim } from '../render'
+import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { El } from '../types'
 import type { Palette } from '../constants'
@@ -83,9 +84,8 @@ export function Canvas({ palette }: { palette: Palette }) {
   }, [])
 
   const erasingSet = new Set(erasing)
-  // Dot grid that follows pan & zoom, thinning out when zoomed far away
-  let gap = 24 * viewport.zoom
-  while (gap < 12) gap *= 2
+  // Dot grid that follows pan & zoom: 8 / 16 / 24 … apart, closer when zoomed in, thinning out far away
+  const gap = dotSpacing(viewport.zoom) * viewport.zoom
   const ox = ((viewport.x % gap) + gap) % gap
   const oy = ((viewport.y % gap) + gap) % gap
 

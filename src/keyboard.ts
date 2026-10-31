@@ -118,7 +118,8 @@ export function startKeyboard() {
       case 'ArrowDown': {
         if (!s.selectedIds.length) return
         e.preventDefault()
-        const d = e.shiftKey ? 10 : 1
+        // on the grid, nudge by grid steps so things stay on multiples of 8
+        const d = s.gridSnap ? (e.shiftKey ? 24 : 8) : e.shiftKey ? 10 : 1
         const dx = e.key === 'ArrowLeft' ? -d : e.key === 'ArrowRight' ? d : 0
         const dy = e.key === 'ArrowUp' ? -d : e.key === 'ArrowDown' ? d : 0
         nudge(dx, dy)

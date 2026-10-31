@@ -5,10 +5,22 @@ import type { Box, El } from './types'
  * Auto alignment while moving, resizing or drawing:
  * - smart guides: edges and centres snap to nearby objects (pink lines)
  * - equal spacing: snap so gaps match the neighbours' gaps (pink gap markers)
- * - optional grid: positions and sizes snap to the background dot grid
+ * - optional grid: positions and sizes snap to multiples of 8, like the background dots
  */
 
-export const GRID = 24
+/** Grid sizes, all multiples of 8: snapping and the dots pick one to suit the zoom. */
+const GRID_SIZES = [8, 16, 24, 48, 96, 192, 384, 768, 1536]
+const fitting = (zoom: number, minScreenPx: number) => GRID_SIZES.find((s) => s * zoom >= minScreenPx) ?? GRID_SIZES[GRID_SIZES.length - 1]
+
+/** Snapping step: 8 at 100% (and closer), 16 at 50%, 24 further out, so drags never feel jittery. */
+export function gridStep(zoom: number) {
+  return fitting(zoom, 6)
+}
+
+/** Dot spacing: 24 at 100%, 16 and 8 as you zoom in, wider apart as you zoom out. Every dot is a snap point. */
+export function dotSpacing(zoom: number) {
+  return fitting(zoom, 18)
+}
 
 export type Guide =
   /** alignment line: axis 'x' = vertical line at x = at, 'y' = horizontal line at y = at */

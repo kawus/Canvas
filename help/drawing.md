@@ -57,5 +57,5 @@ To copy, use <kbd>⌘C</kbd> / <kbd>⌘V</kbd>, <kbd>⌘D</kbd> to duplicate, or
 While you move, resize or draw, items snap to the edges and centres of things nearby, and pink guide lines show you what lines up. Pink markers appear when the gaps between items are equal.
 
 - Hold <kbd>⌘</kbd> (or <kbd>Ctrl</kbd>) while dragging to place something freely.
-- Turn **Snap to objects** or **Snap to grid** on or off in the **board menu**.
+- Turn **Snap to objects** or **Snap to grid** on or off in the **board menu**. The grid works in steps of 8: things snap to 8 px at 100% (16 or 24 px when you're zoomed out), so positions and sizes are always multiples of 8. The background dots show the grid — 24 px apart at 100%, closer together as you zoom in. With the grid on, the arrow keys nudge by 8 (24 with <kbd>Shift</kbd>).
 - With two or more items selected, the **Align** button lines them up (left, centre, right, top, middle, bottom) or spaces three or more evenly.

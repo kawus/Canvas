@@ -3,7 +3,7 @@ import { bindTarget, resolveDraftLine } from './bindings'
 import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
-import { GRID, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
+import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } from './types'
@@ -302,7 +302,7 @@ export class CanvasController {
   private snapOpts(e: PointerEvent): SnapOptions | null {
     const s = S()
     if (e.metaKey || e.ctrlKey || (!s.snap && !s.gridSnap)) return null
-    return { objects: s.snap, grid: s.gridSnap ? GRID : null }
+    return { objects: s.snap, grid: s.gridSnap ? gridStep(s.viewport.zoom) : null }
   }
 
   private snapTol(pointerType: string) {

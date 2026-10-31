@@ -83,7 +83,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['mod', 'A'], 'Select all'],
       [['delete'], 'Delete'],
       [['Enter'], 'Edit text or label'],
-      [['←', '→'], 'Nudge (add Shift for 10)'],
+      [['←', '→'], 'Nudge (Shift for more)'],
       [['Esc'], 'Deselect'],
     ],
   },
