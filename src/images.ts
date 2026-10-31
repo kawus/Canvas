@@ -2,7 +2,8 @@ import { hashData, saveAsset } from './assets'
 import { boxAt, freeSpot } from './placement'
 import { newElementId } from './storage'
 import { useStore } from './store'
-import type { Box, ImageEl, Point } from './types'
+import { arrange, placeBlock } from './tidy'
+import type { Box, El, ImageEl, Point } from './types'
 
 const MAX_SIDE = 1600
 const MAX_PIXELS = 2_600_000
@@ -85,8 +86,9 @@ export async function importImages(files: Blob[], at?: Point) {
       const { url, w, h } = await prepareImage(file)
       const hash = await hashData(url)
       await saveAsset(hash, url)
-      // fit within half the screen, never upscale
-      const fit = Math.min(1, (window.innerWidth * 0.5) / v.zoom / w, (window.innerHeight * 0.5) / v.zoom / h)
+      // fit within half the screen (a quarter when adding several), never upscale
+      const share = images.length > 1 ? 0.28 : 0.5
+      const fit = Math.min(1, (window.innerWidth * share) / v.zoom / w, (window.innerHeight * share) / v.zoom / h)
       const dw = w * fit
       const dh = h * fit
       // dropped at a point: stack there; otherwise find free space for each
@@ -108,10 +110,17 @@ export async function importImages(files: Blob[], at?: Point) {
     }
   }
   if (!added.length) return
+  // several at once: they arrive neatly arranged
+  let placed: El[] = added
+  if (added.length > 1) {
+    const block = arrange(added, true)
+    const c = at ?? freeSpot(block.w, block.h)
+    placed = placeBlock(block.els, [Math.round((c[0] - block.w / 2) / 8) * 8, Math.round((c[1] - block.h / 2) / 8) * 8])
+  }
   const st = useStore.getState()
   st.setTool('select')
-  st.commit([...st.doc.elements, ...added])
-  st.select(added.map((a) => a.id))
+  st.commit([...st.doc.elements, ...placed])
+  st.select(placed.map((a) => a.id))
 }
 
 /** Open the system file / photo picker. Must be called from a user gesture. */

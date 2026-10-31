@@ -15,6 +15,12 @@ Any of these work:
 
 Large photos are resized so boards stay quick to open and share. New items find free space, so they don't land on top of each other.
 
+## How do I tidy up a moodboard?
+
+Select the things you want to arrange (drag a box around them, or <kbd>⌘A</kbd> for everything) and tap **Tidy up** in the bar above the toolbar. Canvas arranges them into neat columns with even gaps: photos get the same width and keep their shape, and small things like colour swatches sit side by side. Undo with <kbd>⌘Z</kbd> if you liked it better before.
+
+When you add several images at once (paste, drop or pick them), they arrive tidied up already.
+
 ## How do I add a link?
 
 Tap **+ → Link** and type or paste a web address — just `apple.com` is enough, no `https://` needed. You can also paste or drop a web address straight onto the board — `apple.com` works there too. (File names like `notes.md` stay text; if something becomes a link you didn't want, undo with <kbd>⌘Z</kbd>.) Canvas makes a **link card** with the page's preview image, title and site. YouTube and Vimeo videos show their thumbnail. Double-click (or tap) the card to open the page.

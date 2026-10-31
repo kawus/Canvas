@@ -3053,3 +3053,25 @@ button:focus:not(:focus-visible) {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+/* Tidy up (style bar, 2+ items selected) */
+.tidy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: auto;
+  padding: 0 10px 0 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.tidy-btn svg.lucide {
+  width: 16px;
+  height: 16px;
+}
+@media (max-width: 400px) {
+  .tidy-btn span {
+    display: none;
+  }
+}

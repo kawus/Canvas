@@ -9,6 +9,7 @@ import {
   AlignVerticalSpaceAround,
   BringToFront,
   Copy,
+  LayoutDashboard,
   Ellipsis,
   ExternalLink,
   Palette as PaletteIcon,
@@ -21,6 +22,7 @@ import { COLOR_KEYS, COLOR_NAMES, FONT_SIZE, STICKY_FILL, type Palette } from '.
 import { openLink } from '../controller'
 import { extractPalette } from '../moodboard'
 import { selectedElements, useStore } from '../store'
+import { tidySelection, tidyable } from '../tidy'
 import type { El, ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
 import { IconButton, usePopover } from './ui'
 
@@ -128,6 +130,7 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const showFont = types.includes('text') || types.includes('sticky') || hasLabel
   const showActions = sel.length > 0
   // connected arrows follow their shapes, so they don't count as alignable
+  const tidyCount = tidyable(sel).length
   const alignable = sel.filter((e) => !((e.type === 'arrow' || e.type === 'line') && (e.start || e.end))).length
   const single = sel.length === 1 ? sel[0] : null
   const swatches = colorField === 'stickyColor' ? STICKY_FILL : palette
@@ -271,6 +274,12 @@ export function StylePanel({ palette }: { palette: Palette }) {
         {showActions && (
           <>
             <span className="sep" />
+            {tidyCount >= 2 && (
+              <button type="button" className="prop-btn tidy-btn" onClick={tidySelection} title="Arrange neatly" data-testid="tidy">
+                <LayoutDashboard />
+                <span>Tidy up</span>
+              </button>
+            )}
             {alignable >= 2 && (
               <IconButton label="Align" active={pop === 'align'} onClick={() => toggle('align')} className="small" testId="align">
                 <AlignCenterVertical />
