@@ -137,6 +137,7 @@ function shell({ title, description, depth, body, search = true }: { title: stri
 <html lang="en">
 <head>
 <meta charset="utf-8" />
+<script>/* links inside are relative: make sure the address ends in a slash */if(!location.pathname.endsWith('/'))location.replace(location.pathname+'/'+location.search+location.hash)</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}" />
