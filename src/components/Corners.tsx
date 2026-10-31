@@ -58,7 +58,7 @@ export function EmptyHint() {
     <div className="empty-hint" aria-hidden>
       <div className="empty-title">A blank canvas</div>
       <div className="empty-sub">
-        {penMode ? 'Pick the pen to draw with your Pencil — fingers move around.' : 'Pick a tool below to draw, write or add shapes.'}
+        {penMode ? 'Draw with your Pencil — tap with it to select. Fingers move around.' : 'Pick a tool below to draw, write or add shapes.'}
         <br />
         Everything saves automatically.
       </div>

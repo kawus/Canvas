@@ -12,7 +12,8 @@ import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } 
 
 type Action =
   | { kind: 'pan'; pointerId: number; sx: number; sy: number; vp: Viewport; touch: boolean; moved: boolean }
-  | { kind: 'draw'; pointerId: number; el: FreedrawEl }
+  /** `tap`: a Pencil stroke started with Select picked; a tap (no real movement) selects instead */
+  | { kind: 'draw'; pointerId: number; el: FreedrawEl; tap?: { sx: number; sy: number; far: boolean } }
   | {
       kind: 'shape'
       pointerId: number
@@ -252,6 +253,12 @@ export class CanvasController {
 
     // view-only boards can only be looked around
     const readOnly = !s.doc.key
+    // Apple Pencil draws even with Select or Hand picked (fingers select and move);
+    // a tap still selects, and what's already selected can still be moved or resized
+    if (!readOnly && e.pointerType === 'pen' && (tool === 'select' || tool === 'hand') && !this.space && !isDouble && !this.onSelection(sx, sy, p)) {
+      this.startDraw(e, p, false, { sx, sy, far: false })
+      return
+    }
     if (readOnly || e.button === 1 || this.space || tool === 'hand' || (fingerInPenMode && DRAWING_TOOLS.includes(tool))) {
       this.startPan(e, sx, sy)
       return
@@ -457,7 +464,18 @@ export class CanvasController {
     this.action = { kind: 'marquee', pointerId: e.pointerId, start: p, base }
   }
 
-  private startDraw(e: PointerEvent, p: Point, highlight = false) {
+  /** Whether a press lands on the current selection: one of its handles, its frame, or a selected item. */
+  private onSelection(sx: number, sy: number, p: Point) {
+    const s = S()
+    const sel = selectedElements(s)
+    if (!sel.length) return false
+    if (hitHandle(getHandles(sel, s.viewport), sx, sy, 14)) return true
+    const frame = sel.length > 1 ? selectionFrame(sel, s.viewport) : null
+    if (frame && pointInBox([sx, sy], frame)) return true
+    return sel.some((el) => hitTest(el, p, this.tolerance('pen')))
+  }
+
+  private startDraw(e: PointerEvent, p: Point, highlight = false, tap?: { sx: number; sy: number; far: boolean }) {
     const s = S()
     const real = e.pointerType === 'pen' && !highlight
     const el: FreedrawEl = {
@@ -469,7 +487,7 @@ export class CanvasController {
       points: [[p[0], p[1], pressureOf(e)]],
       ...(highlight ? { highlight: true } : {}),
     }
-    this.action = { kind: 'draw', pointerId: e.pointerId, el }
+    this.action = { kind: 'draw', pointerId: e.pointerId, el, tap }
     s.setDraft(el)
   }
 
@@ -506,6 +524,7 @@ export class CanvasController {
         break
       }
       case 'draw': {
+        if (a.tap && !a.tap.far && Math.hypot(sx - a.tap.sx, sy - a.tap.sy) > 6) a.tap.far = true
         const events = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : []
         const list = events.length ? events : [e]
         const pts: StrokePoint[] = a.el.points.slice()
@@ -797,6 +816,12 @@ export class CanvasController {
       case 'draw': {
         const el = { ...a.el }
         s.setDraft(null)
+        if (a.tap && !a.tap.far) {
+          // a Pencil tap with Select picked: select what's there (or clear the selection), no dot
+          const hit = hitTopmost(s.doc.elements, this.world(a.tap.sx, a.tap.sy), this.tolerance('pen'))
+          s.select(hit ? groupOf(s.doc.elements, hit.id) : [])
+          break
+        }
         s.commit([...s.doc.elements, el])
         break
       }

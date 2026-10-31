@@ -155,7 +155,7 @@ function gestures(): { title: string; rows: [ReactNode, string][] }[] {
     {
       title: 'Draw & edit',
       rows: [
-        ...(isTablet ? ([[<Gesture key="pen" kind="pen" />, `Draw with ${pencil} — your palm and fingers won’t leave marks`]] as [ReactNode, string][]) : []),
+        ...(isTablet ? ([[<Gesture key="pen" kind="pen" />, `Draw with ${pencil} any time, even with Select picked — tap with it to select. Your palm won’t leave marks`]] as [ReactNode, string][]) : []),
         [<Gesture key="tap" kind="tap" />, 'Tap to select, drag to move'],
         [<Gesture key="dbl" kind="double" />, 'Double-tap a shape to type inside it, or a photo to crop it'],
         [<Gesture key="hold" kind="hold" />, 'Press and hold a toolbar button for more tools'],

@@ -7,7 +7,7 @@ order: 4
 
 ## Does Canvas work with Apple Pencil?
 
-Yes. Ink is pressure-sensitive and smooth. Once Canvas notices your Pencil, it treats your fingers differently: one finger moves the board around, and a palm resting on the screen is ignored, so you can lean on the iPad while you draw.
+Yes. Ink is pressure-sensitive and smooth, and the Pencil always draws — even when the Select tool is picked, so you never need to switch tools to sketch. A quick tap with the Pencil selects something instead, and dragging something that's already selected moves it. Once Canvas notices your Pencil, your fingers select and move things, one finger moves the board around on empty space, and a palm resting on the screen is ignored, so you can lean on the iPad while you draw.
 
 ## Which gestures can I use on a touchscreen?
 
