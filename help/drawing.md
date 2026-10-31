@@ -52,6 +52,13 @@ With the Select tool, click an item, or drag a box around several. Drag to move 
 
 To copy, use <kbd>⌘C</kbd> / <kbd>⌘V</kbd>, <kbd>⌘D</kbd> to duplicate, or hold <kbd>⌥ Option</kbd> while dragging.
 
+## How do I group things?
+
+Select two or more things and press <kbd>⌘G</kbd> (or tap **⋯ → Group**). From then on, clicking any of them selects the whole group, so they move, resize, copy and line up as one.
+
+- **Change one item in a group:** double-click it. Double-click again to edit its text or crop a photo.
+- **Ungroup:** select the group and press <kbd>⇧⌘G</kbd> (or **⋯ → Ungroup**).
+
 ## How does auto alignment work?
 
 While you move, resize or draw, items snap to the edges and centres of things nearby, and pink guide lines show you what lines up. Pink markers appear when the gaps between items are equal.

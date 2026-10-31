@@ -1,4 +1,5 @@
 import { getBounds, scaleEl, translateEl } from './geometry'
+import { unitBounds, units } from './groups'
 import { useStore } from './store'
 import type { Box, El, Point } from './types'
 
@@ -18,7 +19,8 @@ export function tidyable(els: El[]) {
 }
 
 interface Item {
-  el: El
+  /** one element, or a whole group moving as one */
+  els: El[]
   box: Box
   w: number
   h: number
@@ -84,9 +86,9 @@ function masonry(items: Item[], cols: number, colW: number) {
 
 /** The arranged elements, laid out from (0, 0), and the size of the block. `keepOrder` for things just added. */
 export function arrange(els: El[], keepOrder = false): { els: El[]; w: number; h: number } {
-  const items: Item[] = tidyable(els).map((el) => {
-    const box = getBounds(el)
-    return { el, box, w: box.maxX - box.minX, h: box.maxY - box.minY, scalable: el.type === 'image' }
+  const items: Item[] = units(tidyable(els)).map((u) => {
+    const box = u.length > 1 ? unitBounds(u) : getBounds(u[0])
+    return { els: u, box, w: box.maxX - box.minX, h: box.maxY - box.minY, scalable: u.length === 1 && u[0].type === 'image' }
   })
   if (!items.length) return { els: [], w: 0, h: 0 }
   const ordered = keepOrder ? items : readingOrder(items)
@@ -104,9 +106,11 @@ export function arrange(els: El[], keepOrder = false): { els: El[]; w: number; h
       bestScore = score
     }
   }
-  const out = best!.placed.map(({ item, x, y, w, h }) => {
+  const out = best!.placed.flatMap(({ item, x, y, w, h }) => {
     const to = { minX: x, minY: y, maxX: x + w, maxY: y + h }
-    return item.scalable ? scaleEl(item.el, item.box, to, false) : translateEl(item.el, x - item.box.minX, y - item.box.minY)
+    return item.scalable
+      ? [scaleEl(item.els[0], item.box, to, false)]
+      : item.els.map((el) => translateEl(el, x - item.box.minX, y - item.box.minY))
   })
   return { els: out, w: best!.width, h: best!.height }
 }
@@ -124,7 +128,7 @@ export function tidySelection() {
   const s = useStore.getState()
   const ids = new Set(s.selectedIds)
   const chosen = tidyable(s.doc.elements.filter((e) => ids.has(e.id)))
-  if (chosen.length < 2) return
+  if (units(chosen).length < 2) return
   const start = chosen.map(getBounds).reduce((a, b) => ({
     minX: Math.min(a.minX, b.minX),
     minY: Math.min(a.minY, b.minY),

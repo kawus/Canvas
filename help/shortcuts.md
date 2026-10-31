@@ -26,6 +26,7 @@ order: 9
 | <kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd> | Undo / Redo |
 | <kbd>⌘C</kbd> / <kbd>⌘V</kbd> | Copy / Paste |
 | <kbd>⌘D</kbd> | Duplicate |
+| <kbd>⌘G</kbd> / <kbd>⇧⌘G</kbd> | Group / Ungroup |
 | <kbd>⌥</kbd> + drag | Duplicate while dragging |
 | <kbd>⌫</kbd> | Delete |
 | <kbd>[</kbd> / <kbd>]</kbd> | Send to back / Bring to front |

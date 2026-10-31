@@ -1,10 +1,18 @@
 import { geometricBounds } from '../geometry'
 import { getHandles, isSingleLine, selectionFrame, toScreen, FRAME_PAD } from '../handles'
+import { groupOf, isWholeGroup } from '../groups'
 import { selectedElements, useStore } from '../store'
 import type { El, Viewport } from '../types'
 
 function elementFrame(el: El, v: Viewport) {
   const b = geometricBounds([el])!
+  const [x0, y0] = toScreen(v, b.minX, b.minY)
+  const [x1, y1] = toScreen(v, b.maxX, b.maxY)
+  return { x: x0 - FRAME_PAD, y: y0 - FRAME_PAD, w: x1 - x0 + FRAME_PAD * 2, h: y1 - y0 + FRAME_PAD * 2 }
+}
+
+function groupFrame(els: El[], v: Viewport) {
+  const b = geometricBounds(els)!
   const [x0, y0] = toScreen(v, b.minX, b.minY)
   const [x1, y1] = toScreen(v, b.maxX, b.maxY)
   return { x: x0 - FRAME_PAD, y: y0 - FRAME_PAD, w: x1 - x0 + FRAME_PAD * 2, h: y1 - y0 + FRAME_PAD * 2 }
@@ -43,11 +51,13 @@ export function Overlay() {
       )}
 
       {hovered && (() => {
-        const f = elementFrame(hovered, v)
+        const members = doc.elements.filter((e) => groupOf(doc.elements, hovered.id).includes(e.id))
+        const f = members.length > 1 ? groupFrame(members, v) : elementFrame(hovered, v)
         return <rect className="ov-hover" x={f.x} y={f.y} width={f.w} height={f.h} rx={4} />
       })()}
 
       {sel.length > 1 &&
+        !isWholeGroup(doc.elements, sel) &&
         sel.map((el) => {
           const f = elementFrame(el, v)
           return <rect key={el.id} className="ov-item" x={f.x} y={f.y} width={f.w} height={f.h} rx={3} />

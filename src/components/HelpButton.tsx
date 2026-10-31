@@ -80,6 +80,8 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['mod', 'C'], 'Copy'],
       [['mod', 'V'], 'Paste'],
       [['mod', 'D'], 'Duplicate'],
+      [['mod', 'G'], 'Group'],
+      [['shift', 'mod', 'G'], 'Ungroup'],
       [['mod', 'A'], 'Select all'],
       [['delete'], 'Delete'],
       [['Enter'], 'Edit text, or crop a photo'],

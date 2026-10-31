@@ -1,4 +1,5 @@
 import { startCrop } from './crop'
+import { groupOf, withGroups } from './groups'
 import { cloneWithNewIds, createStickyAt, createTextAt, finishEditing, isEditable, startEditing } from './actions'
 import { bindTarget, resolveDraftLine } from './bindings'
 import { MAX_ZOOM, MIN_ZOOM } from './constants'
@@ -388,6 +389,11 @@ export class CanvasController {
 
     // 2. double click / tap: edit text or a label, or create text on empty canvas
     if (isDouble) {
+      // double-click inside a group picks just that item (double-click again to edit it)
+      if (hit?.group && !(s.selectedIds.length === 1 && s.selectedIds[0] === hit.id)) {
+        s.select([hit.id])
+        return
+      }
       if (hit?.type === 'link') {
         openLink(hit.url)
         return
@@ -413,10 +419,13 @@ export class CanvasController {
     if (hit || (inFrame && !e.shiftKey)) {
       let ids = s.selectedIds
       const wasSelected = !!hit && ids.includes(hit.id)
+      // clicking a grouped item takes the whole group, unless you're already inside that group
+      const inside = !!hit?.group && sel.length === 1 && sel[0].group === hit.group
+      const target = hit ? (inside ? [hit.id] : groupOf(s.doc.elements, hit.id)) : []
       if (hit && e.shiftKey) {
-        ids = wasSelected ? ids.filter((id) => id !== hit.id) : [...ids, hit.id]
+        ids = wasSelected ? ids.filter((id) => !target.includes(id)) : [...new Set([...ids, ...target])]
       } else if (hit && !wasSelected && !inFrame) {
-        ids = [hit.id]
+        ids = target
       }
       s.select(ids)
       if (!ids.length) return
@@ -542,7 +551,7 @@ export class CanvasController {
             return b.minX >= box.minX && b.maxX <= box.maxX && b.minY >= box.minY && b.maxY <= box.maxY
           })
           .map((el) => el.id)
-        const ids = [...new Set([...a.base, ...inside])]
+        const ids = [...new Set([...a.base, ...withGroups(s.doc.elements, inside)])]
         if (ids.length !== s.selectedIds.length || ids.some((id, i) => id !== s.selectedIds[i])) s.select(ids)
         break
       }
@@ -808,7 +817,9 @@ export class CanvasController {
         if (a.moved) {
           s.commit(s.doc.elements, a.before)
         } else if (a.clickedId && a.wasSelected && !e.shiftKey && s.selectedIds.length > 1) {
-          s.select([a.clickedId])
+          // a click (no drag) inside a selection narrows it to what was clicked (or its group)
+          const unit = groupOf(s.doc.elements, a.clickedId)
+          if (unit.length !== s.selectedIds.length || unit.some((id) => !s.selectedIds.includes(id))) s.select(unit)
         }
         break
       case 'resize':

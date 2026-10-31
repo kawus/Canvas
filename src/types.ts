@@ -10,6 +10,8 @@ export type StrokePoint = [number, number, number]
 interface Base {
   id: string
   color: ColorKey
+  /** things grouped together share this id */
+  group?: string
 }
 
 export interface FreedrawEl extends Base {

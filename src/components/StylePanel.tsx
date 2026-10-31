@@ -9,6 +9,8 @@ import {
   AlignVerticalSpaceAround,
   BringToFront,
   Copy,
+  Group,
+  Ungroup,
   Crop,
   LayoutDashboard,
   Ellipsis,
@@ -25,7 +27,9 @@ import { startCrop } from '../crop'
 import { extractPalette } from '../moodboard'
 import { selectedElements, useStore } from '../store'
 import { tidySelection, tidyable } from '../tidy'
+import { canGroup, canUngroup, groupSelection, ungroupSelection, units } from '../groups'
 import type { El, ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
+import { formatKbd } from '../platform'
 import { IconButton, usePopover } from './ui'
 
 const SIZES: { key: SizeKey; label: string; dot: number }[] = [
@@ -132,8 +136,9 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const showFont = types.includes('text') || types.includes('sticky') || hasLabel
   const showActions = sel.length > 0
   // connected arrows follow their shapes, so they don't count as alignable
-  const tidyCount = tidyable(sel).length
-  const alignable = sel.filter((e) => !((e.type === 'arrow' || e.type === 'line') && (e.start || e.end))).length
+  const tidyCount = units(tidyable(sel)).length
+  // a group counts as one thing to align
+  const alignable = units(sel.filter((e) => !((e.type === 'arrow' || e.type === 'line') && (e.start || e.end)))).length
   const single = sel.length === 1 ? sel[0] : null
   const swatches = colorField === 'stickyColor' ? STICKY_FILL : palette
   const activeColor = current[colorField]
@@ -214,10 +219,24 @@ export function StylePanel({ palette }: { palette: Palette }) {
           )}
           {pop === 'more' && (
             <div className="pop-menu">
+              {canGroup(sel) && (
+                <button type="button" className="menu-item" onClick={() => { groupSelection(); setOpen(false) }} data-testid="group">
+                  <span className="menu-icon"><Group /></span>
+                  <span className="menu-label">Group</span>
+                  <span className="menu-hint">{formatKbd('⌘G')}</span>
+                </button>
+              )}
+              {canUngroup(sel) && (
+                <button type="button" className="menu-item" onClick={() => { ungroupSelection(); setOpen(false) }} data-testid="ungroup">
+                  <span className="menu-icon"><Ungroup /></span>
+                  <span className="menu-label">Ungroup</span>
+                  <span className="menu-hint">{formatKbd('⇧⌘G')}</span>
+                </button>
+              )}
               <button type="button" className="menu-item" onClick={() => { duplicateSelection(); setOpen(false) }} data-testid="duplicate-sel">
                 <span className="menu-icon"><Copy /></span>
                 <span className="menu-label">Duplicate</span>
-                <span className="menu-hint">⌘D</span>
+                <span className="menu-hint">{formatKbd('⌘D')}</span>
               </button>
               <button type="button" className="menu-item" onClick={() => { bringToFront(); setOpen(false) }}>
                 <span className="menu-icon"><BringToFront /></span>

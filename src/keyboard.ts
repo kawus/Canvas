@@ -16,6 +16,7 @@ import { isTyping } from './controller'
 import { importImages, openImagePicker } from './images'
 import { connectMyCanvas } from './boards'
 import { startCrop } from './crop'
+import { groupSelection, ungroupSelection } from './groups'
 import { myCanvasIn } from './library'
 import { addLink, isUrl } from './moodboard'
 import { useStore } from './store'
@@ -78,6 +79,10 @@ export function startKeyboard() {
       } else if (key === 'd') {
         e.preventDefault()
         duplicateSelection()
+      } else if (key === 'g') {
+        e.preventDefault()
+        if (e.shiftKey) ungroupSelection()
+        else groupSelection()
       } else if (key === '=' || key === '+') {
         e.preventDefault()
         s.zoomTo(s.viewport.zoom * 1.25)
