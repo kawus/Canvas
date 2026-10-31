@@ -17,7 +17,7 @@ Large photos are resized so boards stay quick to open and share. New items find 
 
 ## How do I add a link?
 
-Tap **+ → Link** and type or paste a web address — just `apple.com` is enough, no `https://` needed. You can also paste or drop a web address straight onto the board (starting with `https://` or `www.`). Canvas makes a **link card** with the page's preview image, title and site. YouTube and Vimeo videos show their thumbnail. Double-click (or tap) the card to open the page.
+Tap **+ → Link** and type or paste a web address — just `apple.com` is enough, no `https://` needed. You can also paste or drop a web address straight onto the board — `apple.com` works there too. (File names like `notes.md` stay text; if something becomes a link you didn't want, undo with <kbd>⌘Z</kbd>.) Canvas makes a **link card** with the page's preview image, title and site. YouTube and Vimeo videos show their thumbnail. Double-click (or tap) the card to open the page.
 
 ## Why does a link card have no picture?
 

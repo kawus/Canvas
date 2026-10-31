@@ -36,10 +36,21 @@ export function normalizeUrl(text: string): string | null {
   }
 }
 
-/** Pasted text that should become a link card: full addresses and ones starting with www. */
+// Real web endings, so a pasted "apple.com" becomes a link but "readme.md" or "Node.js" stays text
+const COUNTRY_TLDS =
+  'ac ad ae af ag ai al am ao aq ar as at au aw ax az ba bb bd be bf bg bh bi bj bm bn bo br bs bt bw by bz ca cc cd cf cg ch ci ck cl cm cn co cr cu cv cw cx cy cz de dj dk dm do dz ec ee eg er es et eu fi fj fk fm fo fr ga gd ge gf gg gh gi gl gm gn gp gq gr gs gt gu gw gy hk hm hn hr ht hu id ie il im in io iq ir is it je jm jo jp ke kg kh ki km kn kp kr kw ky kz la lb lc li lk lr ls lt lu lv ly ma mc me mg mh mk ml mm mn mo mp mq mr ms mt mu mv mw mx my mz na nc ne nf ng ni nl no np nr nu nz om pa pe pf pg ph pk pl pm pn pr pt pw qa re ro ru rw sa sb sc sd se sg si sk sl sm sn so sr ss st sv sx sy sz tc td tf tg th tj tk tl tm tn to tr tt tv tw tz ua ug uk us uy uz va vc ve vg vi vn vu wf ws ye yt za zm zw'
+const WORD_TLDS =
+  'com net org edu gov mil int info biz app dev xyz site online store shop tech design studio art blog page link news live world space cloud digital media agency network works tools systems solutions software codes photo photography gallery fashion style wiki academy school company global group team social life love fun cool club family health travel ventures capital finance money email website one pro work today run inc ltd llc'
+const WEB_TLDS = new Set(`${COUNTRY_TLDS} ${WORD_TLDS}`.split(' '))
+
+/** Pasted text that should become a link card: full addresses, www. ones and plain domains like apple.com. */
 export function isUrl(text: string) {
   const t = text.trim()
-  return (/^https?:\/\//i.test(t) || /^www\./i.test(t)) && normalizeUrl(t) !== null
+  const full = normalizeUrl(t)
+  if (!full) return false
+  if (/^https?:\/\//i.test(t) || /^www\./i.test(t)) return true
+  const host = new URL(full).hostname
+  return WEB_TLDS.has(host.slice(host.lastIndexOf('.') + 1))
 }
 
 function place(els: El[]) {
