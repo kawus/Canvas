@@ -64,7 +64,14 @@ npm run build    # production build in dist/
 
 You get a public address like `canvas-xyz.vercel.app`. From then on, every push to the production branch redeploys automatically, and other branches get preview links.
 
-> Vercel deploys the repository's default branch to production (currently `claude/minimal-whiteboard-app-mcpcrw`). If you later rename it to `main`, update **Settings → Git → Production Branch** in Vercel.
+> Vercel deploys the repository's default branch to production (currently still `claude/minimal-whiteboard-app-mcpcrw`).
+
+**To do: make `main` the production branch.** A `main` branch now exists (created 31 Oct 2026, identical to the live app). Two settings finish the switch:
+
+1. **GitHub** → github.com/kawus/Canvas → **Settings → General → Default branch** → click ⇄ → choose `main` → **Update**.
+2. **Vercel** → the Canvas project → **Settings → Git → Production Branch** → `main` → **Save**.
+
+Nothing on the live site changes when you do this. Afterwards, work happens on a `claude/…` branch (each push gets a Vercel preview link), and canvas.kawus.com only updates when that work is merged into `main` through a pull request. Once both settings are switched, remove this note.
 
 At this stage everything works, but boards are saved only in the browser that made them. The Share button gives a link that contains *a copy* of the board.
 
