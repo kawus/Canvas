@@ -32,7 +32,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
-import { allBoards, type BoardRow } from '../library'
+import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
 import { openPortal, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
 import { boardUrl, shareUrl } from '../storage'
@@ -115,7 +115,11 @@ export function BoardMenu() {
   const [boards, setBoards] = useState<BoardRow[]>([])
 
   useEffect(() => {
-    if (open) void allBoards().then(setBoards)
+    if (!open) return
+    void allBoards().then(setBoards)
+    // pick up boards just made on your other devices
+    void pull()
+    return onLibraryChange(() => void allBoards().then(setBoards))
   }, [open])
 
   const others = boards.filter((b) => b.id !== id).slice(0, 4)

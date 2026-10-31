@@ -2,7 +2,7 @@ import qrcode from 'qrcode-generator'
 import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, MonitorSmartphone, Plus, Search, Share, Smartphone, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { connectMyCanvas, newBoard, openBoard } from '../boards'
-import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, type BoardRow } from '../library'
+import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, pull, type BoardRow } from '../library'
 import { helpUrl } from '../help'
 import { useStore } from '../store'
 import { BoardThumb } from './BoardThumb'
@@ -54,6 +54,8 @@ function AllBoards({ close, welcome }: { close: () => void; welcome: boolean }) 
   useEffect(() => {
     const load = () => void allBoards().then(setBoards)
     load()
+    // pick up boards just made on your other devices
+    void pull()
     return onLibraryChange(load)
   }, [])
 
