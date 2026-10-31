@@ -2,6 +2,7 @@ import { Check, Eye, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { duplicateBoard } from '../boards'
 import { formatPrice, joinEarlyAccess, startCheckout, track } from '../pro'
+import { helpUrl } from '../help'
 import { useStore } from '../store'
 
 /** Canvas Pro: what you get and a way to pay (Stripe Checkout). */
@@ -131,7 +132,12 @@ export function UpgradeDialog() {
           {busy ? (smoke ? 'One moment…' : 'Opening secure checkout…') : `Continue — ${billing === 'month' ? `${monthly}/month` : `${yearly}/year`}`}
         </button>
         {error && <p className="dialog-error">{error}</p>}
-        <p className="dialog-foot">{smoke ? 'Cancel anytime.' : 'Secure payment by Stripe. Cancel anytime.'}</p>
+        <p className="dialog-foot">
+          {smoke ? 'Cancel anytime.' : 'Secure payment by Stripe. Cancel anytime.'}{' '}
+          <a href={helpUrl('pro/')} target="_blank" rel="noopener">
+            Questions?
+          </a>
+        </p>
       </div>
     </div>
   )

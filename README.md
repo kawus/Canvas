@@ -22,6 +22,12 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Edit together (Pro):** an **edit link** invites people to edit with you in real time: cursors with names, selections and drawings as they happen, avatars of who's there. Undo only undoes your own changes. The owner needs Pro; guests join free.
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
 
+## Help centre
+
+User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate from the canvas. People reach it from the board menu (**Help & support**), the <kbd>?</kbd> key, and "How this works" links in the device and Pro dialogs. It has a topic page per subject, search, and light/dark mode.
+
+**To edit it**, change the Markdown files in `help/` — one file per topic, each `## Heading` becomes a question with its own link. The top of each file sets its title, description, Lucide icon and order. `help/_index.md` holds the popular questions on the start page. Link to another topic with `topic:devices#question-id` and to the app with `app:`. The pages are built with the app (`npm run build`); with `npm run dev` they update on reload.
+
 ## Keyboard shortcuts
 
 | Key | Action | Key | Action |
@@ -37,6 +43,7 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 | ⌥A / ⌥H / ⌥D | Align left / centre / right | ⌥W / ⌥V / ⌥S | Align top / middle / bottom |
 | ⇧⌥H / ⇧⌥V | Space evenly across / down | ⌘ while dragging | Don't snap |
 | T | Text (or double-click canvas) | ⌘ + scroll / pinch | Zoom |
+| ? | Help centre | | |
 
 ## Run it locally
 
@@ -132,7 +139,10 @@ src/
   pro.ts          Canvas Pro on the client (checkout, Pro token)
   library.ts      My Canvas: your encrypted list of boards, synced across devices
   store.ts        app state (zustand) with undo/redo
+  help.ts         links to the help centre
   components/     toolbar, style bar, menus, overlays
+help/             help centre: one Markdown file per topic, plus its CSS and search script
+scripts/help.ts   builds help/*.md into the /help/ pages (a Vite plugin)
 api/
   board.js        Vercel Function: GET / PUT / DELETE a board in Redis
   asset.js        Vercel Function: images, stored by content hash

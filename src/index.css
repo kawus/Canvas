@@ -1834,3 +1834,21 @@ button:focus:not(:focus-visible) {
   color: var(--accent-ink);
   font-weight: 500;
 }
+.menu-kbd {
+  min-width: 18px;
+  padding: 0 5px;
+  border-radius: 5px;
+  border: 0.5px solid var(--border-strong);
+  color: var(--text-3);
+  font: inherit;
+  font-size: 11px;
+  text-align: center;
+}
+.dialog-foot a {
+  color: var(--accent-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.dialog-foot a:hover {
+  text-decoration: underline;
+}

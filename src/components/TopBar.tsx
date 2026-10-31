@@ -8,6 +8,7 @@ import {
   CreditCard,
   Eye,
   KeyRound,
+  LifeBuoy,
   LayoutGrid,
   Lock,
   MonitorSmartphone,
@@ -32,6 +33,7 @@ import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
+import { openHelp } from '../help'
 import { allBoards, type BoardRow } from '../library'
 import { openPortal, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
@@ -300,6 +302,17 @@ export function BoardMenu() {
             Snap to grid
           </MenuItem>
           <div className="menu-sep" />
+          <MenuItem
+            icon={<LifeBuoy />}
+            onClick={() => {
+              setOpen(false)
+              openHelp()
+            }}
+            hint={<kbd className="menu-kbd">?</kbd>}
+            testId="help"
+          >
+            Help &amp; support
+          </MenuItem>
           <div className="theme-row" role="radiogroup" aria-label="Appearance">
             {themes.map((t) => (
               <button

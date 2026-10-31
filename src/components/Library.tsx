@@ -3,6 +3,7 @@ import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, MonitorSmar
 import { useEffect, useMemo, useState } from 'react'
 import { connectMyCanvas, newBoard, openBoard } from '../boards'
 import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, type BoardRow } from '../library'
+import { helpUrl } from '../help'
 import { useStore } from '../store'
 import { timeAgo } from './TopBar'
 
@@ -241,7 +242,10 @@ function MyCanvas({ close }: { close: () => void }) {
           )}
           <p className="dialog-foot">
             Keep it private — anyone with this link can edit your boards. Save it somewhere safe, like your notes or
-            password manager.
+            password manager.{' '}
+            <a href={helpUrl('devices/')} target="_blank" rel="noopener">
+              How this works
+            </a>
           </p>
           <button type="button" className="text-btn me-connect" onClick={() => setPanel('connect')} data-testid="me-connect">
             <ClipboardPaste /> New device? Paste the link from your other one
@@ -329,7 +333,11 @@ function Connect({ close }: { close: () => void }) {
         </button>
       </div>
       {error && <p className="dialog-error">{error}</p>}
-      <p className="dialog-foot">Copy it on your other device under Connect your devices. Apple devices on the same Apple ID share the clipboard, so it pastes straight in here.</p>
+      <p className="dialog-foot">Copy it on your other device under Connect your devices. Apple devices on the same Apple ID share the clipboard, so it pastes straight in here.{' '}
+        <a href={helpUrl('devices/#i-use-canvas-from-my-home-screen-how-do-i-connect-it')} target="_blank" rel="noopener">
+          Help
+        </a>
+      </p>
     </form>
   )
 }
