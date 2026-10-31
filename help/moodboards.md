@@ -21,6 +21,12 @@ Select the things you want to arrange (drag a box around them, or <kbd>⌘A</kbd
 
 When you add several images at once (paste, drop or pick them), they arrive tidied up already.
 
+## How do I crop an image?
+
+Double-click (or double-tap) the image, or select it and tap the **crop** button in the bar above the toolbar. Drag the white corners or edges to choose what to keep, or drag inside to move the frame, then tap **Done** (or press <kbd>Enter</kbd>). **Cancel** or <kbd>Esc</kbd> leaves it as it was.
+
+Canvas keeps the whole original, so you can crop again later and get back what you cut off — **Reset** shows the full picture again.
+
 ## How do I add a link?
 
 Tap **+ → Link** and type or paste a web address — just `apple.com` is enough, no `https://` needed. You can also paste or drop a web address straight onto the board — `apple.com` works there too. (File names like `notes.md` stay text; if something becomes a link you didn't want, undo with <kbd>⌘Z</kbd>.) Canvas makes a **link card** with the page's preview image, title and site. YouTube and Vimeo videos show their thumbnail. Double-click (or tap) the card to open the page.

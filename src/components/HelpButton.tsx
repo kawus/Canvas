@@ -82,7 +82,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['mod', 'D'], 'Duplicate'],
       [['mod', 'A'], 'Select all'],
       [['delete'], 'Delete'],
-      [['Enter'], 'Edit text or label'],
+      [['Enter'], 'Edit text, or crop a photo'],
       [['←', '→'], 'Nudge (Shift for more)'],
       [['Esc'], 'Deselect'],
     ],
@@ -155,7 +155,7 @@ function gestures(): { title: string; rows: [ReactNode, string][] }[] {
       rows: [
         ...(isTablet ? ([[<Gesture key="pen" kind="pen" />, `Draw with ${pencil} — your palm and fingers won’t leave marks`]] as [ReactNode, string][]) : []),
         [<Gesture key="tap" kind="tap" />, 'Tap to select, drag to move'],
-        [<Gesture key="dbl" kind="double" />, 'Double-tap a shape to type inside it'],
+        [<Gesture key="dbl" kind="double" />, 'Double-tap a shape to type inside it, or a photo to crop it'],
         [<Gesture key="hold" kind="hold" />, 'Press and hold a toolbar button for more tools'],
         ...(isTablet ? ([[<Gesture key="scribble" kind="pen" />, `Write in a text box with ${pencil} (Scribble)`]] as [ReactNode, string][]) : []),
       ],

@@ -29,7 +29,7 @@ order: 9
 | <kbd>⌥</kbd> + drag | Duplicate while dragging |
 | <kbd>⌫</kbd> | Delete |
 | <kbd>[</kbd> / <kbd>]</kbd> | Send to back / Bring to front |
-| <kbd>Enter</kbd> | Edit the selected text or label |
+| <kbd>Enter</kbd> | Edit the selected text or label, or crop the selected image |
 | Arrow keys | Nudge the selection |
 | <kbd>⌘</kbd> while dragging | Don't snap |
 

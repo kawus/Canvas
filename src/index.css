@@ -3075,3 +3075,72 @@ button:focus:not(:focus-visible) {
     display: none;
   }
 }
+
+/* ---------- Crop ---------- */
+
+.crop-layer {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  touch-action: none;
+}
+.crop-svg {
+  position: absolute;
+  inset: 0;
+}
+.crop-dim {
+  fill: rgba(0, 0, 0, 0.55);
+}
+.crop-frame {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 1;
+  filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.5));
+}
+.crop-thirds {
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 0.75;
+  pointer-events: none;
+}
+.crop-brackets {
+  fill: none;
+  stroke: #fff;
+  stroke-width: 4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.45));
+  pointer-events: none;
+}
+.crop-bar {
+  position: absolute;
+  left: 50%;
+  bottom: max(16px, env(safe-area-inset-bottom));
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 14px;
+  font-size: 13px;
+  white-space: nowrap;
+  animation: pop 0.14s ease-out;
+}
+.crop-bar .primary-btn,
+.crop-bar .ghost-btn {
+  height: 34px;
+}
+.crop-reset {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.crop-reset svg.lucide {
+  width: 15px;
+  height: 15px;
+}
+.crop-bar .sep {
+  width: 0.5px;
+  height: 20px;
+  margin: 0 2px;
+  background: var(--border-strong);
+}

@@ -8,6 +8,7 @@ import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
 import { BoardMenu, ExportButton, ShareButton } from './components/TopBar'
 import { HelpButton, ShortcutsDialog } from './components/HelpButton'
+import { CropOverlay } from './components/CropOverlay'
 import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
@@ -35,6 +36,7 @@ export default function App() {
   const theme = useStore((s) => s.theme)
   const loaded = useStore((s) => s.loaded)
   const viewOnly = useStore((s) => s.loaded && !s.doc.key)
+  const cropping = useStore((s) => !!s.cropId)
   const statsView = useSyncExternalStore(subscribeHash, () => location.hash === '#stats')
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
@@ -82,12 +84,13 @@ export default function App() {
       </div>
 
       <div className="bottom">
-        {!viewOnly && <StylePanel palette={palette} />}
+        {!viewOnly && !cropping && <StylePanel palette={palette} />}
         <Toast />
-        {viewOnly ? <ViewBar /> : <Toolbar />}
+        {viewOnly ? <ViewBar /> : !cropping && <Toolbar />}
       </div>
       <UpgradeDialog />
       <InsertDialog />
+      <CropOverlay />
       <LibraryDialogs />
       {welcome && (
         <Welcome

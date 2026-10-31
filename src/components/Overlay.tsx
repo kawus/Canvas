@@ -19,12 +19,15 @@ export function Overlay() {
   const penMode = useStore((s) => s.penMode)
   const guides = useStore((s) => s.guides)
   const peers = useStore((s) => s.collab.peers)
+  const cropping = useStore((s) => !!s.cropId)
 
   const sel = selectedElements({ doc, selectedIds })
   const hovered = hoveredId ? doc.elements.find((e) => e.id === hoveredId) : null
   const handles = getHandles(sel, v)
   const frame = sel.length && !isSingleLine(sel) ? selectionFrame(sel, v) : null
   const hs = penMode ? 10 : 8 // handle size
+  // the crop brackets take over while cropping
+  if (cropping) return null
 
   return (
     <svg className="overlay" width="100%" height="100%">

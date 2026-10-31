@@ -1,3 +1,4 @@
+import { startCrop } from './crop'
 import { cloneWithNewIds, createStickyAt, createTextAt, finishEditing, isEditable, startEditing } from './actions'
 import { bindTarget, resolveDraftLine } from './bindings'
 import { MAX_ZOOM, MIN_ZOOM } from './constants'
@@ -389,6 +390,10 @@ export class CanvasController {
     if (isDouble) {
       if (hit?.type === 'link') {
         openLink(hit.url)
+        return
+      }
+      if (hit?.type === 'image') {
+        startCrop(hit.id)
         return
       }
       const editable = this.editableAt(p, e.pointerType)

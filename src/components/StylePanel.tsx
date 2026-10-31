@@ -9,6 +9,7 @@ import {
   AlignVerticalSpaceAround,
   BringToFront,
   Copy,
+  Crop,
   LayoutDashboard,
   Ellipsis,
   ExternalLink,
@@ -20,6 +21,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { alignSelection, bringToFront, distributeSelection, duplicateSelection, sendToBack, type AlignMode } from '../actions'
 import { COLOR_KEYS, COLOR_NAMES, FONT_SIZE, STICKY_FILL, type Palette } from '../constants'
 import { openLink } from '../controller'
+import { startCrop } from '../crop'
 import { extractPalette } from '../moodboard'
 import { selectedElements, useStore } from '../store'
 import { tidySelection, tidyable } from '../tidy'
@@ -264,6 +266,11 @@ export function StylePanel({ palette }: { palette: Palette }) {
         {single?.type === 'link' && (
           <IconButton label="Open link" onClick={() => openLink(single.url)} className="small" testId="open-link">
             <ExternalLink />
+          </IconButton>
+        )}
+        {single?.type === 'image' && (
+          <IconButton label="Crop" kbd="↵" onClick={() => startCrop(single.id)} className="small" testId="crop-image">
+            <Crop />
           </IconButton>
         )}
         {single?.type === 'image' && (

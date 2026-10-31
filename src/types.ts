@@ -54,6 +54,9 @@ export interface ImageEl extends Base {
   h: number
   /** content hash of the image data, stored separately (see assets.ts) */
   asset: string
+  /** when cropped: the uncropped original, and the part shown (fractions x, y, w, h) */
+  src?: string
+  crop?: [number, number, number, number]
 }
 
 export interface LineEl extends Base {

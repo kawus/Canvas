@@ -93,6 +93,8 @@ interface State {
   panel: Panel
   /** replaying the welcome tour */
   tour: boolean
+  /** the image being cropped */
+  cropId: string | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -115,6 +117,7 @@ interface State {
   setInsert: (insert: 'link' | 'color' | null) => void
   setPanel: (panel: Panel) => void
   setTour: (tour: boolean) => void
+  setCropId: (id: string | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -210,6 +213,7 @@ export const useStore = create<State>((set, get) => ({
   insert: null,
   panel: null,
   tour: false,
+  cropId: null,
 
   setDoc: (doc) =>
     set((s) => ({
@@ -276,6 +280,7 @@ export const useStore = create<State>((set, get) => ({
   setInsert: (insert) => set({ insert }),
   setPanel: (panel) => set({ panel }),
   setTour: (tour) => set({ tour }),
+  setCropId: (cropId) => set({ cropId, editingId: null }),
 
   markShared: () =>
     set((s) =>

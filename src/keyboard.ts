@@ -15,6 +15,7 @@ import {
 import { isTyping } from './controller'
 import { importImages, openImagePicker } from './images'
 import { connectMyCanvas } from './boards'
+import { startCrop } from './crop'
 import { myCanvasIn } from './library'
 import { addLink, isUrl } from './moodboard'
 import { useStore } from './store'
@@ -145,6 +146,11 @@ export function startKeyboard() {
     }
     if (e.key === 'Enter' && s.selectedIds.length === 1) {
       const el = s.doc.elements.find((x) => x.id === s.selectedIds[0])
+      if (el?.type === 'image') {
+        e.preventDefault()
+        startCrop(el.id)
+        return
+      }
       if (isEditable(el)) {
         e.preventDefault()
         startEditing(el.id)
