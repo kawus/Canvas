@@ -43,6 +43,8 @@ export async function handle(request) {
   // unknown boards get the general card, so a made-up link reveals nothing
   let title = 'Canvas — a calm whiteboard'
   let description = 'Sketch, plan and make moodboards on a calm, minimal whiteboard. No sign-up.'
+  // a picture of the board itself once someone has shared it, else the general Canvas card
+  let image = '/og.png'
   if (valid && redisConfig()) {
     try {
       const raw = /** @type {string | null} */ (await redis(['GET', `board:${id}`]))
@@ -51,6 +53,7 @@ export async function handle(request) {
         const name = typeof board.title === 'string' ? board.title.trim().slice(0, 120) : ''
         title = name && name !== 'Untitled' ? `${name} — Canvas` : 'A board on Canvas'
         const elements = Array.isArray(board.elements) ? board.elements : []
+        if (typeof board.preview === 'number') image = `/api/preview?id=${id}&v=${board.preview}`
         description = `${describe(elements)} Open it in your browser — no sign-up needed.`
       }
     } catch (err) {
@@ -71,7 +74,7 @@ export async function handle(request) {
 <meta property="og:title" content="${escape(title)}" />
 <meta property="og:description" content="${escape(description)}" />
 <meta property="og:url" content="${site}/b/${valid ? id : ''}" />
-<meta property="og:image" content="${site}/og.png" />
+<meta property="og:image" content="${site}${escape(image)}" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />

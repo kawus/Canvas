@@ -32,6 +32,7 @@ import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
+import { refreshPreview } from '../preview'
 import { openPortal, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
 import { boardUrl, shareUrl } from '../storage'
@@ -340,6 +341,12 @@ export function ShareButton() {
   const snapshot = useMemo(() => (open && snapshotOnly ? shareUrl(doc) : ''), [open, snapshotOnly, doc])
   const url = snapshotOnly ? snapshot : editing ? boardUrl(doc.id, doc.key) : boardUrl(doc.id)
   const empty = doc.elements.length === 0
+
+  // sharing: save a picture of the board for its link preview (after the board itself is saved)
+  useEffect(() => {
+    if (open && editable && !snapshotOnly && !empty) void syncNow().then(() => refreshPreview(true))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open])
 
   const shared = () => {
     if (!editing || locked) return

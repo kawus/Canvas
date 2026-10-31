@@ -109,6 +109,8 @@ interface State {
   markShared: () => void
   /** the server says whether live editing on this board is paid for */
   setDocPro: (pro: boolean) => void
+  /** a link-preview picture of this version was saved */
+  setPreview: (version: number) => void
   /** this device turned out not to be allowed to edit the board */
   dropKey: () => void
   setKey: (key: string) => void
@@ -269,6 +271,7 @@ export const useStore = create<State>((set, get) => ({
   setCollab: (patch) => set((s) => ({ collab: { ...s.collab, ...patch } })),
 
   setDocPro: (pro) => set((s) => (!!s.doc.pro === pro ? {} : { doc: { ...s.doc, pro } })),
+  setPreview: (preview) => set((s) => (s.doc.preview === preview ? {} : { doc: { ...s.doc, preview } })),
   dropKey: () =>
     set((s) => {
       const doc = { ...s.doc }

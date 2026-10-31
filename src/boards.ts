@@ -3,6 +3,7 @@ import { deleteRemote, fetchIfNewer, fetchRemote, pushRemote, type RemoteResult 
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
 import { adoptLibrary, allBoards, forgetKey, inSafariTab, keyFor, myCanvasIn, onLibraryChange } from './library'
 import { activateProLink } from './pro'
+import { refreshPreview } from './preview'
 import { useStore } from './store'
 import { countCheck } from './usage'
 import {
@@ -198,7 +199,10 @@ interface OpenOptions {
 
 /** Returns false when the board exists neither on this device nor in the cloud. */
 export async function openBoard(id: string, opts: OpenOptions = {}): Promise<boolean> {
-  if (opts.save !== false) await flushSave()
+  if (opts.save !== false) {
+    await flushSave()
+    void refreshPreview(false)
+  }
   let local = await loadBoard(id)
   // a board you own on another device: My Canvas knows its edit key
   if (!opts.key && !local?.key) opts = { ...opts, key: keyFor(id) }
@@ -460,8 +464,10 @@ export function startPersistence() {
     return quiet < 2 * 60_000 ? 10_000 : quiet < 10 * 60_000 ? 30_000 : 60_000
   }
   const onVisibility = () => {
-    if (document.visibilityState === 'hidden') void flushSave()
-    else {
+    if (document.visibilityState === 'hidden') {
+      // a shared board's link preview catches up with your changes
+      void flushSave().then(() => refreshPreview(false))
+    } else {
       poke()
       void pullIfNewer()
     }

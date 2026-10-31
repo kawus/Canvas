@@ -72,7 +72,7 @@ export async function handle(request) {
         if (!(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
         const text = await request.text()
         if (text.length > MAX_BYTES) return json({ error: 'board too large' }, 413)
-        /** @type {{ id?: unknown, title?: unknown, elements?: unknown, createdAt?: unknown, updatedAt?: unknown, shared?: unknown }} */
+        /** @type {{ id?: unknown, title?: unknown, elements?: unknown, createdAt?: unknown, updatedAt?: unknown, shared?: unknown, preview?: unknown }} */
         let doc
         try {
           doc = JSON.parse(text)
@@ -96,6 +96,8 @@ export async function handle(request) {
           updatedAt: doc.updatedAt,
           // once shared, every editor that opens the board joins it live
           shared: doc.shared === true,
+          // version of the link-preview picture (api/preview.js); other devices' saves keep it
+          ...(typeof doc.preview === 'number' ? { preview: doc.preview } : typeof record?.preview === 'number' ? { preview: record.preview } : {}),
           keyHash: record?.keyHash || (await sha256(/** @type {string} */ (editKey))),
           ...(proCustomer ? { proCustomer } : {}),
         }
@@ -109,6 +111,7 @@ export async function handle(request) {
         if (!record) return new Response(null, { status: 204 })
         if (!(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
         await redis(['DEL', key])
+        await redis(['DEL', `preview:${id}`])
         return new Response(null, { status: 204 })
       default:
         return json({ error: 'method not allowed' }, 405)

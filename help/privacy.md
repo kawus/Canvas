@@ -19,7 +19,7 @@ No. Canvas has no accounts, sign-ups or passwords, and doesn't ask for your name
 
 Only people who have a board's link. Links contain a long random code, not the board's name, so they can't be guessed. A View link lets people see the board; an Edit together link or your My Canvas link lets people change it. Keep those two private.
 
-When you paste a board link into a messaging or social app, the app shows a preview with the board's name and how many items it has, so it briefly reads those from Canvas. It never sees the board's content or the edit key.
+When you paste a board link into a messaging or social app, the app shows a preview with the board's name, how many items it has and a small picture of the board (saved when you open Share), so it briefly reads those from Canvas. It never gets the edit key. Boards you haven't shared don't have a picture.
 
 ## How long are boards kept?
 

@@ -74,6 +74,61 @@ export async function exportSvg(elements: El[], title: string) {
   download(new Blob([svg], { type: 'image/svg+xml' }), fileName(title, 'svg'))
 }
 
+/**
+ * A 1200×630 picture of the board for link previews in messaging apps: the
+ * board on Canvas's dotted paper with a small Canvas badge. JPEG data URL.
+ */
+export async function boardSnapshot(elements: El[]): Promise<string | null> {
+  if (!elements.length) return null
+  const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: false })
+  const img = new Image()
+  const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
+  try {
+    await new Promise<void>((resolve, reject) => {
+      img.onload = () => resolve()
+      img.onerror = () => reject(new Error('Could not render image'))
+      img.src = url
+    })
+    const W = 1200
+    const H = 630
+    const canvas = document.createElement('canvas')
+    canvas.width = W
+    canvas.height = H
+    const ctx = canvas.getContext('2d')!
+    ctx.fillStyle = '#fbfbfb'
+    ctx.fillRect(0, 0, W, H)
+    ctx.fillStyle = '#d9d9de'
+    for (let x = 12; x < W; x += 24) for (let y = 12; y < H; y += 24) ctx.fillRect(x - 1, y - 1, 2, 2)
+    // the board, as large as fits above the badge (small boards aren't blown up too far)
+    const box = { x: 48, y: 36, w: W - 96, h: H - 36 - 84 }
+    const k = Math.min(box.w / width, box.h / height, 2.5)
+    const dw = width * k
+    const dh = height * k
+    ctx.drawImage(img, box.x + (box.w - dw) / 2, box.y + (box.h - dh) / 2, dw, dh)
+    // the Canvas badge
+    ctx.save()
+    ctx.translate(48, H - 66)
+    ctx.scale(30 / 24, 30 / 24)
+    ctx.fillStyle = '#1d1d1f'
+    ctx.beginPath()
+    ctx.roundRect(1, 1, 22, 22, 6.5)
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+    ctx.stroke(new Path2D('M7 15.5c2.2-4.6 4.2-7 6-7 2.4 0-1.6 7 1.2 7 1.1 0 2-1 2.8-2.4'))
+    ctx.restore()
+    ctx.fillStyle = '#1d1d1f'
+    ctx.font = `600 26px ${FONT_FAMILY}, system-ui, sans-serif`
+    ctx.textBaseline = 'middle'
+    ctx.fillText('Canvas', 90, H - 49)
+    return canvas.toDataURL('image/jpeg', 0.86)
+  } finally {
+    URL.revokeObjectURL(url)
+  }
+}
+
 export async function exportPng(elements: El[], title: string) {
   const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: true })
   // iPad Safari caps canvases at ~16.7M pixels

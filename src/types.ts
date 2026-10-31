@@ -156,6 +156,8 @@ export interface BoardDoc {
   updatedAt: number
   /** set once the board's live link has been shared; shared boards collaborate live */
   shared?: boolean
+  /** version (the board's updatedAt) of its link-preview picture, once shared */
+  preview?: number
   /**
    * Edit key: proof that this device may change the board (owner or invited
    * editor). Boards opened from a view link have none and are read-only.

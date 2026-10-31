@@ -67,6 +67,16 @@ async function parseBoard(res: Response | 'offline', allowUnchanged = false): Pr
 
 const round = (_k: string, v: unknown) => (typeof v === 'number' ? Math.round(v * 100) / 100 : v)
 
+/** Saves the board's link-preview picture (editors only). */
+export async function pushPreview(id: string, key: string, dataUrl: string) {
+  try {
+    const res = await fetch(`api/preview?id=${encodeURIComponent(id)}`, { method: 'PUT', headers: { 'X-Edit-Key': key }, body: dataUrl })
+    return res.ok
+  } catch {
+    return false
+  }
+}
+
 /** Saves the board; the value says whether live editing on it is paid for by a Pro owner. */
 export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<boolean>> {
   // the edit key travels in a header and is never stored with the board
