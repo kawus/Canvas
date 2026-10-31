@@ -1,6 +1,6 @@
 import { Link, Palette } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { addLink, addSwatch } from '../moodboard'
+import { addLink, addSwatch, normalizeUrl } from '../moodboard'
 import { useStore } from '../store'
 
 const HEX_RE = /^#?[0-9a-f]{6}$/i
@@ -11,11 +11,13 @@ export function InsertDialog() {
   const setInsert = useStore((s) => s.setInsert)
   const [url, setUrl] = useState('')
   const [hex, setHex] = useState('#ff9f0a')
+  const [urlError, setUrlError] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!insert) return
     setUrl('')
+    setUrlError(false)
     requestAnimationFrame(() => inputRef.current?.focus())
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -34,10 +36,14 @@ export function InsertDialog() {
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     if (insert === 'link') {
-      const value = url.trim()
-      if (!value) return
+      // people type "apple.com": the https:// is added for them
+      const full = normalizeUrl(url)
+      if (!full) {
+        setUrlError(true)
+        return
+      }
       close()
-      void addLink(/^https?:\/\//i.test(value) ? value : `https://${value}`)
+      void addLink(full)
     } else if (HEX_RE.test(hex)) {
       close()
       addSwatch(normalizedHex)
@@ -46,7 +52,7 @@ export function InsertDialog() {
 
   return (
     <div className="dialog-backdrop" onPointerDown={(e) => e.target === e.currentTarget && close()}>
-      <form className="dialog insert-dialog" onSubmit={submit} data-testid={`insert-dialog-${insert}`}>
+      <form className="dialog insert-dialog" noValidate onSubmit={submit} data-testid={`insert-dialog-${insert}`}>
         <div className="insert-head">
           {insert === 'link' ? <Link /> : <Palette />}
           <h2 className="insert-title">{insert === 'link' ? 'Add a link' : 'Add a colour'}</h2>
@@ -56,16 +62,29 @@ export function InsertDialog() {
             <input
               ref={inputRef}
               className="field"
-              type="url"
+              type="text"
               inputMode="url"
+              autoComplete="url"
               autoCapitalize="off"
               autoCorrect="off"
-              placeholder="Paste a link — a website, Pinterest, YouTube…"
+              spellCheck={false}
+              enterKeyHint="go"
+              placeholder="apple.com, a Pinterest pin, a YouTube video…"
               value={url}
-              onChange={(e) => setUrl(e.target.value)}
+              onChange={(e) => {
+                setUrl(e.target.value)
+                setUrlError(false)
+              }}
+              aria-invalid={urlError}
               data-testid="link-input"
             />
-            <p className="insert-hint">Tip: you can also paste or drop links and images straight onto the board.</p>
+            {urlError ? (
+              <p className="insert-hint is-error" data-testid="link-error">
+                That doesn’t look like a web address — try something like apple.com
+              </p>
+            ) : (
+              <p className="insert-hint">Type or paste a web address. You can also paste or drop links and images straight onto the board.</p>
+            )}
           </>
         ) : (
           <div className="color-row">

@@ -1559,6 +1559,12 @@ button:focus:not(:focus-visible) {
   color: var(--text-3);
   font-size: 12px;
 }
+.insert-hint.is-error {
+  color: var(--danger);
+}
+.field[aria-invalid='true'] {
+  box-shadow: inset 0 0 0 1.5px var(--danger);
+}
 .color-row {
   display: flex;
   gap: 10px;

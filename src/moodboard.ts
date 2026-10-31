@@ -16,9 +16,30 @@ const S = () => useStore.getState()
 const IMAGE_EXT = /\.(png|jpe?g|gif|webp|avif)(\?|#|$)/i
 
 /** A single web address (what people paste or drop). */
+const DOMAIN = /^(localhost|[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,})(:\d+)?([/?#]\S*)?$/i
+
+/** A web address as people type it ("apple.com", "www.x.com/a", "https://…") made complete, or null. */
+export function normalizeUrl(text: string): string | null {
+  const t = text.trim()
+  if (!t || /\s/.test(t)) return null
+  let url = t
+  if (t.startsWith('//')) url = `https:${t}`
+  else if (!/^https?:\/\//i.test(t)) {
+    if (!DOMAIN.test(t)) return null
+    url = `https://${t}`
+  }
+  try {
+    const u = new URL(url)
+    return u.hostname.includes('.') || u.hostname === 'localhost' ? u.href : null
+  } catch {
+    return null
+  }
+}
+
+/** Pasted text that should become a link card: full addresses and ones starting with www. */
 export function isUrl(text: string) {
   const t = text.trim()
-  return /^https?:\/\/\S+$/i.test(t) && !/\s/.test(t)
+  return (/^https?:\/\//i.test(t) || /^www\./i.test(t)) && normalizeUrl(t) !== null
 }
 
 function place(els: El[]) {
@@ -69,7 +90,7 @@ function cardHeight(title: string, description: string, hasImage: boolean) {
 
 /** Add a link as a preview card (title, description, site, image). */
 export async function addLink(raw: string, at?: Point) {
-  const url = raw.trim()
+  const url = normalizeUrl(raw) ?? raw.trim()
   if (IMAGE_EXT.test(url)) return importImageUrl(url, at)
   S().showToast('Adding link…')
   let p: Preview = { url, title: '', description: '', site: hostOf(url), image: '' }
