@@ -33,7 +33,7 @@ The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
 ## Link previews
 
-Links to Canvas show a proper preview in messaging and social apps (iMessage, WhatsApp, Slack, LinkedIn, X…): a title, a description and the image `public/og.png` (1200 × 630). Help pages show their own topic as the title. The tags need the site's full address; Vercel provides the production domain at build time, or set `SITE_URL` (e.g. `https://canvas.kawus.com`) to choose it yourself.
+Links to Canvas show a proper preview in messaging and social apps (iMessage, WhatsApp, Slack, LinkedIn, X…): a title, a description and the image `public/og.png` (1200 × 630). Help pages show their own topic as the title, and **board links** (`/b/<id>`, made by Share and Copy owner link) show the board's own name and what's on it ("Kitchen moodboard — Canvas · 12 items: photos, sticky notes and links"), via `api/share.js`. The link holds only the board's random id; an edit key stays after the `#`, which never reaches the server. The tags need the site's full address; Vercel provides the production domain at build time, or set `SITE_URL` (e.g. `https://canvas.kawus.com`) to choose it yourself.
 
 To change the image, edit `scripts/og-image.html`, open it in a browser at 1200 × 630 and save a screenshot as `public/og.png`. Apps cache previews for a while: after a change, a link you already shared may keep the old preview for a few days.
 

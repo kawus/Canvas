@@ -34,6 +34,13 @@ function brandNew() {
   }
 }
 
+// A board link opened where /b/<id> isn't handled by the server: turn it into the app's #id(.key)
+const boardPath = /\/b\/([a-z0-9]{4,32})\/?$/.exec(location.pathname)
+if (boardPath) {
+  const key = location.hash.length > 1 ? `.${location.hash.slice(1)}` : ''
+  history.replaceState(null, '', `${location.pathname.slice(0, boardPath.index + 1)}#${boardPath[1]}${key}`)
+}
+
 // The optional front page: with VITE_FRONT_PAGE=on, brand-new visitors see /intro/ first
 if (import.meta.env.VITE_FRONT_PAGE === 'on' && brandNew()) location.replace('intro/')
 else void boot()

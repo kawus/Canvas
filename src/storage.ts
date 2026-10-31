@@ -170,7 +170,11 @@ export function shareUrl(doc: BoardDoc) {
   return `${location.origin}${location.pathname}#share=${encodeShare(doc)}`
 }
 
-/** View link (`#id`), or edit / owner link when the key is included (`#id.key`). */
+/**
+ * A board's link: /b/<id> (view), with the edit key after a # for owner and
+ * edit links (/b/<id>#<key>). The /b/ path lets messaging apps show the
+ * board's name in link previews (api/share.js); the key never reaches the server.
+ */
 export function boardUrl(id: string, key?: string) {
-  return `${location.origin}${location.pathname}#${id}${key ? `.${key}` : ''}`
+  return `${location.origin}${location.pathname}b/${id}${key ? `#${key}` : ''}`
 }
