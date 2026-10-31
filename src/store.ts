@@ -8,7 +8,7 @@ import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
 
 
-export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | null
+export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | 'keys' | null
 export type ThemePref = 'system' | 'light' | 'dark'
 /** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
 export type SyncStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'offline' | 'too-large' | 'error'
@@ -91,6 +91,8 @@ interface State {
   insert: 'link' | 'color' | null
   /** dialogs: All boards, My Canvas link, pasting a link from another device, All boards after opening the link */
   panel: Panel
+  /** replaying the welcome tour */
+  tour: boolean
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -112,6 +114,7 @@ interface State {
   setUpgradeOpen: (open: boolean) => void
   setInsert: (insert: 'link' | 'color' | null) => void
   setPanel: (panel: Panel) => void
+  setTour: (tour: boolean) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -206,6 +209,7 @@ export const useStore = create<State>((set, get) => ({
   upgradeOpen: false,
   insert: null,
   panel: null,
+  tour: false,
 
   setDoc: (doc) =>
     set((s) => ({
@@ -271,6 +275,7 @@ export const useStore = create<State>((set, get) => ({
   setUpgradeOpen: (upgradeOpen) => set({ upgradeOpen }),
   setInsert: (insert) => set({ insert }),
   setPanel: (panel) => set({ panel }),
+  setTour: (tour) => set({ tour }),
 
   markShared: () =>
     set((s) =>

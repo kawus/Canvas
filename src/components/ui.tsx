@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { formatKbd } from '../platform'
 
 export function Tip({ label, kbd }: { label: string; kbd?: string }) {
   return (
     <span className="tip" role="tooltip">
       {label}
-      {kbd && <kbd>{kbd}</kbd>}
+      {kbd && <kbd>{formatKbd(kbd)}</kbd>}
     </span>
   )
 }

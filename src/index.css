@@ -228,7 +228,8 @@ svg.lucide {
 .top-left,
 .top-right,
 .bottom,
-.bottom-left {
+.bottom-left,
+.bottom-right {
   position: absolute;
   z-index: 10;
   pointer-events: none;
@@ -236,7 +237,8 @@ svg.lucide {
 .top-left > *,
 .top-right > *,
 .bottom > *,
-.bottom-left > * {
+.bottom-left > *,
+.bottom-right > * {
   pointer-events: auto;
 }
 
@@ -2860,4 +2862,188 @@ button:focus:not(:focus-visible) {
   stroke-width: 1.5;
   stroke-dasharray: 3 4;
   stroke-linecap: round;
+}
+
+/* ---------- Help button & shortcuts ---------- */
+
+.bottom-right {
+  right: max(12px, env(safe-area-inset-right));
+  bottom: max(14px, env(safe-area-inset-bottom));
+}
+.help-wrap {
+  position: relative;
+}
+.help-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--btn);
+  height: var(--btn);
+  border-radius: 50%;
+  color: var(--text-2);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    color 0.12s ease,
+    transform 0.12s ease;
+}
+.help-btn:hover,
+.help-btn.is-open {
+  color: var(--text);
+}
+.help-btn:active {
+  transform: scale(0.94);
+}
+.popover-up {
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: 0;
+  min-width: 230px;
+  transform-origin: bottom right;
+}
+.keys-dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(680px, 100%);
+  max-height: min(720px, calc(100dvh - 32px));
+  padding: 16px 8px 12px 20px;
+  text-align: left;
+}
+.keys-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-right: 4px;
+  margin-bottom: 8px;
+}
+.keys-head .insert-title {
+  flex: 1;
+}
+.keys-head .icon-btn {
+  width: 32px;
+  height: 32px;
+  color: var(--text-2);
+}
+.keys-tabs {
+  grid-template-columns: auto auto;
+}
+.keys-tabs .theme-btn {
+  gap: 6px;
+  padding: 0 12px;
+  white-space: nowrap;
+}
+.keys-tabs svg.lucide {
+  width: 15px;
+  height: 15px;
+}
+.keys-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  columns: 2 280px;
+  column-gap: 28px;
+  padding-right: 12px;
+}
+.keys-group {
+  break-inside: avoid;
+  margin-bottom: 14px;
+}
+.keys-group h3 {
+  margin: 8px 0 4px;
+  color: var(--text-3);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.keys-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 32px;
+  padding: 3px 0;
+  border-bottom: 0.5px solid var(--border);
+  font-size: 13px;
+}
+.keys {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 3px;
+}
+.keys kbd {
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: 0.5px solid var(--border-strong);
+  border-bottom-width: 1.5px;
+  background: var(--panel-solid);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
+}
+.keys-plus {
+  color: var(--text-3);
+  font-size: 12px;
+}
+.touch-row {
+  justify-content: flex-start;
+  gap: 12px;
+  min-height: 44px;
+  line-height: 1.35;
+}
+.gesture {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  padding: 2px;
+  border-radius: 9px;
+  background: var(--accent-soft);
+  fill: var(--accent);
+  stroke: var(--accent);
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.gesture path {
+  fill: none;
+}
+.gesture .ring {
+  fill: none;
+  opacity: 0.45;
+}
+.g-pen path {
+  fill: none;
+}
+.keys-dialog.is-touch {
+  width: min(520px, 100%);
+}
+.is-touch .keys-body {
+  columns: 1;
+}
+.keys-foot {
+  padding: 10px 12px 0 0;
+  text-align: right;
+  font-size: 13px;
+}
+.keys-foot a {
+  color: var(--accent-ink);
+  text-decoration: none;
+}
+@media (max-width: 560px) {
+  .keys-head {
+    flex-wrap: wrap;
+  }
+  .keys-tabs {
+    order: 3;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
 }

@@ -42,6 +42,10 @@ Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <
 
 Yes. Canvas follows your device's light or dark setting. To choose one yourself, open the **board menu** and pick **Auto**, **Light** or **Dark** at the bottom.
 
+## Where do I find help inside Canvas?
+
+Tap the **?** button in the bottom-right corner. It has this help centre, the welcome tour, and a list of shortcuts that fits your device: keyboard shortcuts on a computer, touch and Apple Pencil gestures on an iPad (with a Keyboard tab for when one is attached), and touch gestures on an iPhone.
+
 ## Can I see the welcome tour again?
 
-Yes — [show the welcome tour](app:?tour). It opens Canvas with the short three-step introduction.
+Yes — tap **? → Welcome tour**, or [show the welcome tour](app:?tour).

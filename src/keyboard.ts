@@ -15,7 +15,6 @@ import {
 import { isTyping } from './controller'
 import { importImages, openImagePicker } from './images'
 import { connectMyCanvas } from './boards'
-import { openHelp } from './help'
 import { myCanvasIn } from './library'
 import { addLink, isUrl } from './moodboard'
 import { useStore } from './store'
@@ -52,7 +51,7 @@ export function startKeyboard() {
     const mod = e.metaKey || e.ctrlKey
     const key = e.key.toLowerCase()
     if (e.key === '?' && !mod) {
-      openHelp()
+      s.setPanel(s.panel === 'keys' ? null : 'keys')
       return
     }
     // view-only: just zooming around

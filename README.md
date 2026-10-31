@@ -25,7 +25,7 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 
 ## Help centre
 
-User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate from the canvas. People reach it from the board menu (**Help & support**), the <kbd>?</kbd> key, and "How this works" links in the device and Pro dialogs. It has a topic page per subject, search, and light/dark mode.
+User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate from the canvas. People reach it from the **?** button (bottom right) and "How this works" links in the device and Pro dialogs. The **?** button also shows shortcuts that fit the device (keyboard shortcuts with Mac or Windows keys, touch and Pencil gestures on iPad, touch gestures on iPhone) and replays the welcome tour. It has a topic page per subject, search, and light/dark mode.
 
 **To edit it**, change the Markdown files in `help/` — one file per topic, each `## Heading` becomes a question with its own link. The top of each file sets its title, description, Lucide icon and order. `help/_index.md` holds the popular questions on the start page. Link to another topic with `topic:devices#question-id` and to the app with `app:`. The pages are built with the app (`npm run build`); with `npm run dev` they update on reload.
 
@@ -44,7 +44,7 @@ User help lives at **`/help/`** (e.g. `canvas-xyz.vercel.app/help/`), separate f
 | ⌥A / ⌥H / ⌥D | Align left / centre / right | ⌥W / ⌥V / ⌥S | Align top / middle / bottom |
 | ⇧⌥H / ⇧⌥V | Space evenly across / down | ⌘ while dragging | Don't snap |
 | T | Text (or double-click canvas) | ⌘ + scroll / pinch | Zoom |
-| ? | Help centre | | |
+| ? | Shortcuts & help | | |
 
 ## Run it locally
 

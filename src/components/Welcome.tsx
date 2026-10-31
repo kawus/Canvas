@@ -1,6 +1,5 @@
 import { ArrowLeft, ArrowRight, Share, SquarePlus } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { helpUrl } from '../help'
 import { inSafariTab } from '../library'
 import { markWelcomed } from '../onboarding'
 
@@ -182,13 +181,7 @@ export function Welcome({ onClose }: { onClose: () => void }) {
               </button>
             </div>
             {step === last && (
-              <p className="welcome-foot">
-                Questions later? Press <kbd>?</kbd> or open{' '}
-                <a href={helpUrl()} target="_blank" rel="noopener">
-                  Help &amp; support
-                </a>
-                .
-              </p>
+              <p className="welcome-foot">Questions later? Tap the ? in the bottom corner.</p>
             )}
           </div>
         )}

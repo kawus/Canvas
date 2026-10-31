@@ -7,6 +7,7 @@ import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
 import { BoardMenu, ExportButton, ShareButton } from './components/TopBar'
+import { HelpButton, ShortcutsDialog } from './components/HelpButton'
 import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
@@ -41,7 +42,8 @@ export default function App() {
   // first run: the welcome tour, once the person's own board is open
   const [welcomeDone, setWelcomeDone] = useState(false)
   const ownBoard = useStore((s) => s.loaded && !!s.doc.key)
-  const welcome = shouldWelcome() && ownBoard && !welcomeDone
+  const replay = useStore((s) => s.tour)
+  const welcome = (shouldWelcome() && ownBoard && !welcomeDone) || replay
 
   useEffect(() => {
     document.documentElement.dataset.theme = dark ? 'dark' : 'light'
@@ -87,7 +89,18 @@ export default function App() {
       <UpgradeDialog />
       <InsertDialog />
       <LibraryDialogs />
-      {welcome && <Welcome onClose={() => setWelcomeDone(true)} />}
+      {welcome && (
+        <Welcome
+          onClose={() => {
+            setWelcomeDone(true)
+            useStore.getState().setTour(false)
+          }}
+        />
+      )}
+      <div className="bottom-right">
+        <HelpButton />
+      </div>
+      <ShortcutsDialog />
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

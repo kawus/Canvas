@@ -48,6 +48,8 @@ order: 9
 | <kbd>⌘</kbd> + scroll, or pinch | Zoom |
 | <kbd>⇧1</kbd> | Zoom to fit everything |
 | <kbd>⇧0</kbd> | Zoom to 100% |
-| <kbd>?</kbd> | Open this help centre |
+| <kbd>?</kbd> | Show the shortcuts in Canvas |
 
 On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd> and <kbd>Alt</kbd> instead of <kbd>⌥</kbd>.
+
+> In Canvas, press <kbd>?</kbd> or tap the **?** button in the bottom-right corner to see these shortcuts any time — shown with the right keys for your computer.
