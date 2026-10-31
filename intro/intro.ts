@@ -1,4 +1,6 @@
+import { inject } from '@vercel/analytics'
 import { getStroke } from 'perfect-freehand'
+import { pageOnly } from '../src/analytics'
 import './intro.css'
 
 /**
@@ -8,6 +10,8 @@ import './intro.css'
  * itself) and live cursors. With "reduce motion" on, everything simply shows
  * its finished state.
  */
+
+inject({ beforeSend: pageOnly })
 
 const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
 const $ = <T extends Element = HTMLElement>(sel: string, root: ParentNode = document) => root.querySelector<T>(sel)!

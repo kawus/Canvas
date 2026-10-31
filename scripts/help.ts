@@ -182,6 +182,12 @@ ${body}
   <a href="${up}../">Open Canvas</a>
 </footer>
 <script src="${up}help.js" defer></script>
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments) }
+  // visit counts get the page only, not the #question or ?query
+  window.va('beforeSend', function (e) { var u = new URL(e.url); u.hash = ''; u.search = ''; e.url = u.toString(); return e })
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
 `

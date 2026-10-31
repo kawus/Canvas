@@ -35,9 +35,10 @@ As long as you use them. A board that nobody has edited for a year is removed fr
 - **Upstash** stores boards, images and your encrypted list of boards.
 - **Liveblocks** keeps boards in sync when you edit together live.
 - **Stripe** handles payments for Canvas Pro. Canvas never sees your card details.
+- **Vercel Web Analytics** counts page visits, anonymously and without cookies.
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
 
 ## Does Canvas track me?
 
-No ads and no tracking cookies. To learn whether people want Canvas Pro, Canvas counts anonymously how often its offer is seen and chosen, using a random ID for each browser.
+No ads and no tracking cookies. Canvas uses Vercel Web Analytics to count visits to its pages anonymously and without cookies. Only the page is counted (like the app, the front page or a help page) — never which board you opened, and never the private part of a link. To learn whether people want Canvas Pro, Canvas also counts anonymously how often its offer is seen and chosen, using a random ID for each browser.

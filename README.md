@@ -31,6 +31,10 @@ An animated front page for new visitors lives at **`/intro/`** (e.g. `canvas.kaw
 
 The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
+## Visitor analytics
+
+[Vercel Web Analytics](https://vercel.com/docs/analytics) counts visits to the app, the front page and the help centre (cookieless). Only the page is sent — everything after `?` or `#` is removed first (`src/analytics.ts`), so board ids, edit keys and My Canvas links never reach it. To start collecting, open the project in Vercel → **Analytics** → **Enable**, then redeploy.
+
 ## Link previews
 
 Links to Canvas show a proper preview in messaging and social apps (iMessage, WhatsApp, Slack, LinkedIn, X…): a title, a description and the image `public/og.png` (1200 × 630). Help pages show their own topic as the title, and **board links** (`/b/<id>`, made by Share and Copy owner link) show the board's own name and what's on it ("Kitchen moodboard — Canvas · 12 items: photos, sticky notes and links"), via `api/share.js`. The link holds only the board's random id; an edit key stays after the `#`, which never reaches the server. The tags need the site's full address; Vercel provides the production domain at build time, or set `SITE_URL` (e.g. `https://canvas.kawus.com`) to choose it yourself.

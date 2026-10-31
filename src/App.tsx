@@ -1,4 +1,6 @@
+import { Analytics } from '@vercel/analytics/react'
 import { useEffect, useState, useSyncExternalStore } from 'react'
+import { pageOnly } from './analytics'
 import { routeFromHash, startPersistence } from './boards'
 import { Canvas } from './components/Canvas'
 import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
@@ -67,7 +69,13 @@ export default function App() {
     }
   }, [])
 
-  if (statsView) return <StatsPage />
+  if (statsView)
+    return (
+      <>
+        <StatsPage />
+        <Analytics beforeSend={pageOnly} />
+      </>
+    )
 
   return (
     <div className={`app ${loaded ? 'is-loaded' : ''}`}>
@@ -94,6 +102,7 @@ export default function App() {
       <InsertDialog />
       <CropOverlay />
       <LibraryDialogs />
+      <Analytics beforeSend={pageOnly} />
       {welcome && (
         <Welcome
           onClose={() => {
