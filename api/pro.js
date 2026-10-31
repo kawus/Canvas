@@ -45,6 +45,45 @@ async function stats() {
   return out
 }
 
+/**
+ * Board sync usage: each device tallies its "anything new?" checks and reports
+ * them in batches, so counting doesn't add a database request per check.
+ * @param {unknown} checks @param {unknown} changed @param {unknown} device
+ */
+async function recordUsage(checks, changed, device) {
+  const n = Math.floor(Number(checks))
+  const c = Math.floor(Number(changed))
+  if (!redisConfig() || !(n > 0 && n <= 100_000)) return
+  const keep = 60 * 60 * 24 * 120
+  const k = `usage:${day()}`
+  await redis(['INCRBY', `${k}:checks`, n])
+  await redis(['EXPIRE', `${k}:checks`, keep])
+  if (c > 0 && c <= n) {
+    await redis(['INCRBY', `${k}:changed`, c])
+    await redis(['EXPIRE', `${k}:changed`, keep])
+  }
+  if (typeof device === 'string' && DEVICE_RE.test(device)) {
+    await redis(['PFADD', `${k}:devices`, device])
+    await redis(['EXPIRE', `${k}:devices`, keep])
+  }
+}
+
+/** The last 30 days of board sync usage, newest last. */
+async function usage() {
+  const days = Array.from({ length: 30 }, (_, i) => day(29 - i))
+  const checks = /** @type {(string | null)[]} */ (await redis(['MGET', ...days.map((d) => `usage:${d}:checks`)]))
+  const changed = /** @type {(string | null)[]} */ (await redis(['MGET', ...days.map((d) => `usage:${d}:changed`)]))
+  /** @type {number[]} */
+  const devices = []
+  for (const d of days.slice(-14)) devices.push(Number((await redis(['PFCOUNT', `usage:${d}:devices`])) || 0))
+  return days.map((d, i) => ({
+    day: d,
+    checks: Number(checks[i] || 0),
+    changed: Number(changed[i] || 0),
+    devices: i >= 16 ? devices[i - 16] : null,
+  }))
+}
+
 /** Only send people back to this app. @param {Request} request @param {unknown} url */
 function safeReturn(request, url) {
   const origin = new URL(request.url).origin
@@ -69,7 +108,7 @@ export async function handle(request) {
   try {
     if (action === 'stats') {
       if (!redisConfig()) return json({ error: 'cloud storage not configured' }, 503)
-      return json({ mode: proMode(), events: await stats() })
+      return json({ mode: proMode(), events: await stats(), usage: await usage() })
     }
     const token = request.headers.get('x-pro-token')
     if (action === 'status') {
@@ -81,6 +120,11 @@ export async function handle(request) {
 
     if (action === 'track') {
       await track(String(body.event), body.device)
+      return new Response(null, { status: 204 })
+    }
+
+    if (action === 'usage') {
+      await recordUsage(body.checks, body.changed, body.device)
       return new Response(null, { status: 204 })
     }
 

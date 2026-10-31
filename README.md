@@ -95,7 +95,7 @@ Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live 
 
 **4. Canvas Pro: smoke test first, real payments later**
 
-Until a Stripe key is added, Pro runs as a **smoke test** ("fake door"): people see the real offer (locked "Edit together", pricing, Continue button), but nobody is charged. Choosing a plan records the interest and unlocks free early access on that device. See the results at **`/#stats`** on your site: how many hit the Pro feature, looked at the offer and chose monthly or yearly (counted anonymously, once per device). Set `PRO_MODE=off` in Vercel to switch the paywall off entirely.
+Until a Stripe key is added, Pro runs as a **smoke test** ("fake door"): people see the real offer (locked "Edit together", pricing, Continue button), but nobody is charged. Choosing a plan records the interest and unlocks free early access on that device. The same page also shows **Board sync**: how many "anything new?" checks open boards make each day (each is one small database read), with a monthly projection to compare against your Upstash plan. See the smoke-test results at **`/#stats`** on your site: how many hit the Pro feature, looked at the offer and chose monthly or yearly (counted anonymously, once per device). Set `PRO_MODE=off` in Vercel to switch the paywall off entirely.
 
 To take payments:
 

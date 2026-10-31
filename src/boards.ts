@@ -4,6 +4,7 @@ import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
 import { adoptLibrary, allBoards, forgetKey, inSafariTab, keyFor, myCanvasIn, onLibraryChange } from './library'
 import { activateProLink } from './pro'
 import { useStore } from './store'
+import { countCheck } from './usage'
 import {
   decodeShare,
   deleteBoard,
@@ -146,6 +147,7 @@ async function pullIfNewer(quick = false) {
   const before = s.doc
   const r = quick ? await fetchIfNewer(before.id, before.updatedAt) : await fetchRemote(before.id)
   noteRemote(r)
+  if (quick && r.ok) countCheck(r.value !== 'unchanged')
   if (!r.ok || !r.value || r.value === 'unchanged') return
   // only replace if nothing changed locally while we were fetching
   const now = S()

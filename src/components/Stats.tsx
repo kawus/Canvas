@@ -1,8 +1,9 @@
 import { ArrowLeft } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 
 type Counts = { total: number; people: number; last7: number }
-type Stats = { mode: string; events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts> }
+type Day = { day: string; checks: number; changed: number; devices: number | null }
+type Stats = { mode: string; events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts>; usage?: Day[] }
 
 const ROWS: { key: keyof Stats['events']; label: string; hint: string }[] = [
   { key: 'locked', label: 'Hit the Pro feature', hint: 'Opened “Edit together” without Pro' },
@@ -84,6 +85,111 @@ export function StatsPage() {
           </>
         )}
       </div>
+      {stats?.usage && <UsageCard days={stats.usage} />}
+    </div>
+  )
+}
+
+const fmt = (n: number) => Math.round(n).toLocaleString()
+const sum = (days: Day[], k: 'checks' | 'changed') => days.reduce((t, d) => t + d[k], 0)
+const dayLabel = (d: string, opts: Intl.DateTimeFormatOptions) => new Date(`${d}T00:00:00Z`).toLocaleDateString(undefined, { ...opts, timeZone: 'UTC' })
+
+/** Board sync: how often open boards ask the database "anything new?" */
+function UsageCard({ days }: { days: Day[] }) {
+  const [hover, setHover] = useState<number | null>(null)
+  const today = days[days.length - 1]
+  const week = days.slice(-7)
+  const recent = days.slice(-14)
+  const last7 = sum(week, 'checks')
+  const last30 = sum(days, 'checks')
+  const changed30 = sum(days, 'changed')
+  const perMonth = (last7 / 7) * 30
+  const max = Math.max(1, ...recent.map((d) => d.checks))
+  const tip = (d: Day) =>
+    `${dayLabel(d.day, { weekday: 'short', day: 'numeric', month: 'short' })}: ${fmt(d.checks)} checks, ${fmt(d.changed)} downloads${d.devices ? `, ${d.devices} device${d.devices === 1 ? '' : 's'}` : ''}`
+
+  return (
+    <div className="stats-card panel" data-testid="usage">
+      <h2 className="stats-title">Board sync</h2>
+      <p className="stats-sub">
+        While a board is open, each device asks the database “anything new?” every 10 seconds, so your own devices
+        stay in step. This isn’t live collaboration — that’s Edit together. Each check is one small database read; compare
+        the monthly figure with your Upstash plan’s request limit.
+      </p>
+      <div className="usage-kpis">
+        <div>
+          <div className="stats-big" data-testid="usage-today">{fmt(today.checks)}</div>
+          <div className="stats-label">checks today</div>
+        </div>
+        <div>
+          <div className="stats-big">{fmt(last7)}</div>
+          <div className="stats-label">last 7 days</div>
+        </div>
+        <div>
+          <div className="stats-big">{fmt(last30)}</div>
+          <div className="stats-label">last 30 days</div>
+        </div>
+        <div>
+          <div className="stats-big" data-testid="usage-month">{fmt(perMonth)}</div>
+          <div className="stats-label">per month, at this week’s pace</div>
+        </div>
+      </div>
+
+      <div className="usage-chart" aria-label="Checks per day, last 14 days">
+        {recent.map((d, i) => (
+          <div
+            key={d.day}
+            className="usage-slot"
+            tabIndex={0}
+            aria-label={tip(d)}
+            onPointerEnter={() => setHover(i)}
+            onPointerLeave={() => setHover(null)}
+            onFocus={() => setHover(i)}
+            onBlur={() => setHover(null)}
+          >
+            {i === recent.length - 1 && d.checks > 0 && (
+              <span className="usage-value" style={{ bottom: `calc(${(d.checks / max) * 100}% + 4px)` }}>
+                {fmt(d.checks)}
+              </span>
+            )}
+            <span className="usage-bar" style={{ height: `${(d.checks / max) * 100}%` }} />
+            {hover === i && <span className={`usage-tip ${i > recent.length - 4 ? 'is-left' : ''}`}>{tip(d)}</span>}
+          </div>
+        ))}
+      </div>
+      <div className="usage-axis">
+        <span>{dayLabel(recent[0].day, { day: 'numeric', month: 'short' })}</span>
+        <span>Today</span>
+      </div>
+
+      <p className="stats-foot">
+        {last30 ? `${Math.round((changed30 / last30) * 100)}% of checks found changes and downloaded the board. ` : ''}
+        {today.devices ? `${today.devices} device${today.devices === 1 ? '' : 's'} had a board open today. ` : ''}
+        Reported every few minutes, so today’s number lags a little.
+      </p>
+      <details className="usage-table">
+        <summary>Show as table</summary>
+        <table className="stats-table">
+          <thead>
+            <tr>
+              <th />
+              <th>Checks</th>
+              <th>Downloads</th>
+              <th>Devices</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[...days].reverse().map((d) => (
+              <tr key={d.day}>
+                <td>{dayLabel(d.day, { weekday: 'short', day: 'numeric', month: 'short' })}</td>
+                <td>{fmt(d.checks)}</td>
+                <td>{fmt(d.changed)}</td>
+                <td>{d.devices || '—'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
     </div>
   )
 }
