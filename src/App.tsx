@@ -20,6 +20,7 @@ import { shouldWelcome } from './onboarding'
 import { initLibrary } from './library'
 import { claimFromUrl, refreshPro } from './pro'
 import { useStore } from './store'
+import { startUpdates } from './updates'
 
 const subscribeHash = (cb: () => void) => {
   window.addEventListener('hashchange', cb)
@@ -59,6 +60,7 @@ export default function App() {
     void routeFromHash().then(initLibrary)
     // back from Stripe Checkout, then learn whether this device has Pro
     void claimFromUrl().then(refreshPro)
+    startUpdates()
     return () => {
       stopPersist()
       stopKeys()

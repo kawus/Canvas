@@ -54,7 +54,9 @@ function Cropper({ el }: { el: ImageEl }) {
 
   // Enter = done, Esc = cancel; nothing else reaches the canvas shortcuts
   const doneRef = useRef(done)
-  doneRef.current = done
+  useEffect(() => {
+    doneRef.current = done
+  })
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       e.stopPropagation()
