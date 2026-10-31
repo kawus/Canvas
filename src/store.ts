@@ -7,6 +7,8 @@ import type { Guide } from './snap'
 import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
 
+
+export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | null
 export type ThemePref = 'system' | 'light' | 'dark'
 /** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
 export type SyncStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'offline' | 'too-large' | 'error'
@@ -87,8 +89,8 @@ interface State {
   upgradeOpen: boolean
   /** "+" menu dialogs */
   insert: 'link' | 'color' | null
-  /** full-screen dialogs: All boards, My Canvas link */
-  panel: 'boards' | 'me' | null
+  /** dialogs: All boards, My Canvas link, pasting a link from another device, All boards after opening the link */
+  panel: Panel
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -109,7 +111,7 @@ interface State {
   setPro: (pro: Partial<ProState>) => void
   setUpgradeOpen: (open: boolean) => void
   setInsert: (insert: 'link' | 'color' | null) => void
-  setPanel: (panel: 'boards' | 'me' | null) => void
+  setPanel: (panel: Panel) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void

@@ -207,7 +207,7 @@ export function BoardMenu() {
               }}
               testId="my-canvas"
             >
-              Open on another device
+              Connect your devices
             </MenuItem>
           )}
           <div className="menu-sep" />

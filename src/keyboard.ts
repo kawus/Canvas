@@ -14,6 +14,8 @@ import {
 } from './actions'
 import { isTyping } from './controller'
 import { importImages, openImagePicker } from './images'
+import { connectMyCanvas } from './boards'
+import { myCanvasIn } from './library'
 import { addLink, isUrl } from './moodboard'
 import { useStore } from './store'
 import type { Tool } from './types'
@@ -157,7 +159,15 @@ export function startKeyboard() {
     if (copySelection(e)) useStore.getState().deleteSelected()
   }
   const onPaste = (e: ClipboardEvent) => {
-    if (isTyping(e) || useStore.getState().editingId || !useStore.getState().doc.key) return
+    if (isTyping(e) || useStore.getState().editingId) return
+    // your My Canvas link brings your boards here instead of becoming a link card
+    const pasted = e.clipboardData?.getData('text/plain') ?? ''
+    if (myCanvasIn(pasted)) {
+      e.preventDefault()
+      void connectMyCanvas(pasted)
+      return
+    }
+    if (!useStore.getState().doc.key) return
     const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length) {
       e.preventDefault()

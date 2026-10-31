@@ -291,6 +291,16 @@ export async function adoptLibrary(link: string): Promise<'same' | 'adopted' | '
   return 'adopted'
 }
 
+/** iPhone / iPad Safari in a tab: the Home Screen app keeps its own, separate storage. */
+export function inSafariTab() {
+  return (navigator as Navigator & { standalone?: boolean }).standalone === false
+}
+
+/** The My Canvas link inside pasted text (the whole link, or just its `me=…` part). */
+export function myCanvasIn(text: string) {
+  return /(?:^|[#\s])me=([a-z0-9]{10,32}\.[A-Za-z0-9]{16,64})\s*$/.exec(text.trim())?.[1] ?? null
+}
+
 let lastPull = 0
 let started = false
 

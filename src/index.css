@@ -962,10 +962,10 @@ button:focus:not(:focus-visible) {
     bottom: auto;
     top: calc(max(12px, env(safe-area-inset-top)) + var(--btn) + 14px);
   }
-  .primary-btn span {
+  .top-right .primary-btn span {
     display: none;
   }
-  .primary-btn {
+  .top-right .primary-btn {
     padding: 0 11px;
   }
   .title-input {
@@ -1761,4 +1761,76 @@ button:focus:not(:focus-visible) {
   justify-content: center;
   width: 100%;
   margin-top: 8px;
+}
+.dialog-back {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 32px;
+  height: 32px;
+  color: var(--text-2);
+}
+.text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 10px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--accent-ink);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+}
+.text-btn:hover {
+  background: var(--hover);
+}
+.text-btn svg.lucide,
+.dialog-cta svg.lucide,
+.home-tip svg.lucide {
+  width: 16px;
+  height: 16px;
+}
+.dialog-cta {
+  gap: 6px;
+}
+.connect-row {
+  margin-top: 10px;
+}
+.home-tip {
+  display: flex;
+  gap: 10px;
+  margin: 0 4px 10px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+.home-tip > svg.lucide {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--accent-ink);
+}
+.home-tip-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+.home-tip-text span {
+  color: var(--text-2);
+}
+.home-tip .ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+  margin-left: -8px;
+  color: var(--accent-ink);
+  font-weight: 500;
 }

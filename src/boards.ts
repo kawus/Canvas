@@ -1,7 +1,7 @@
 import { uploadAssets } from './assets'
 import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
-import { adoptLibrary, allBoards, forgetKey, keyFor, onLibraryChange } from './library'
+import { adoptLibrary, allBoards, forgetKey, inSafariTab, keyFor, myCanvasIn, onLibraryChange } from './library'
 import { activateProLink } from './pro'
 import { useStore } from './store'
 import {
@@ -387,15 +387,25 @@ async function route() {
 }
 
 /** Opening a My Canvas link: bring in its boards, open the latest one and show the list. */
-async function openMyCanvas(link: string) {
+async function openMyCanvas(link: string, fromUrl = true) {
   const result = await adoptLibrary(link)
   if (result === 'invalid') S().showToast('That My Canvas link looks broken')
   const [latest] = await allBoards()
-  if (latest) await openBoard(latest.id)
+  if (latest) await openBoard(latest.id, { push: !fromUrl })
   else await openBoard(newId(), { fresh: true })
   if (result === 'invalid') return
   S().showToast(result === 'same' ? 'This is your Canvas' : 'Welcome back — your boards are here')
-  S().setPanel('boards')
+  // in a Safari tab, also explain how to bring the boards into the Home Screen app
+  S().setPanel(fromUrl && inSafariTab() ? 'welcome' : 'boards')
+}
+
+/** A My Canvas link pasted into the app (e.g. the Home Screen app, which links can't open). */
+export async function connectMyCanvas(text: string) {
+  const link = myCanvasIn(text)
+  if (!link) return false
+  routing = routing.then(() => openMyCanvas(link, false))
+  await routing
+  return true
 }
 
 /** Make sure the latest version is saved and uploaded (e.g. before copying a live link). */
