@@ -36,11 +36,28 @@ function failure(res: Response | 'offline'): RemoteResult<never> {
 
 /** value is null when the board doesn't exist in the cloud yet */
 export async function fetchRemote(id: string): Promise<RemoteResult<BoardDoc | null>> {
-  const res = await request(id)
+  return parseBoard(await request(id))
+}
+
+/** Only downloads the board if it changed after `since` (value 'unchanged' otherwise). */
+export async function fetchIfNewer(id: string, since: number): Promise<RemoteResult<BoardDoc | null | 'unchanged'>> {
+  let res: Response | 'offline'
+  try {
+    res = await fetch(`${endpoint(id)}&since=${since}`, { cache: 'no-store' })
+  } catch {
+    res = 'offline'
+  }
+  return parseBoard(res, true)
+}
+
+async function parseBoard(res: Response | 'offline'): Promise<RemoteResult<BoardDoc | null>>
+async function parseBoard(res: Response | 'offline', allowUnchanged: true): Promise<RemoteResult<BoardDoc | null | 'unchanged'>>
+async function parseBoard(res: Response | 'offline', allowUnchanged = false): Promise<RemoteResult<BoardDoc | null | 'unchanged'>> {
   if (res !== 'offline' && res.status === 404 && isJson(res)) return { ok: true, value: null }
   if (res === 'offline' || !res.ok || !isJson(res)) return failure(res)
   try {
-    const doc = (await res.json()) as BoardDoc
+    const doc = (await res.json()) as BoardDoc & { unchanged?: boolean }
+    if (allowUnchanged && doc?.unchanged) return { ok: true, value: 'unchanged' }
     if (!doc || !Array.isArray(doc.elements)) return { ok: false, reason: 'error' }
     return { ok: true, value: doc }
   } catch {

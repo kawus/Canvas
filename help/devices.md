@@ -26,7 +26,9 @@ They're kept. Connecting doesn't replace anything — the boards on both devices
 
 ## Do my devices stay in sync?
 
-Yes. Once connected, boards you create, rename or delete on one device show up on the others. Each board's content syncs as you work; your list of boards updates a few seconds after a change, and when you come back to Canvas on another device.
+Yes. Once connected, boards you create, rename or delete on one device show up on the others. Changes to a board appear on your other devices within about 10 seconds, even if the board is already open there; your list of boards refreshes whenever you open the board menu or All boards.
+
+If you edit the same board on two devices at the very same moment, the most recent save wins — for real-time editing side by side, use [Edit together](topic:sharing#can-we-draw-on-the-same-board-at-the-same-time).
 
 ## I use Canvas from my Home Screen — how do I connect it?
 

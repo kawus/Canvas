@@ -1,5 +1,5 @@
 import { uploadAssets } from './assets'
-import { deleteRemote, fetchRemote, pushRemote, type RemoteResult } from './cloud'
+import { deleteRemote, fetchIfNewer, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
 import { adoptLibrary, allBoards, forgetKey, inSafariTab, keyFor, myCanvasIn, onLibraryChange } from './library'
 import { activateProLink } from './pro'
@@ -138,23 +138,25 @@ function hasUnsyncedChanges() {
 }
 
 /** Pull a newer version of the open board from the cloud (e.g. edited on another device). */
-async function pullIfNewer() {
+async function pullIfNewer(quick = false) {
   const s = S()
-  // while collaborating live, the room keeps everyone in sync
+  // while collaborating live, the room keeps everyone in sync; and never mid-edit
   if (!s.cloud || !s.loaded || hasUnsyncedChanges() || pushing || isLive()) return
+  if (s.editingId || s.cropId || s.draft) return
   const before = s.doc
-  const r = await fetchRemote(before.id)
+  const r = quick ? await fetchIfNewer(before.id, before.updatedAt) : await fetchRemote(before.id)
   noteRemote(r)
-  if (!r.ok || !r.value) return
+  if (!r.ok || !r.value || r.value === 'unchanged') return
   // only replace if nothing changed locally while we were fetching
-  if (S().doc !== before) return
-  S().setDocPro(!!r.value.pro)
+  const now = S()
+  if (now.doc !== before || now.editingId || now.cropId || now.draft) return
+  now.setDocPro(!!r.value.pro)
   if (r.value.updatedAt <= before.updatedAt) return
-  // the cloud copy never contains the edit key, so keep ours
-  const merged = withKey(r.value, before.key)
-  await saveBoard(merged)
-  show(merged, true, true)
+  // changes from your other device: applied in place, keeping your selection, view and undo
+  now.applyRemote(r.value.elements, r.value.title, r.value.updatedAt)
   lastSynced = S().doc
+  await saveBoard(S().doc)
+  setTitle(S().doc)
   S().setSync('saved')
 }
 
@@ -451,9 +453,10 @@ export function startPersistence() {
   }
   const onFocus = () => void pullIfNewer()
   // viewers have no live connection: check for the owner's changes now and then
+  // pick up changes made on your other devices (or by the owner, for viewers) while a board is open
   const poll = setInterval(() => {
-    if (!S().doc.key && document.visibilityState === 'visible') void pullIfNewer()
-  }, 15_000)
+    if (document.visibilityState === 'visible') void pullIfNewer(true)
+  }, 10_000)
   const onOnline = () => {
     if (hasUnsyncedChanges()) void flushSave()
   }

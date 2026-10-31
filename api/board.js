@@ -57,6 +57,9 @@ export async function handle(request) {
     switch (request.method) {
       case 'GET': {
         if (!record) return json({ error: 'not found' }, 404)
+        // a device checking for changes made elsewhere: answer briefly when there are none
+        const since = Number(new URL(request.url).searchParams.get('since'))
+        if (since && typeof record.updatedAt === 'number' && record.updatedAt <= since) return json({ unchanged: true })
         // never reveal the key hash or who pays; just whether live editing is paid for right now
         const { keyHash: _k, proCustomer, ...pub } = record
         const pro = !!proCustomer && (!paywallEnabled() || (await isActive(proCustomer).catch(() => true)))
