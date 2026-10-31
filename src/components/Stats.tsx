@@ -112,8 +112,8 @@ function UsageCard({ days }: { days: Day[] }) {
     <div className="stats-card panel" data-testid="usage">
       <h2 className="stats-title">Board sync</h2>
       <p className="stats-sub">
-        While a board is open, each device asks the database “anything new?” every 10 seconds, so your own devices
-        stay in step. This isn’t live collaboration — that’s Edit together. Each check is one small database read; compare
+        While a board is open, each device asks the database “anything new?” — every 10 seconds while it's being worked on,
+        easing off to once a minute when it's quiet — so your own devices stay in step. This isn’t live collaboration — that’s Edit together. Each check is one small database read; compare
         the monthly figure with your Upstash plan’s request limit.
       </p>
       <div className="usage-kpis">

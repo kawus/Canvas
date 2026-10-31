@@ -449,20 +449,38 @@ export function startPersistence() {
       }, 300)
     }
   })
+  // How often an open board looks for changes made elsewhere: every 10 s while
+  // something is happening (you're working on it, or it just changed), easing off
+  // to every 30 s and then once a minute when the board has been quiet.
+  let lastPoke = Date.now()
+  let lastCheck = Date.now()
+  const poke = () => (lastPoke = Date.now())
+  const checkEvery = () => {
+    const quiet = Date.now() - Math.max(lastPoke, S().doc.updatedAt)
+    return quiet < 2 * 60_000 ? 10_000 : quiet < 10 * 60_000 ? 30_000 : 60_000
+  }
   const onVisibility = () => {
     if (document.visibilityState === 'hidden') void flushSave()
-    else void pullIfNewer()
+    else {
+      poke()
+      void pullIfNewer()
+    }
   }
   const onFocus = () => void pullIfNewer()
   // viewers have no live connection: check for the owner's changes now and then
   // pick up changes made on your other devices (or by the owner, for viewers) while a board is open
   const poll = setInterval(() => {
-    if (document.visibilityState === 'visible') void pullIfNewer(true)
-  }, 10_000)
+    if (document.visibilityState !== 'visible' || Date.now() - lastCheck < checkEvery()) return
+    lastCheck = Date.now()
+    void pullIfNewer(true)
+  }, 2_000)
   const onOnline = () => {
     if (hasUnsyncedChanges()) void flushSave()
   }
   const onHash = () => void routeFromHash()
+  window.addEventListener('pointerdown', poke, true)
+  window.addEventListener('keydown', poke, true)
+  window.addEventListener('wheel', poke, { capture: true, passive: true })
   // the open board turned out to be yours (My Canvas knows its edit key from another device)
   const offLibrary = onLibraryChange(() => {
     const s = S()
@@ -485,5 +503,8 @@ export function startPersistence() {
     window.removeEventListener('focus', onFocus)
     window.removeEventListener('online', onOnline)
     window.removeEventListener('hashchange', onHash)
+    window.removeEventListener('pointerdown', poke, true)
+    window.removeEventListener('keydown', poke, true)
+    window.removeEventListener('wheel', poke, true)
   }
 }

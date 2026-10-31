@@ -26,7 +26,7 @@ They're kept. Connecting doesn't replace anything — the boards on both devices
 
 ## Do my devices stay in sync?
 
-Yes. Once connected, boards you create, rename or delete on one device show up on the others. Changes to a board appear on your other devices within about 10 seconds, even if the board is already open there; your list of boards refreshes whenever you open the board menu or All boards.
+Yes. Once connected, boards you create, rename or delete on one device show up on the others. Changes to a board appear on your other devices within about 10 seconds while you're working on it, even if the board is already open there (a board that's been left untouched checks less often — at most a minute — and catches up instantly when you come back to it); your list of boards refreshes whenever you open the board menu or All boards.
 
 If you edit the same board on two devices at the very same moment, the most recent save wins — for real-time editing side by side, use [Edit together](topic:sharing#can-we-draw-on-the-same-board-at-the-same-time).
 
