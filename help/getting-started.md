@@ -25,7 +25,7 @@ No. Everything saves automatically as you work, first on your device (so it also
 
 ## How do I find my other boards?
 
-Open the **board menu**. Your most recent boards are listed at the top. **All boards** shows every board you have, including ones you made on your other devices, with a search box once you have a few.
+Open the **board menu**. Your most recent boards are listed at the top. **All boards** shows every board you have with a small preview, including ones you made on your other devices, and a search box once you have a few.
 
 ## How do I move around the board?
 

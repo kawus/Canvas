@@ -5,6 +5,7 @@ import { connectMyCanvas, newBoard, openBoard } from '../boards'
 import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, type BoardRow } from '../library'
 import { helpUrl } from '../help'
 import { useStore } from '../store'
+import { BoardThumb } from './BoardThumb'
 import { timeAgo } from './TopBar'
 
 /** Close on Escape without also deselecting or switching tools. */
@@ -99,6 +100,7 @@ function AllBoards({ close, welcome }: { close: () => void; welcome: boolean }) 
             data-testid="board-row"
             data-id={b.id}
           >
+            <BoardThumb id={b.id} version={b.updatedAt} here={b.here} />
             <span className="board-row-main">
               <span className="board-row-title">{b.title || 'Untitled'}</span>
               <span className="board-row-meta">

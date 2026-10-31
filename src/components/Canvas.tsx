@@ -38,7 +38,7 @@ function ImageView({ el, palette, hash }: { el: El; palette: Palette; hash: stri
   )
 }
 
-const ElementView = memo(function ElementView({
+export const ElementView = memo(function ElementView({
   el,
   palette,
   faded,
