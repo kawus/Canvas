@@ -13,7 +13,7 @@ There's no sign-up. Open [Canvas](app:) and start drawing.
 
 ## How do I start a new board?
 
-Every time you open Canvas you're on a board, ready to draw. To start another, open the **board menu** (the Canvas logo, top left) and choose **New board**. Give it a name by clicking **Untitled** next to the logo and typing.
+Every time you open Canvas you're on a board, with the Select tool picked so a stray tap never leaves a mark — pick the pen or another tool to start. To start another, open the **board menu** (the Canvas logo, top left) and choose **New board**. Give it a name by clicking **Untitled** next to the logo and typing.
 
 ## Do I need to save?
 

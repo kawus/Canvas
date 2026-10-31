@@ -187,7 +187,8 @@ export const useStore = create<State>((set, get) => ({
   doc: emptyBoard(),
   loaded: false,
   viewport: { x: 0, y: 0, zoom: 1 },
-  tool: 'pen',
+  // Select, so a stray tap or click never leaves a mark
+  tool: 'select',
   style: readStyle(),
   selectedIds: [],
   editingId: null,
@@ -216,10 +217,10 @@ export const useStore = create<State>((set, get) => ({
   cropId: null,
 
   setDoc: (doc) =>
-    set((s) => ({
+    set(() => ({
       doc,
-      // view-only boards open with the hand tool
-      tool: doc.key ? s.tool : 'hand',
+      // boards open with Select (no accidental marks); view-only boards with the hand tool
+      tool: doc.key ? 'select' : 'hand',
       change: 'load',
       loaded: true,
       past: [],
@@ -274,7 +275,8 @@ export const useStore = create<State>((set, get) => ({
       delete doc.key
       return { doc, change: 'load', selectedIds: [], editingId: null, tool: 'hand' }
     }),
-  setKey: (key) => set((s) => ({ doc: { ...s.doc, key }, change: 'load' })),
+  // the board turned out to be yours: leave the view-only hand tool for Select
+  setKey: (key) => set((s) => ({ doc: { ...s.doc, key }, change: 'load', tool: s.tool === 'hand' ? 'select' : s.tool })),
   setPro: (pro) => set((s) => ({ pro: { ...s.pro, ...pro } })),
   setUpgradeOpen: (upgradeOpen) => set({ upgradeOpen }),
   setInsert: (insert) => set({ insert }),
