@@ -38,7 +38,9 @@ export function PresentButton() {
   const list = useRef<HTMLDivElement>(null)
 
   const chosen = selectedIds.length === 1 ? slides.findIndex((s) => s.id === selectedIds[0]) : -1
-  const from = Math.max(chosen, 0)
+  // the show starts at the beginning, unless you picked a slide in this list
+  const [picked, setPicked] = useState<string | null>(null)
+  const from = picked && slides[chosen]?.id === picked ? chosen : 0
 
   // a view-only board without slides has nothing to present
   if (!canEdit && !slides.length) return null
@@ -62,7 +64,10 @@ export function PresentButton() {
       <button
         type="button"
         className={`panel-btn present-btn ${open ? 'is-open' : ''}`}
-        onClick={() => setOpen(!open)}
+        onClick={() => {
+          setPicked(null)
+          setOpen(!open)
+        }}
         aria-expanded={open}
         data-testid="present"
       >
@@ -86,7 +91,10 @@ export function PresentButton() {
                     key={slide.id}
                     className={`slide-row ${chosen === i ? 'is-active' : ''} ${dragging ? 'is-dragging' : ''}`}
                     style={dragging ? { transform: `translateY(${drag.dy - (to - drag.from) * ROW}px)` } : undefined}
-                    onClick={() => showSlide(slide)}
+                    onClick={() => {
+                      setPicked(slide.id)
+                      showSlide(slide)
+                    }}
                     aria-label={`Slide ${dragging ? to + 1 : shownAt + 1}`}
                     data-testid="slide-row"
                   >
