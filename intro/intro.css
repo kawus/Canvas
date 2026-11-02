@@ -672,6 +672,9 @@ h2 {
 .scene-tidy {
   height: 300vh;
 }
+.scene-present {
+  height: 400vh;
+}
 .sticky-frame {
   position: sticky;
   top: 0;
@@ -1320,6 +1323,210 @@ h2 {
   color: var(--text);
 }
 
+/* Present: a little board that plays its slides */
+.present-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  max-height: 72svh;
+  border-radius: 24px;
+  overflow: hidden;
+  background: var(--bg-2);
+  box-shadow: inset 0 0 0 1px var(--border), var(--shadow);
+  isolation: isolate;
+}
+@media (max-width: 860px) {
+  .present-stage {
+    align-self: center;
+  }
+}
+.p-world {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1500px;
+  height: 960px;
+  transform-origin: 0 0;
+}
+.p-dots {
+  position: absolute;
+  left: -1500px;
+  top: -1000px;
+  width: 4500px;
+  height: 3000px;
+  background-image: radial-gradient(var(--dot) 1.6px, transparent 1.9px);
+  background-size: 26px 26px;
+}
+.p-el {
+  position: absolute;
+}
+.p-el.sticky {
+  padding: 10px;
+  font-size: 17px;
+  transform: rotate(var(--r, 0deg));
+}
+.p-el.photo {
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+}
+.p-el.swatch-card {
+  box-shadow: var(--shadow);
+}
+.p-el.swatch-card b {
+  font-size: 7px;
+}
+.p-pink {
+  background: #ffc6c1;
+  color: #4a1410;
+}
+.p-blue {
+  background: #cfe9ff;
+  color: #0b2a44;
+}
+.p-grey {
+  background: #e5e5ea;
+  color: #2c2c2e;
+}
+.p-headline {
+  font-size: 46px;
+  font-weight: 650;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  white-space: nowrap;
+}
+.p-sub {
+  color: var(--text-2);
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.p-title {
+  font-size: 30px;
+  font-weight: 650;
+  letter-spacing: -0.035em;
+  white-space: nowrap;
+}
+.p-box {
+  display: grid;
+  place-items: center;
+  width: 150px;
+  height: 90px;
+  border: 3px solid var(--c);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--c);
+  font-size: 20px;
+  font-weight: 650;
+}
+.p-arrow {
+  width: 30px;
+  height: 18px;
+  background:
+    linear-gradient(var(--text-3), var(--text-3)) 0 50% / 24px 3px no-repeat,
+    conic-gradient(from -135deg at 100% 50%, var(--text-3) 90deg, transparent 0) 100% 50% / 12px 18px no-repeat;
+}
+.p-ink path {
+  fill: none;
+  stroke: #30d158;
+  stroke-width: 7;
+  stroke-linecap: round;
+}
+.p-frame {
+  position: absolute;
+  border: 2px dashed rgba(10, 132, 255, 0.6);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.p-frame span {
+  position: absolute;
+  left: -2px;
+  bottom: calc(100% + 10px);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 36px;
+  padding: 0 16px 0 5px;
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 1.5px rgba(10, 132, 255, 0.4), var(--shadow);
+  color: var(--accent-ink);
+  font-size: 18px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.p-frame b {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+}
+.p-spot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.p-veil {
+  fill: var(--bg-2);
+}
+.p-ring {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 2;
+}
+.p-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(29, 29, 31, 0.78);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transform: translateX(-50%);
+  opacity: 0;
+}
+.p-bar i {
+  width: 6px;
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.4);
+  transition: width 0.3s var(--out), background-color 0.3s ease;
+}
+.p-bar i.is-on {
+  width: 18px;
+  background: #fff;
+}
+.p-play {
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 34px;
+  padding: 0 14px 0 11px;
+  border-radius: 10px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 6px 16px -6px rgba(10, 132, 255, 0.6);
+  transform: scale(var(--press, 1));
+  transition: transform 0.15s ease;
+}
+.p-play svg {
+  width: 13px;
+  height: 13px;
+  fill: currentColor;
+}
+
 /* ---------- Reduced motion: everything in its final place, nothing moving ---------- */
 
 @media (prefers-reduced-motion: reduce) {
@@ -1346,7 +1553,8 @@ h2 {
     opacity: 1;
   }
   .scene-draw,
-  .scene-tidy {
+  .scene-tidy,
+  .scene-present {
     height: auto;
   }
   .sticky-frame {

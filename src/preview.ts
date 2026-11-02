@@ -1,3 +1,4 @@
+import { contentOf } from './geometry'
 import { pushPreview } from './cloud'
 import { boardSnapshot } from './export'
 import { useStore } from './store'
@@ -14,7 +15,7 @@ let busy = false
 export async function refreshPreview(sharing: boolean) {
   const s = useStore.getState()
   const doc = s.doc
-  if (busy || !s.cloud || !doc.key || !doc.elements.length) return
+  if (busy || !s.cloud || !doc.key || !contentOf(doc.elements).length) return
   if (doc.preview === doc.updatedAt) return // already up to date
   if (!sharing && doc.preview === undefined) return // never shared: nothing to keep fresh
   busy = true

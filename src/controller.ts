@@ -6,6 +6,7 @@ import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
 import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
+import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } from './types'
@@ -158,6 +159,13 @@ export class CanvasController {
 
   private world(sx: number, sy: number): Point {
     return toWorld(S().viewport, sx, sy)
+  }
+
+  /** What a press at this screen point picks: a slide's name tag, else the top-most thing there. */
+  private pickAt(sx: number, sy: number, pointerType: string) {
+    const s = S()
+    const slop = pointerType === 'touch' ? 6 : 2
+    return slideTagAt(s.doc.elements, s.viewport, sx, sy, slop) ?? hitTopmost(s.doc.elements, this.world(sx, sy), this.tolerance(pointerType))
   }
 
   private tolerance(type: string) {
@@ -384,7 +392,7 @@ export class CanvasController {
             before,
             orig: new Map(sel.map((x) => [x.id, x])),
             ids: new Set(sel.map((x) => x.id)),
-            lockAspect: sel.length === 1 && (sel[0].type === 'text' || sel[0].type === 'image'),
+            lockAspect: sel.length === 1 && (sel[0].type === 'text' || sel[0].type === 'image' || sel[0].type === 'slide'),
           }
         }
         this.updateCursor(h.cursor)
@@ -392,7 +400,7 @@ export class CanvasController {
       }
     }
 
-    const hit = hitTopmost(s.doc.elements, p, this.tolerance(e.pointerType))
+    const hit = this.pickAt(sx, sy, e.pointerType)
 
     // 2. double click / tap: edit text or a label, or create text on empty canvas
     if (isDouble) {
@@ -472,6 +480,8 @@ export class CanvasController {
     if (hitHandle(getHandles(sel, s.viewport), sx, sy, 14)) return true
     const frame = sel.length > 1 ? selectionFrame(sel, s.viewport) : null
     if (frame && pointInBox([sx, sy], frame)) return true
+    const tag = slideTagAt(s.doc.elements, s.viewport, sx, sy, 2)
+    if (tag && s.selectedIds.includes(tag.id)) return true
     return sel.some((el) => hitTest(el, p, this.tolerance('pen')))
   }
 
@@ -712,7 +722,7 @@ export class CanvasController {
       return
     }
     this.updateCursor()
-    const hit = hitTopmost(s.doc.elements, this.world(sx, sy), this.tolerance(e.pointerType))
+    const hit = this.pickAt(sx, sy, e.pointerType)
     s.setHovered(hit && !s.selectedIds.includes(hit.id) ? hit.id : null)
   }
 
@@ -765,7 +775,8 @@ export class CanvasController {
     const steps = Math.max(1, Math.ceil(len / tol))
     let changed = false
     for (const el of s.doc.elements) {
-      if (a.hits.has(el.id)) continue
+      // the eraser leaves slide frames alone (select one and delete it instead)
+      if (a.hits.has(el.id) || el.type === 'slide') continue
       for (let i = 0; i <= steps; i++) {
         const t = i / steps
         const p: Point = [from[0] + (to[0] - from[0]) * t, from[1] + (to[1] - from[1]) * t]
@@ -818,7 +829,7 @@ export class CanvasController {
         s.setDraft(null)
         if (a.tap && !a.tap.far) {
           // a Pencil tap with Select picked: select what's there (or clear the selection), no dot
-          const hit = hitTopmost(s.doc.elements, this.world(a.tap.sx, a.tap.sy), this.tolerance('pen'))
+          const hit = this.pickAt(a.tap.sx, a.tap.sy, 'pen')
           s.select(hit ? groupOf(s.doc.elements, hit.id) : [])
           break
         }

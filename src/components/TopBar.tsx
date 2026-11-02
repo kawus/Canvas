@@ -32,6 +32,7 @@ import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
+import { contentOf } from '../geometry'
 import { refreshPreview } from '../preview'
 import { openPortal, track } from '../pro'
 import { selectedElements, useStore, type ThemePref } from '../store'
@@ -522,7 +523,7 @@ export function ExportButton() {
 
   const sel = selectedElements({ doc, selectedIds })
   const useSel = onlySelection && sel.length > 0
-  const els = useSel ? sel : doc.elements
+  const els = contentOf(useSel ? sel : doc.elements)
 
   const run = async (fn: typeof exportPdf) => {
     if (!els.length) {

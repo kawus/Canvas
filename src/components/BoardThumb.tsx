@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { fetchRemote } from '../cloud'
 import { PALETTE_DARK, PALETTE_LIGHT } from '../constants'
-import { geometricBounds } from '../geometry'
+import { contentOf, geometricBounds } from '../geometry'
 import { loadBoard } from '../storage'
 import { useStore } from '../store'
 import type { El } from '../types'
@@ -49,7 +49,7 @@ export function BoardThumb({ id, version, here }: { id: string; version: number;
     }
   }, [id, version, here, current, els])
 
-  const shown = current ?? els
+  const shown = current || els ? contentOf(current ?? els!) : null
   const b = shown?.length ? geometricBounds(shown) : null
   const pad = b ? Math.max(b.maxX - b.minX, b.maxY - b.minY) * 0.06 + 8 : 0
   return (

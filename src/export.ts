@@ -2,7 +2,7 @@ import { loadAsset } from './assets'
 import fontWoff2Url from './assets/fonts/Geist-Variable.woff2?url'
 import fontTtfUrl from './assets/fonts/Geist-Regular.ttf?url'
 import { FONT_FAMILY, PALETTE_LIGHT } from './constants'
-import { unionBounds } from './geometry'
+import { contentOf, unionBounds } from './geometry'
 import { elementPrims, primToMarkup } from './render'
 import type { El } from './types'
 
@@ -22,8 +22,10 @@ async function fetchBase64(url: string) {
 }
 
 /** Build a standalone SVG of the given elements (always in the light palette). */
-export async function buildSvg(elements: El[], opts: { embedFont: boolean; background: boolean }) {
-  const b = unionBounds(elements)!
+export async function buildSvg(all: El[], opts: { embedFont: boolean; background: boolean }) {
+  // slide frames are for presenting only
+  const elements = contentOf(all)
+  const b = unionBounds(elements) ?? { minX: 0, minY: 0, maxX: 1, maxY: 1 }
   const x = b.minX - PAD
   const y = b.minY - PAD
   const width = Math.ceil(b.maxX - b.minX + PAD * 2)
@@ -79,7 +81,7 @@ export async function exportSvg(elements: El[], title: string) {
  * board on Canvas's dotted paper with a small Canvas badge. JPEG data URL.
  */
 export async function boardSnapshot(elements: El[]): Promise<string | null> {
-  if (!elements.length) return null
+  if (!contentOf(elements).length) return null
   const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: false })
   const img = new Image()
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))

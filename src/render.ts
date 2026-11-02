@@ -145,6 +145,9 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
   // ink is near-white only in the dark palette
   const dark = palette.ink !== STICKY_INK
   switch (el.type) {
+    // slide frames are drawn by the editor overlay only, never in exports or previews
+    case 'slide':
+      return []
     case 'link': {
       const l = linkLayout(el)
       const out: Prim[] = [cardPrim(el, dark)]

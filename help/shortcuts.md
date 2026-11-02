@@ -51,6 +51,15 @@ order: 9
 | <kbd>⇧0</kbd> | Zoom to 100% |
 | <kbd>?</kbd> | Show the shortcuts in Canvas |
 
+## Presenting
+
+| Key | Action |
+| --- | --- |
+| <kbd>→</kbd> or <kbd>Space</kbd> | Next slide |
+| <kbd>←</kbd> | Previous slide |
+| <kbd>O</kbd> | Overview of the whole board |
+| <kbd>Esc</kbd> | Stop presenting |
+
 On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd> and <kbd>Alt</kbd> instead of <kbd>⌥</kbd>.
 
 > In Canvas, press <kbd>?</kbd> or tap the **?** button in the bottom-right corner to see these shortcuts any time — shown with the right keys for your computer.

@@ -6,8 +6,8 @@ import './intro.css'
 /**
  * The front page for new visitors (/intro/). Plain DOM and CSS for speed:
  * the headline writes itself in, board objects float and follow the pointer,
- * two scroll-driven scenes (ink that draws itself, a moodboard that tidies
- * itself) and live cursors. With "reduce motion" on, everything simply shows
+ * three scroll-driven scenes (ink that draws itself, a moodboard that tidies
+ * itself, a board that presents itself) and live cursors. With "reduce motion" on, everything simply shows
  * its finished state.
  */
 
@@ -258,6 +258,110 @@ function updateTidy(p: number) {
   stage.style.setProperty('--guide-o', String(guides))
 }
 
+/* ---------- Scene: a board presents itself ---------- */
+
+const present = $('[data-scene="present"]')
+const pStage = $('[data-present-stage]')
+const pWorld = $('[data-present-world]')
+const pFrames = $$('[data-present-frame]')
+const pBar = $('[data-present-bar]')
+const pDots = $$('i', pBar)
+const pPlay = $('[data-present-play]')
+const pVeil = $<SVGRectElement>('.p-veil', pStage)
+const [pOld, pNew, pRing] = (['old', 'new', 'ring'] as const).map((k) => $<SVGRectElement>(`[data-hole="${k}"]`, pStage))
+type PBox = [x: number, y: number, w: number, h: number]
+// the board's slides, in world units, and the whole board around them
+const P_SLIDES: PBox[] = [
+  [60, 60, 600, 337.5],
+  [840, 140, 640, 360],
+  [300, 560, 600, 337.5],
+]
+const P_ALL: PBox = [-20, 20, 1500, 900]
+/** a camera: world centre and world width across the stage */
+type PCam = [number, number, number]
+function pFit([x, y, w, h]: PBox, margin: number): PCam {
+  const sw = pStage.clientWidth
+  const sh = pStage.clientHeight
+  const z = Math.min((sw * (1 - margin)) / w, (sh * (1 - margin)) / h)
+  return [x + w / 2, y + h / 2, sw / z]
+}
+/** the zoom-out-and-in flight the app uses between slides (van Wijk & Nuij) */
+function pFlight(a: PCam, b: PCam, t: number): PCam {
+  const rho = 1.9
+  const [ux0, uy0, w0] = a
+  const [ux1, uy1, w1] = b
+  const dx = ux1 - ux0
+  const dy = uy1 - uy0
+  const d2 = dx * dx + dy * dy
+  if (d2 < 1e-6) return [ux0, uy0, w0 * Math.pow(w1 / w0, t)]
+  const d1 = Math.sqrt(d2)
+  const r = (sign: number, w: number) => {
+    const b0 = (w1 * w1 - w0 * w0 + sign * rho ** 4 * d2) / (2 * w * rho * rho * d1)
+    return Math.log(Math.sqrt(b0 * b0 + 1) - b0)
+  }
+  const r0 = r(1, w0)
+  const r1 = r(-1, w1)
+  const s = t * ((r1 - r0) / rho)
+  const u = (w0 / (rho * rho * d1)) * (Math.cosh(r0) * Math.tanh(rho * s + r0) - Math.sinh(r0))
+  return [ux0 + u * dx, uy0 + u * dy, (w0 * Math.cosh(r0)) / Math.cosh(rho * s + r0)]
+}
+// the show along the scroll: [start, end, from, to] with -1 for the whole board
+const P_LEGS: [number, number, number, number][] = [
+  [0.1, 0.24, -1, 0],
+  [0.34, 0.5, 0, 1],
+  [0.6, 0.76, 1, 2],
+  [0.86, 0.98, 2, -1],
+]
+function updatePresent(p: number) {
+  const camOf = (i: number) => (i < 0 ? pFit(P_ALL, 0.08) : pFit(P_SLIDES[i], 0))
+  const boxOf = (i: number): PBox => (i < 0 ? P_ALL : P_SLIDES[i])
+  // where we are: resting on a spot, or flying between two
+  let cam = camOf(-1)
+  let lit = -1
+  let from = -1
+  let mix = 1
+  let ring = 0
+  for (const [a, b, f, t] of P_LEGS) {
+    if (p < a) break
+    const k = easeInOut(range(p, a, b))
+    cam = pFlight(camOf(f), camOf(t), k)
+    from = f
+    lit = t
+    mix = clamp((k - 0.15) / 0.7)
+    ring = t < 0 || k >= 1 ? 0 : Math.sin(Math.PI * k) * 0.9
+  }
+  const sw = pStage.clientWidth
+  const sh = pStage.clientHeight
+  const z = sw / cam[2]
+  const x = sw / 2 - cam[0] * z
+  const y = sh / 2 - cam[1] * z
+  pWorld.style.transform = `translate(${x}px, ${y}px) scale(${z})`
+  const place = (el: SVGRectElement, i: number) => {
+    const [bx, by, bw, bh] = boxOf(i)
+    el.setAttribute('x', String(bx * z + x))
+    el.setAttribute('y', String(by * z + y))
+    el.setAttribute('width', String(bw * z))
+    el.setAttribute('height', String(bh * z))
+  }
+  // the spotlight: dims the board around the slide, fades over from the one you left
+  const dimOf = (i: number) => (i < 0 ? 0 : 0.62)
+  place(pNew, lit)
+  place(pRing, lit)
+  place(pOld, from)
+  pOld.setAttribute('fill-opacity', String(from < 0 ? 0 : 1 - mix))
+  pNew.setAttribute('fill-opacity', String(lit < 0 ? 0 : mix))
+  pVeil.setAttribute('fill-opacity', String(lerp(dimOf(from), dimOf(lit), mix)))
+  pRing.setAttribute('stroke-opacity', String(ring))
+  // slide frames show while editing, the controls while presenting
+  const showing = range(p, 0.1, 0.16) * (1 - range(p, 0.9, 0.96))
+  for (const f of pFrames) f.style.opacity = String(1 - showing)
+  pBar.style.opacity = String(showing)
+  pPlay.style.opacity = String(1 - range(p, 0.06, 0.12) + range(p, 0.97, 1))
+  pPlay.style.setProperty('--press', p > 0.07 && p < 0.1 ? '0.92' : '1')
+  const at = p < 0.34 ? 0 : p < 0.6 ? 1 : 2
+  pDots.forEach((d, i) => d.classList.toggle('is-on', i === at))
+}
+
 /* ---------- Together: live cursors drawing ---------- */
 
 const board = $('[data-live-board]')
@@ -320,7 +424,7 @@ const watch = new IntersectionObserver((entries) => {
   }
   wake()
 })
-for (const el of [hero, draw, tidy, board]) watch.observe(el)
+for (const el of [hero, draw, tidy, present, board]) watch.observe(el)
 
 const progressOf = (el: HTMLElement) => {
   const r = el.getBoundingClientRect()
@@ -339,6 +443,7 @@ function frame(t: number) {
   }
   if (visible.has(draw)) updateDraw(progressOf(draw))
   if (visible.has(tidy)) updateTidy(progressOf(tidy))
+  if (visible.has(present)) updatePresent(progressOf(present))
   if (visible.has(board)) updateTogether(t)
   // the hero and the live board animate on their own; scroll scenes only when scrolled
   if (visible.has(hero) || visible.has(board)) wake()
@@ -351,11 +456,13 @@ function wake() {
 
 function layout() {
   sizeItems()
+  updatePresent(progressOf(present))
   sizeCanvas()
   if (still) {
     // finished states, nothing moving
     updateDraw(1)
     updateTidy(1)
+    updatePresent(0)
     moveHeroCursor(9000)
     return
   }

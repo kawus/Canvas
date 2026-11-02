@@ -7,7 +7,7 @@ order: 1
 
 ## What is Canvas?
 
-Canvas is a calm, minimal whiteboard. You can sketch, write, add shapes, sticky notes, images and links, and share what you make. It works in your browser on a computer, iPad and iPhone, with a mouse, a trackpad, your fingers or Apple Pencil.
+Canvas is a calm, minimal whiteboard. You can sketch, write, add shapes, sticky notes, images and links, share what you make, and [present it as slides](topic:presenting#how-do-i-make-a-presentation) that glide across the board. It works in your browser on a computer, iPad and iPhone, with a mouse, a trackpad, your fingers or Apple Pencil.
 
 There's no sign-up. Open [Canvas](app:) and start drawing.
 

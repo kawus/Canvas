@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Canvas — a calm whiteboard for your ideas</title>
-    <meta name="description" content="Sketch, plan and make moodboards on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
+    <meta name="description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
     <!-- link previews in messaging and social apps (__SITE__ = the site's address, filled in at build time) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Canvas" />
     <meta property="og:title" content="Canvas — a calm whiteboard for your ideas" />
-    <meta property="og:description" content="Sketch, plan and make moodboards on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
+    <meta property="og:description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
     <meta property="og:url" content="__SITE__/intro/" />
     <meta property="og:image" content="__SITE__/og.png" />
     <meta property="og:image:width" content="1200" />
@@ -110,6 +110,60 @@
             <div class="guide" data-guide style="--x: 1"></div>
             <div class="tidy-bar" data-tidy-btn><svg viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1" /><rect width="7" height="5" x="14" y="3" rx="1" /><rect width="7" height="9" x="14" y="12" rx="1" /><rect width="7" height="5" x="3" y="16" rx="1" /></svg>Tidy up</div>
             <div class="cursor c-tidy" data-tidy-cursor style="--c: #0a84ff"><svg viewBox="0 0 20 22"><path d="M1 1 L1 18 L5.5 13.6 L9 21 L12 19.7 L8.6 12.6 L15 12.6 Z" /></svg></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3b. Present -->
+      <section class="scene scene-present" id="present" data-scene="present">
+        <div class="sticky-frame">
+          <div class="copy" data-reveal>
+            <p class="eyebrow">Present</p>
+            <h2>Your board is the deck.<br /><span class="muted">Nothing to rebuild.</span></h2>
+            <p class="lead">Mark parts of the board as slides and press Play. Canvas glides from one to the next, so everyone sees how it all fits together.</p>
+          </div>
+          <div class="present-stage" data-present-stage aria-hidden="true">
+            <div class="p-world" data-present-world>
+              <div class="p-dots"></div>
+              <!-- slide 1 -->
+              <div class="p-el p-headline" style="left: 100px; top: 120px">Our living room<br />feels cold.</div>
+              <div class="p-el p-sub" style="left: 104px; top: 300px">Three weekends, one calm room.</div>
+              <div class="p-el sticky" style="left: 470px; top: 86px; width: 120px; height: 120px; --r: -3deg">No warm light</div>
+              <div class="p-el sticky p-pink" style="left: 486px; top: 222px; width: 110px; height: 110px; --r: 4deg">Bare walls</div>
+              <!-- slide 2 -->
+              <div class="p-el p-title" style="left: 880px; top: 180px">Warm &amp; earthy</div>
+              <div class="p-el photo photo-dune" style="left: 880px; top: 230px; width: 200px; height: 122px"></div>
+              <div class="p-el photo photo-sea" style="left: 880px; top: 366px; width: 200px; height: 122px"></div>
+              <div class="p-el photo photo-fern" style="left: 1096px; top: 176px; width: 190px; height: 228px"></div>
+              <div class="p-el swatch-card" style="left: 1096px; top: 418px; width: 58px; height: 70px; --c: #c56b3e"><i></i><b>#C56B3E</b></div>
+              <div class="p-el swatch-card" style="left: 1162px; top: 418px; width: 58px; height: 70px; --c: #e9d8a6"><i></i><b>#E9D8A6</b></div>
+              <div class="p-el swatch-card" style="left: 1228px; top: 418px; width: 58px; height: 70px; --c: #2f4858"><i></i><b>#2F4858</b></div>
+              <div class="p-el sticky" style="left: 1306px; top: 330px; width: 130px; height: 120px; --r: 3deg">Linen, oak, terracotta</div>
+              <!-- slide 3 -->
+              <div class="p-el p-title" style="left: 340px; top: 606px">Plan</div>
+              <div class="p-el p-box" style="left: 340px; top: 700px; --c: #ff9f0a">Lamps</div>
+              <div class="p-el p-box" style="left: 530px; top: 700px; --c: #bf5af2">Textiles</div>
+              <div class="p-el p-box" style="left: 720px; top: 700px; --c: #30d158">Paint</div>
+              <div class="p-el p-arrow" style="left: 494px; top: 736px"></div>
+              <div class="p-el p-arrow" style="left: 684px; top: 736px"></div>
+              <div class="p-el sticky" style="left: 760px; top: 590px; width: 110px; height: 100px; --r: -4deg">Start with lamps!</div>
+              <!-- the rest of the board -->
+              <div class="p-el sticky p-grey" style="left: 690px; top: 40px; width: 100px; height: 90px; --r: 2deg">Budget €2,000</div>
+              <div class="p-el photo photo-dusk" style="left: 1040px; top: 640px; width: 180px; height: 130px"></div>
+              <div class="p-el sticky p-blue" style="left: 1240px; top: 660px; width: 110px; height: 100px; --r: -2deg">Rug from the market?</div>
+              <svg class="p-el p-ink" style="left: -10px; top: 470px" width="230" height="90" viewBox="0 0 230 90"><path d="M10 60 C 50 10, 90 10, 120 50 S 190 90, 220 30" /></svg>
+              <!-- slide frames (only while editing) -->
+              <div class="p-frame" data-present-frame style="left: 60px; top: 60px; width: 600px; height: 337.5px"><span><b>1</b>The problem</span></div>
+              <div class="p-frame" data-present-frame style="left: 840px; top: 140px; width: 640px; height: 360px"><span><b>2</b>Moodboard</span></div>
+              <div class="p-frame" data-present-frame style="left: 300px; top: 560px; width: 600px; height: 337.5px"><span><b>3</b>The plan</span></div>
+            </div>
+            <svg class="p-spot" data-present-spot width="100%" height="100%">
+              <defs><mask id="p-spot-mask"><rect width="100%" height="100%" fill="#fff" /><rect data-hole="old" rx="6" fill="#000" fill-opacity="0" /><rect data-hole="new" rx="6" fill="#000" fill-opacity="0" /></mask></defs>
+              <rect class="p-veil" width="100%" height="100%" mask="url(#p-spot-mask)" fill-opacity="0" />
+              <rect class="p-ring" data-hole="ring" rx="6" stroke-opacity="0" />
+            </svg>
+            <div class="p-bar" data-present-bar><i></i><i></i><i></i></div>
+            <div class="p-play" data-present-play><svg viewBox="0 0 24 24"><path d="M6 3.5v17l14-8.5z" /></svg>Play</div>
           </div>
         </div>
       </section>

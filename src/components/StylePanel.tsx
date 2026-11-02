@@ -18,6 +18,7 @@ import {
   Palette as PaletteIcon,
   SendToBack,
   Trash2,
+  Play,
 } from 'lucide-react'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { alignSelection, bringToFront, distributeSelection, duplicateSelection, sendToBack, type AlignMode } from '../actions'
@@ -27,6 +28,7 @@ import { startCrop } from '../crop'
 import { extractPalette } from '../moodboard'
 import { selectedElements, useStore } from '../store'
 import { tidySelection, tidyable } from '../tidy'
+import { slidesOf, startPresenting } from '../slides'
 import { canGroup, canUngroup, groupSelection, ungroupSelection, units } from '../groups'
 import type { El, ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
 import { formatKbd } from '../platform'
@@ -71,7 +73,7 @@ const TOOL_TYPE: Partial<Record<string, ElType>> = {
 type Pop = 'color' | 'size' | 'fill' | 'font' | 'align' | 'more'
 type ColorField = 'color' | 'stickyColor' | 'highlightColor'
 
-const hasInk = (e: El) => e.type !== 'image' && e.type !== 'link' && e.type !== 'swatch'
+const hasInk = (e: El) => e.type !== 'image' && e.type !== 'link' && e.type !== 'swatch' && e.type !== 'slide'
 const isHighlight = (e: El) => e.type === 'freedraw' && !!e.highlight
 
 /**
@@ -286,6 +288,18 @@ export function StylePanel({ palette }: { palette: Palette }) {
           <IconButton label="Open link" onClick={() => openLink(single.url)} className="small" testId="open-link">
             <ExternalLink />
           </IconButton>
+        )}
+        {single?.type === 'slide' && (
+          <button
+            type="button"
+            className="prop-btn tidy-btn"
+            onClick={() => startPresenting(Math.max(0, slidesOf(doc.elements).indexOf(single)))}
+            title="Present from this slide"
+            data-testid="present-from-here"
+          >
+            <Play />
+            <span>Present</span>
+          </button>
         )}
         {single?.type === 'image' && (
           <IconButton label="Crop" kbd="↵" onClick={() => startCrop(single.id)} className="small" testId="crop-image">

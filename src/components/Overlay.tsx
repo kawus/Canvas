@@ -1,6 +1,7 @@
 import { geometricBounds } from '../geometry'
 import { getHandles, isSingleLine, selectionFrame, toScreen, FRAME_PAD } from '../handles'
 import { groupOf, isWholeGroup } from '../groups'
+import { slideTags, TAG_H } from '../slides'
 import { selectedElements, useStore } from '../store'
 import type { El, Viewport } from '../types'
 
@@ -37,8 +38,30 @@ export function Overlay() {
   // the crop brackets take over while cropping
   if (cropping) return null
 
+  const tags = slideTags(doc.elements, v)
+
   return (
     <svg className="overlay" width="100%" height="100%">
+      {tags.map((t) => {
+        const on = selectedIds.includes(t.slide.id) || hoveredId === t.slide.id
+        return (
+          <g key={t.slide.id} className={`ov-slide ${on ? 'is-on' : ''}`} data-testid="slide-frame">
+            <rect className="ov-slide-frame" x={t.frame.x} y={t.frame.y} width={t.frame.w} height={t.frame.h} rx={2} />
+            <g className="ov-slide-tag" transform={`translate(${t.x} ${t.y})`}>
+              <rect width={t.w} height={TAG_H} rx={TAG_H / 2} />
+              <circle className="ov-slide-num" cx={t.compact ? t.w / 2 : 14} cy={TAG_H / 2} r={8} />
+              <text className="ov-slide-n" x={t.compact ? t.w / 2 : 14} y={TAG_H / 2 + 3.5}>
+                {t.number}
+              </text>
+              {!t.compact && (
+                <text className="ov-slide-name" x={28} y={TAG_H / 2 + 4}>
+                  {t.label}
+                </text>
+              )}
+            </g>
+          </g>
+        )
+      })}
       {peers.map((p) =>
         doc.elements
           .filter((el) => p.selection.includes(el.id))
@@ -50,7 +73,7 @@ export function Overlay() {
           }),
       )}
 
-      {hovered && (() => {
+      {hovered && hovered.type !== 'slide' && (() => {
         const members = doc.elements.filter((e) => groupOf(doc.elements, hovered.id).includes(e.id))
         const f = members.length > 1 ? groupFrame(members, v) : elementFrame(hovered, v)
         return <rect className="ov-hover" x={f.x} y={f.y} width={f.w} height={f.h} rx={4} />

@@ -71,7 +71,8 @@ export function getHandles(sel: El[], v: Viewport): Handle[] {
     { id: 'se', x: f.maxX, y: f.maxY, cursor: CURSORS.se },
     { id: 'sw', x: f.minX, y: f.maxY, cursor: CURSORS.sw },
   ]
-  const textOnly = sel.every((e) => e.type === 'text')
+  // text and slides keep their shape: corners only
+  const textOnly = sel.every((e) => e.type === 'text' || e.type === 'slide')
   const w = f.maxX - f.minX
   const h = f.maxY - f.minY
   if (textOnly) return corners

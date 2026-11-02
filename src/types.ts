@@ -107,7 +107,23 @@ export interface SwatchEl extends Base {
   hex: string
 }
 
-export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl | LinkEl | SwatchEl
+/**
+ * A slide: a 16:9 part of the board that presentation mode flies between.
+ * Only a frame (drawn as a dashed outline while editing); it never shows in
+ * exports or previews and doesn't hold or move what's inside it.
+ */
+export interface SlideEl extends Base {
+  type: 'slide'
+  x: number
+  y: number
+  w: number
+  h: number
+  name: string
+  /** place in the slideshow, lowest first */
+  order: number
+}
+
+export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl | LinkEl | SwatchEl | SlideEl
 /** Elements with a box that arrows can attach to */
 export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl | LinkEl | SwatchEl
 export type ElType = El['type']

@@ -52,9 +52,12 @@ export async function handle(request) {
       if (board) {
         const name = typeof board.title === 'string' ? board.title.trim().slice(0, 120) : ''
         title = name && name !== 'Untitled' ? `${name} — Canvas` : 'A board on Canvas'
-        const elements = Array.isArray(board.elements) ? board.elements : []
+        const all = Array.isArray(board.elements) ? board.elements : []
+        // slide frames aren't things on the board; they make it a presentation
+        const elements = all.filter((/** @type {{ type?: string }} */ e) => e?.type !== 'slide')
+        const slides = all.length - elements.length
         if (typeof board.preview === 'number') image = `/api/preview?id=${id}&v=${board.preview}`
-        description = `${describe(elements)} Open it in your browser — no sign-up needed.`
+        description = `${describe(elements)}${slides ? ` A presentation of ${count(slides, 'slide', 'slides')}.` : ''} Open it in your browser — no sign-up needed.`
       }
     } catch (err) {
       console.error(err)

@@ -26,6 +26,7 @@ export function getBounds(el: El): Box {
     case 'image':
     case 'link':
     case 'swatch':
+    case 'slide':
       b = { minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h }
       break
     case 'line':
@@ -50,7 +51,7 @@ export function getBounds(el: El): Box {
 /** Half of the visual stroke thickness, used to pad bounds and hit areas. */
 export function strokeHalf(el: El) {
   if (el.type === 'freedraw') return (PEN_SIZE[el.size] * (el.highlight ? HIGHLIGHT_SCALE : 1)) / 2
-  if (el.type === 'text' || el.type === 'sticky' || el.type === 'image' || el.type === 'link' || el.type === 'swatch') return 0
+  if (el.type === 'text' || el.type === 'sticky' || el.type === 'image' || el.type === 'link' || el.type === 'swatch' || el.type === 'slide') return 0
   return STROKE_WIDTH[el.size] / 2
 }
 
@@ -142,6 +143,9 @@ export function hitTest(el: El, p: Point, tol: number): boolean {
     case 'line':
     case 'arrow':
       return distToSegment(p, [el.x1, el.y1], [el.x2, el.y2]) <= pad
+    case 'slide':
+      // only its outline: what's inside stays easy to pick
+      return !pointInBox(p, { minX: b.minX + pad, minY: b.minY + pad, maxX: b.maxX - pad, maxY: b.maxY - pad })
     case 'freedraw': {
       const pts = el.points
       if (pts.length === 1) return Math.hypot(p[0] - pts[0][0], p[1] - pts[0][1]) <= pad
@@ -153,13 +157,20 @@ export function hitTest(el: El, p: Point, tol: number): boolean {
   }
 }
 
-/** Top-most element under the point. */
+/** Top-most element under the point. Things on the board win over a slide's outline. */
 export function hitTopmost(elements: El[], p: Point, tol: number): El | null {
+  let slide: El | null = null
   for (let i = elements.length - 1; i >= 0; i--) {
-    if (hitTest(elements[i], p, tol)) return elements[i]
+    const el = elements[i]
+    if (el.type === 'slide') {
+      if (!slide && hitTest(el, p, tol)) slide = el
+    } else if (hitTest(el, p, tol)) return el
   }
-  return null
+  return slide
 }
+
+/** Everything on the board except slide frames (for exports, previews and thumbnails). */
+export const contentOf = (els: El[]) => (els.some((e) => e.type === 'slide') ? els.filter((e) => e.type !== 'slide') : els)
 
 export function translateEl<T extends El>(el: T, dx: number, dy: number): T {
   switch (el.type) {
@@ -195,6 +206,12 @@ export function scaleEl<T extends El>(el: T, from: Box, to: Box, uniformText: bo
     case 'swatch': {
       const b = normalizeBox(mx(el.x), my(el.y), mx(el.x + el.w), my(el.y + el.h))
       return { ...el, x: b.minX, y: b.minY, w: b.maxX - b.minX, h: b.maxY - b.minY }
+    }
+    case 'slide': {
+      // slides always keep their 16:9 shape
+      const b = normalizeBox(mx(el.x), my(el.y), mx(el.x + el.w), my(el.y + el.h))
+      const w = Math.max(b.maxX - b.minX, 64)
+      return { ...el, x: b.minX, y: b.minY, w, h: (w * 9) / 16 }
     }
     case 'text': {
       const s = uniformText ? Math.abs(sy) : Math.min(Math.abs(sx), Math.abs(sy))

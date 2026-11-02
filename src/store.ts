@@ -95,6 +95,8 @@ interface State {
   tour: boolean
   /** the image being cropped */
   cropId: string | null
+  /** presenting, starting from this slide (index in slideshow order) */
+  presenting: number | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -120,6 +122,7 @@ interface State {
   setPanel: (panel: Panel) => void
   setTour: (tour: boolean) => void
   setCropId: (id: string | null) => void
+  setPresenting: (from: number | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -217,6 +220,7 @@ export const useStore = create<State>((set, get) => ({
   panel: null,
   tour: false,
   cropId: null,
+  presenting: null,
 
   setDoc: (doc) =>
     set(() => ({
@@ -286,6 +290,7 @@ export const useStore = create<State>((set, get) => ({
   setPanel: (panel) => set({ panel }),
   setTour: (tour) => set({ tour }),
   setCropId: (cropId) => set({ cropId, editingId: null }),
+  setPresenting: (presenting) => set({ presenting, editingId: null, draft: null, marquee: null, guides: [] }),
 
   markShared: () =>
     set((s) =>
@@ -352,7 +357,7 @@ export const useStore = create<State>((set, get) => ({
     const elements = s.doc.elements.map((el) => {
       if (!ids.has(el.id)) return el
       const next = { ...el } as El & Record<string, unknown>
-      if (patch.color && el.type !== 'image' && el.type !== 'link' && el.type !== 'swatch') next.color = patch.color
+      if (patch.color && el.type !== 'image' && el.type !== 'link' && el.type !== 'swatch' && el.type !== 'slide') next.color = patch.color
       if (patch.stickyColor && el.type === 'sticky') next.color = patch.stickyColor
       if (patch.highlightColor && el.type === 'freedraw' && el.highlight) next.color = patch.highlightColor
       if (patch.size && 'size' in el) next.size = patch.size

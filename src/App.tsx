@@ -16,6 +16,8 @@ import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { Welcome } from './components/Welcome'
+import { Presenter } from './components/Presenter'
+import { PresentButton } from './components/Slides'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
 import { startKeyboard } from './keyboard'
 import { shouldWelcome } from './onboarding'
@@ -40,6 +42,7 @@ export default function App() {
   const loaded = useStore((s) => s.loaded)
   const viewOnly = useStore((s) => s.loaded && !s.doc.key)
   const cropping = useStore((s) => !!s.cropId)
+  const presenting = useStore((s) => s.presenting !== null)
   const statsView = useSyncExternalStore(subscribeHash, () => location.hash === '#stats')
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
@@ -89,6 +92,7 @@ export default function App() {
       </div>
       <div className="top-right">
         <PeerAvatars />
+        <PresentButton />
         <ExportButton />
         <ShareButton />
       </div>
@@ -115,6 +119,7 @@ export default function App() {
         <HelpButton />
       </div>
       <ShortcutsDialog />
+      {presenting && <Presenter palette={palette} />}
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

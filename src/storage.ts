@@ -70,7 +70,7 @@ export function onIndexChange(fn: () => void) {
 export async function saveBoard(doc: BoardDoc) {
   await write(`board:${doc.id}`, doc)
   const index = (await read<BoardMeta[]>('index')) ?? []
-  const meta: BoardMeta = { id: doc.id, title: doc.title, updatedAt: doc.updatedAt, count: doc.elements.length }
+  const meta: BoardMeta = { id: doc.id, title: doc.title, updatedAt: doc.updatedAt, count: doc.elements.filter((e) => e.type !== 'slide').length }
   if (doc.key) meta.key = doc.key
   const prev = index.find((m) => m.id === doc.id)
   // a board opened again after you removed it comes back to your list
@@ -163,7 +163,7 @@ export function decodeShare(data: string): { id: string; title: string; elements
 function isElement(e: unknown): e is El {
   if (!e || typeof e !== 'object') return false
   const t = (e as El).type
-  return ['freedraw', 'rect', 'ellipse', 'line', 'arrow', 'text', 'sticky', 'image', 'link', 'swatch'].includes(t) && typeof (e as El).id === 'string'
+  return ['freedraw', 'rect', 'ellipse', 'line', 'arrow', 'text', 'sticky', 'image', 'link', 'swatch', 'slide'].includes(t) && typeof (e as El).id === 'string'
 }
 
 export function shareUrl(doc: BoardDoc) {

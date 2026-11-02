@@ -114,6 +114,15 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['?'], 'Show this list'],
     ],
   },
+  {
+    title: 'Presenting',
+    rows: [
+      [['→'], 'Next slide (or Space)'],
+      [['←'], 'Previous slide'],
+      [['O'], 'Overview of the whole board'],
+      [['Esc'], 'Stop presenting'],
+    ],
+  },
 ]
 
 const HOLD: Record<string, [Key, string]> = {
@@ -166,6 +175,7 @@ function gestures(): { title: string; rows: [ReactNode, string][] }[] {
       title: 'Handy',
       rows: [
         [<Gesture key="link" kind="double" />, 'Double-tap a link card to open the page'],
+        [<Gesture key="present" kind="tap" />, 'Presenting: tap or swipe to go to the next slide, tap the left edge to go back'],
         ...(inSafariTab()
           ? ([[<Gesture key="home" kind="tap" />, 'Add Canvas to your Home Screen to use it full screen: Share → Add to Home Screen']] as [ReactNode, string][])
           : []),

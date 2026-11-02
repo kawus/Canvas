@@ -5,7 +5,7 @@ import { fromIntro, markWelcomed } from '../onboarding'
 
 /**
  * First-run welcome: an animated splash, then three short steps (Create,
- * Everywhere, Together). Who sees it is decided in onboarding.ts.
+ * Everywhere, Share & present). Who sees it is decided in onboarding.ts.
  */
 
 interface Step {
@@ -30,10 +30,10 @@ const STEPS: Step[] = [
     art: <DevicesArt />,
   },
   {
-    eyebrow: 'Together',
-    title: 'Share it, or make it together',
-    text: 'Send a view link to anyone in a tap, or invite people to draw with you live and watch their cursors move.',
-    art: <TogetherArt />,
+    eyebrow: 'Share & present',
+    title: 'Share it, or present it',
+    text: 'Send a view link in a tap, or invite people to draw with you live. Mark parts of your board as slides, and Canvas glides from one to the next as you present.',
+    art: <PresentArt />,
   },
   // iPhone / iPad in Safari: nudge to the Home Screen app before the first board
   ...(inSafariTab()
@@ -322,50 +322,46 @@ function HomeArt() {
   )
 }
 
-const SAM_PATH = 'M112 136 C 130 112, 146 146, 164 120 S 192 96, 206 112'
-
-function Cursor({ name, className, children }: { name: string; className: string; children?: ReactNode }) {
+/** Step 3: a little board with two slides; the camera zooms into one, pulls back and glides to the next. */
+function PresentArt() {
   return (
-    <g className={className}>
-      {children}
-      <path d="M0 0 L0 15 L4 11 L7.5 18 L10 17 L6.8 10 L12 10 Z" className="cursor" />
-      <g transform="translate(10 18)">
-        <rect width={name.length * 7 + 14} height="18" rx="9" className="cursor-tag" />
-        <text x="7" y="12.5" className="cursor-name">
-          {name}
-        </text>
+    <svg viewBox="0 0 320 180" className="art art-present">
+      <defs>
+        <clipPath id="w-screen">
+          <rect width="320" height="180" rx="14" />
+        </clipPath>
+      </defs>
+      <g clipPath="url(#w-screen)">
+        <g className="p-cam">
+          {/* slide 1: a note and a sketch */}
+          <rect x="24" y="22" width="120" height="67.5" rx="2" className="p-frame" />
+          <rect x="24" y="12" width="26" height="7" rx="3.5" className="p-tag" />
+          <rect x="34" y="34" width="54" height="7" rx="3.5" className="p-title" />
+          <rect x="34" y="46" width="38" height="4" rx="2" className="p-line" />
+          <g>
+            <rect x="96" y="34" width="36" height="34" rx="2.5" className="w-paper" />
+            <rect x="102" y="44" width="24" height="3" rx="1.5" className="w-paper-line" />
+            <rect x="102" y="51" width="17" height="3" rx="1.5" className="w-paper-line" />
+          </g>
+          <path d="M36 72 Q 52 62 66 72 T 92 72" className="p-ink" />
+          {/* slide 2: shapes */}
+          <rect x="176" y="92" width="120" height="67.5" rx="2" className="p-frame" />
+          <rect x="176" y="82" width="26" height="7" rx="3.5" className="p-tag" />
+          <rect x="188" y="106" width="40" height="40" rx="6" className="shape-purple" />
+          <ellipse cx="262" cy="126" rx="22" ry="17" className="shape-green" />
+          {/* the rest of the board */}
+          <rect x="196" y="24" width="70" height="40" rx="8" className="shape-blue" />
+          <rect x="40" y="112" width="34" height="32" rx="2.5" className="w-paper p-loose" />
+          <path d="M96 150 Q 116 132 140 146" className="p-ink p-ink-2" />
+        </g>
       </g>
-    </g>
-  )
-}
-
-function TogetherArt() {
-  return (
-    <svg viewBox="0 0 320 180" className="art art-together">
-      <g className="t-sticky">
-        <rect x="34" y="36" width="72" height="64" rx="4" className="w-paper" />
-        <rect x="44" y="52" width="48" height="5" rx="2.5" className="w-paper-line" />
-        <rect x="44" y="64" width="36" height="5" rx="2.5" className="w-paper-line" />
-      </g>
-      <rect x="30" y="32" width="80" height="72" rx="6" className="t-select" />
-      <rect x="214" y="96" width="74" height="46" rx="9" className="shape-blue" />
-      <path className="t-ink" d={SAM_PATH} pathLength={1} />
-      <g transform={still ? 'translate(206 112)' : undefined}>
-        <Cursor name="Sam" className="t-sam">
-          <Along path={SAM_PATH} dur={6.5} from={0.12} to={0.5} />
-        </Cursor>
-      </g>
-      <Cursor name="You" className="t-you" />
-      <g className="t-avatars">
-        <circle cx="222" cy="30" r="12" className="av av-you" />
-        <text x="222" y="34" className="av-text">
-          Y
-        </text>
-        <circle cx="242" cy="30" r="12" className="av av-sam" />
-        <text x="242" y="34" className="av-text">
-          S
-        </text>
+      <g className="p-bar">
+        <rect x="136" y="160" width="48" height="12" rx="6" />
+        <circle cx="152" cy="166" r="1.6" className="p-dot p-dot-1" />
+        <circle cx="160" cy="166" r="1.6" className="p-dot p-dot-2" />
+        <circle cx="168" cy="166" r="1.6" className="p-dot" />
       </g>
     </svg>
   )
 }
+

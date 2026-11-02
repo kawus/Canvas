@@ -15,7 +15,7 @@ const GAP = 24
 const snap8 = (v: number) => Math.round(v / 8) * 8
 
 export function tidyable(els: El[]) {
-  return els.filter((e) => e.type !== 'line' && e.type !== 'arrow')
+  return els.filter((e) => e.type !== 'line' && e.type !== 'arrow' && e.type !== 'slide')
 }
 
 interface Item {

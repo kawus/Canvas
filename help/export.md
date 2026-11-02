@@ -17,6 +17,8 @@ Tap the **Export** button (the download arrow, top right) and choose:
 
 Yes. Select the items you want first, then open **Export** and tick **Only selection**.
 
+Slide frames (the dashed outlines from [presenting](topic:presenting#how-do-i-make-a-presentation)) never show in exports.
+
 ## The share link is very long. What can I do?
 
 On some boards a link can get long, and some chat apps cut long links off. Use an [export](topic:export#how-do-i-export-a-board) instead, such as a PDF.
