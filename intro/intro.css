@@ -1441,28 +1441,16 @@ h2 {
   position: absolute;
   left: -2px;
   bottom: calc(100% + 10px);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  height: 36px;
-  padding: 0 16px 0 5px;
-  border-radius: 18px;
-  background: var(--panel);
-  box-shadow: inset 0 0 0 1.5px rgba(10, 132, 255, 0.4), var(--shadow);
-  color: var(--accent-ink);
-  font-size: 18px;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.p-frame b {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  font-size: 14px;
+  background: var(--panel);
+  box-shadow: inset 0 0 0 2px rgba(10, 132, 255, 0.7), var(--shadow);
+  color: var(--accent-ink);
+  font-size: 18px;
+  font-weight: 700;
 }
 .p-spot {
   position: absolute;

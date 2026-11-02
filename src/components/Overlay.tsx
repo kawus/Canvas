@@ -48,16 +48,10 @@ export function Overlay() {
           <g key={t.slide.id} className={`ov-slide ${on ? 'is-on' : ''}`} data-testid="slide-frame">
             <rect className="ov-slide-frame" x={t.frame.x} y={t.frame.y} width={t.frame.w} height={t.frame.h} rx={2} />
             <g className="ov-slide-tag" transform={`translate(${t.x} ${t.y})`}>
-              <rect width={t.w} height={TAG_H} rx={TAG_H / 2} />
-              <circle className="ov-slide-num" cx={t.compact ? t.w / 2 : 14} cy={TAG_H / 2} r={8} />
-              <text className="ov-slide-n" x={t.compact ? t.w / 2 : 14} y={TAG_H / 2 + 3.5}>
+              <circle cx={TAG_H / 2} cy={TAG_H / 2} r={TAG_H / 2} />
+              <text className="ov-slide-n" x={TAG_H / 2} y={TAG_H / 2 + 4}>
                 {t.number}
               </text>
-              {!t.compact && (
-                <text className="ov-slide-name" x={28} y={TAG_H / 2 + 4}>
-                  {t.label}
-                </text>
-              )}
             </g>
           </g>
         )

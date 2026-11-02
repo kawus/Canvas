@@ -29,15 +29,14 @@ Presentation clickers work too, because they send the same keys.
 
 ## Can I start from a slide in the middle?
 
-Yes. Select the slide on the board (tap its name tag) and tap **Present** in the bar above the toolbar. Or open **Present**, tap the slide in the list, and tap **Play from slide …**.
+Yes. Select the slide on the board (tap its number) and tap **Present** in the bar above the toolbar. Or open **Present**, tap the slide in the list, and tap **Play from slide …**.
 
 ## How do I change a slide?
 
-A slide shows on the board as a thin dashed frame with a numbered name tag. These only show while you edit, never in the presentation itself.
+A slide shows on the board as a thin dashed frame with its number in a small circle. These only show while you edit, never in the presentation itself.
 
-- **Move it:** drag its name tag (or its edge).
+- **Move it:** drag its number (or its edge).
 - **Resize it:** select it and drag a corner. Slides always keep the widescreen shape (16:9), so they fill a TV or projector neatly.
-- **Rename it:** open **Present**, tap the slide in the list, then tap its name again.
 - **Change the order:** open **Present** and drag a slide by the dots on the right.
 - **Delete it:** select it and press <kbd>Delete</kbd> or tap the bin. Only the frame goes; what's on the board stays.
 

@@ -335,7 +335,7 @@ function PresentArt() {
         <g className="p-cam">
           {/* slide 1: a note and a sketch */}
           <rect x="24" y="22" width="120" height="67.5" rx="2" className="p-frame" />
-          <rect x="24" y="12" width="26" height="7" rx="3.5" className="p-tag" />
+          <circle cx="28" cy="15" r="4.5" className="p-tag" />
           <rect x="34" y="34" width="54" height="7" rx="3.5" className="p-title" />
           <rect x="34" y="46" width="38" height="4" rx="2" className="p-line" />
           <g>
@@ -346,7 +346,7 @@ function PresentArt() {
           <path d="M36 72 Q 52 62 66 72 T 92 72" className="p-ink" />
           {/* slide 2: shapes */}
           <rect x="176" y="92" width="120" height="67.5" rx="2" className="p-frame" />
-          <rect x="176" y="82" width="26" height="7" rx="3.5" className="p-tag" />
+          <circle cx="180" cy="85" r="4.5" className="p-tag" />
           <rect x="188" y="106" width="40" height="40" rx="6" className="shape-purple" />
           <ellipse cx="262" cy="126" rx="22" ry="17" className="shape-green" />
           {/* the rest of the board */}

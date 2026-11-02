@@ -1,7 +1,6 @@
 import { toScreen, toWorld } from './handles'
 import { newElementId } from './storage'
 import { useStore } from './store'
-import { textWidth } from './textMetrics'
 import type { Box, El, SlideEl, Viewport } from './types'
 
 /**
@@ -27,7 +26,7 @@ export const slideBox = (s: SlideEl): Box => ({ minX: s.x, minY: s.y, maxX: s.x 
 function visibleArea(): Box {
   const w = window.innerWidth
   const h = window.innerHeight
-  // below the top bar, with room for the slide's name tag
+  // below the top bar, with room for the slide's number
   const top = 100
   const bottom = w < 600 ? 132 : 92
   const side = w < 600 ? 16 : 48
@@ -66,14 +65,6 @@ export function addSlide() {
   if (s.tool !== 'select') s.setTool('select')
   S().select([slide.id])
   return slide
-}
-
-export function renameSlide(id: string, name: string) {
-  const s = S()
-  const clean = name.trim().slice(0, 60)
-  const el = s.doc.elements.find((e) => e.id === id)
-  if (!el || el.type !== 'slide' || !clean || el.name === clean) return
-  s.commit(s.doc.elements.map((e) => (e.id === id ? { ...el, name: clean } : e)))
 }
 
 /** Puts the slides in this order (ids, first to last). */
@@ -131,50 +122,32 @@ function glide(from: Viewport, to: Viewport) {
   glideFrame = requestAnimationFrame(step)
 }
 
-/* ---------- the name tag drawn above each slide while editing ---------- */
+/* ---------- the numbered tag drawn above each slide while editing ---------- */
 
 export const TAG_H = 22
-const TAG_FONT = 12
 const TAG_GAP = 6
-
-const short = (name: string) => (name.length > 28 ? name.slice(0, 27) + '…' : name)
 
 export interface SlideTag {
   slide: SlideEl
   number: number
-  label: string
+  /** top-left of the tag on screen (it's a circle, TAG_H across) */
   x: number
   y: number
   w: number
-  /** only the number fits */
-  compact: boolean
   /** the slide's outline on screen */
   frame: { x: number; y: number; w: number; h: number }
 }
 
-/** Where each slide's outline and name tag sit on screen. */
+/** Where each slide's outline and number sit on screen. */
 export function slideTags(els: El[], v: Viewport): SlideTag[] {
   return slidesOf(els).map((slide, i) => {
     const [x0, y0] = toScreen(v, slide.x, slide.y)
     const [x1, y1] = toScreen(v, slide.x + slide.w, slide.y + slide.h)
-    const label = short(slide.name || `Slide ${i + 1}`)
-    const numW = 16
-    const full = 6 + numW + 6 + textWidth(label, TAG_FONT) * 1.06 + 10
-    const compact = full > x1 - x0
-    return {
-      slide,
-      number: i + 1,
-      label,
-      x: x0,
-      y: y0 - TAG_H - TAG_GAP,
-      w: compact ? numW + 12 : full,
-      compact,
-      frame: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 },
-    }
+    return { slide, number: i + 1, x: x0, y: y0 - TAG_H - TAG_GAP, w: TAG_H, frame: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } }
   })
 }
 
-/** The slide whose name tag is at this screen point. */
+/** The slide whose number tag is at this screen point. */
 export function slideTagAt(els: El[], v: Viewport, sx: number, sy: number, slop = 0): SlideEl | null {
   if (!els.some(isSlide)) return null
   const tags = slideTags(els, v)

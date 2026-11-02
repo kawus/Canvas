@@ -175,36 +175,23 @@ svg.lucide {
 .ov-slide.is-on .ov-slide-frame {
   stroke-opacity: 0.9;
 }
-.ov-slide-tag > rect {
+.ov-slide-tag > circle {
   fill: var(--panel-solid);
   stroke: var(--accent);
-  stroke-opacity: 0.35;
-  stroke-width: 1;
-  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.1));
-}
-.ov-slide-num {
-  fill: var(--accent);
+  stroke-width: 1.5;
+  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.12));
 }
 .ov-slide-n {
-  fill: #fff;
-  font-size: 10px;
+  fill: var(--accent-ink);
+  font-size: 12px;
   font-weight: 700;
   text-anchor: middle;
   font-variant-numeric: tabular-nums;
 }
-.ov-slide-name {
-  fill: var(--accent-ink);
-  font-size: 12px;
-  font-weight: 600;
-}
-.ov-slide.is-on .ov-slide-tag > rect {
+.ov-slide.is-on .ov-slide-tag > circle {
   fill: var(--accent);
-  stroke-opacity: 0;
 }
-.ov-slide.is-on .ov-slide-num {
-  fill: rgba(255, 255, 255, 0.28);
-}
-.ov-slide.is-on .ov-slide-name {
+.ov-slide.is-on .ov-slide-n {
   fill: #fff;
 }
 .ov-guide {
@@ -3318,7 +3305,7 @@ button:focus:not(:focus-visible) {
   }
 }
 .slides-pop {
-  width: min(320px, calc(100vw - 24px));
+  width: min(260px, calc(100vw - 24px));
   padding: 6px 6px 8px;
 }
 .top-right:has(.slides-pop) {
@@ -3351,7 +3338,7 @@ button:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 56px;
+  height: 72px;
   padding: 0 4px 0 6px;
   border-radius: 10px;
   font-size: 13px;
@@ -3380,8 +3367,8 @@ button:focus:not(:focus-visible) {
 }
 .slide-thumb {
   flex: none;
-  width: 72px;
-  height: 40.5px;
+  width: 104px;
+  height: 58.5px;
   border-radius: 5px;
   overflow: hidden;
   background: var(--canvas);
@@ -3392,28 +3379,8 @@ button:focus:not(:focus-visible) {
   width: 100%;
   height: 100%;
 }
-.slide-name {
+.slide-spacer {
   flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.slide-row.is-active .slide-name {
-  cursor: text;
-}
-.slide-name-input {
-  flex: 1;
-  min-width: 0;
-  height: 30px;
-  margin-left: -6px;
-  padding: 0 6px;
-  border-radius: 7px;
-  border: 1px solid var(--accent);
-  background: var(--panel-solid);
-  color: var(--text);
-  font: inherit;
-  outline: none;
 }
 .slide-grip {
   display: inline-flex;
@@ -3606,25 +3573,15 @@ button:focus:not(:focus-visible) {
   position: absolute;
   left: 0;
   bottom: calc(100% + 8px);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 28px;
-  padding: 0 12px 0 4px;
-  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
   background: var(--accent);
   color: #fff;
   font-size: 14px;
-  font-weight: 600;
-  white-space: nowrap;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
   box-shadow: 0 6px 16px -6px rgba(10, 132, 255, 0.6);
-}
-.presenter-tag b {
-  display: grid;
-  place-items: center;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.25);
-  font-size: 11px;
 }

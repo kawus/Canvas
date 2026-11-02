@@ -371,13 +371,10 @@ export function Presenter({ palette }: { palette: Palette }) {
                 onPointerDown={(e) => e.stopPropagation()}
                 onPointerUp={(e) => e.stopPropagation()}
                 onClick={() => go(i)}
-                aria-label={`Go to slide ${i + 1}: ${s.name}`}
+                aria-label={`Go to slide ${i + 1}`}
                 data-testid="presenter-pick"
               >
-                <span className="presenter-tag">
-                  <b>{i + 1}</b>
-                  {r.width > 120 && <span>{s.name}</span>}
-                </span>
+                <span className="presenter-tag">{i + 1}</span>
               </button>
             )
           })}
