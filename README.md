@@ -147,12 +147,12 @@ Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live 
 
 **4. Canvas Pro: the Founder licence**
 
-Pro is sold as a one-time **Founder licence** (default €39, `FOUNDER_PRICE` in cents and `PRO_CURRENCY`). It includes live editing together, no "Made with Canvas" mark on the founder's shared boards and exports, and every later Pro feature. Founders are remembered in Redis (`founder:<customer>`) and on the Stripe customer (`metadata.canvas_founder`), so a wiped database doesn't lose them. The stats page counts **founders who paid**. The monthly/yearly subscription code is still there but isn't offered in the app.
+Pro is sold as a one-time **Founder licence** (default €19, `FOUNDER_PRICE` in cents and `PRO_CURRENCY`). It includes live editing together, no "Made with Canvas" mark on the founder's shared boards and exports, and every later Pro feature. Founders are remembered in Redis (`founder:<customer>`) and on the Stripe customer (`metadata.canvas_founder`), so a wiped database doesn't lose them. The stats page counts **founders who paid**. The monthly/yearly subscription code is still there but isn't offered in the app.
 
 **Going live with real payments (checklist):**
 
 1. In Vercel → **Settings → Environment Variables**, add **`PRO_TOKEN_SECRET`**: a long random value (40+ characters, for example from your password manager's generator). Never change it later, or every founder is signed out.
-2. Add `PRO_CURRENCY` = `eur` and, if you want another price, `FOUNDER_PRICE` (in cents, e.g. `2900`).
+2. Add `PRO_CURRENCY` = `eur` and, if you want another price, `FOUNDER_PRICE` (in cents, e.g. `2900` for €29).
 3. Test first: add `STRIPE_SECRET_KEY` with your **test** key (`sk_test_…`), redeploy, open **board menu → Canvas Pro → Become a founder** and pay with the test card `4242 4242 4242 4242`. You should come back with Pro on, and the Export menu note gone.
 4. In Stripe, turn on **Settings → Customer emails → Successful payments** so buyers get a receipt.
 5. Go live: activate your Stripe account, replace `STRIPE_SECRET_KEY` with the live key (`sk_live_…`) and redeploy.

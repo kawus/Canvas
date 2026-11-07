@@ -31,8 +31,8 @@ export function pricing() {
     currency: (process.env.PRO_CURRENCY || 'eur').toLowerCase(),
     month: Number(process.env.PRO_PRICE_MONTH || 600),
     year: Number(process.env.PRO_PRICE_YEAR || 4800),
-    // the one-time Founder licence (FOUNDER_PRICE, in cents: 3900 = 39.00)
-    founder: Number(process.env.FOUNDER_PRICE || 3900),
+    // the one-time Founder licence (FOUNDER_PRICE, in cents: 1900 = 19.00)
+    founder: Number(process.env.FOUNDER_PRICE || 1900),
   }
 }
 
