@@ -31,6 +31,12 @@ As long as you use them. A board that nobody has edited for a year is removed fr
 
 **Delete board** removes it from the cloud, for everyone with the link, and from the board lists on all your connected devices. This can't be undone.
 
+## Do you have my email address?
+
+Only if you asked for updates. Under **Connect your devices → Back up by email** you can tick **Also send me rare updates about Canvas**. Then your email address, and nothing else, goes on a short list for occasional news (a few times a year at most). It isn't linked to your boards or your devices. Every update will have a way to unsubscribe.
+
+Backing up your link by email doesn't share your address with Canvas: it opens your own email app, and the email goes from there.
+
 ## Which other services does Canvas use?
 
 - **Vercel** hosts the app.

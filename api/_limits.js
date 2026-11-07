@@ -5,6 +5,7 @@
  *
  *   storage:  new data a visitor may add per day (boards, images, My Canvas)
  *   previews: link previews / web images a visitor may fetch per hour
+ *   signups:  "send me updates" sign-ups a visitor may make per hour (5)
  *
  * Both can be changed with environment variables (LIMIT_STORAGE_MB, LIMIT_PREVIEWS_PER_HOUR).
  */
@@ -47,6 +48,9 @@ export const allowStorage = (request, bytes) => spend(request, 'store', bytes, S
 
 /** One more link preview / web image this hour. @param {Request} request */
 export const allowPreview = (request) => spend(request, 'preview', 1, PREVIEWS_PER_HOUR(), 3_600)
+
+/** One more "send me updates" sign-up this hour. @param {Request} request */
+export const allowSignup = (request) => spend(request, 'signup', 1, 5, 3_600)
 
 export const tooMuch = () =>
   new Response(JSON.stringify({ error: 'fair-use limit reached, try again later' }), {

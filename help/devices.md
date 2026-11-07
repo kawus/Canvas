@@ -56,6 +56,12 @@ No — keep it private. Anyone with it can see your list of boards and edit them
 
 As long as one of your devices still has your boards, you can get the link again: **board menu → Connect your devices**. If you lose every device *and* the link, there's no way to recover your list, because there's no account. That's why it's worth saving the link somewhere safe.
 
+## Can I back up my link by email?
+
+Yes. Go to **board menu → Connect your devices**, type your email address under **Back up by email**, and tap **Email me the link**. Your own email app opens with the link already filled in. Just press Send, and the link waits in your inbox for the day you need it.
+
+The email goes from your email app, so the link never passes through Canvas.
+
 ## What's the difference between “Delete board” and “Remove from my boards”?
 
 - **Delete board** (boards you own) deletes it for everyone you shared it with, and takes it off your list on all your devices. It can't be undone.

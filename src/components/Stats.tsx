@@ -3,9 +3,13 @@ import { useState, useEffect } from 'react'
 
 type Counts = { total: number; people: number; last7: number }
 type Day = { day: string; checks: number; changed: number; devices: number | null }
-type Stats = { mode: string; events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts>; usage?: Day[] }
+type Stats = {
+  mode: string
+  events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts> & Partial<Record<'backup_email' | 'updates_signup', Counts>>
+  usage?: Day[]
+}
 
-const ROWS: { key: keyof Stats['events']; label: string; hint: string }[] = [
+const ROWS: { key: 'locked' | 'view' | 'intent_month' | 'intent_year'; label: string; hint: string }[] = [
   { key: 'locked', label: 'Hit the Pro feature', hint: 'Opened “Edit together” without Pro' },
   { key: 'view', label: 'Looked at the offer', hint: 'Opened the Canvas Pro window' },
   { key: 'intent_month', label: 'Chose monthly', hint: 'Clicked Continue on the monthly plan' },
@@ -85,7 +89,35 @@ export function StatsPage() {
           </>
         )}
       </div>
+      {e && <InterestCard events={e} />}
       {stats?.usage && <UsageCard days={stats.usage} />}
+    </div>
+  )
+}
+
+/** Interest: people who want to keep their boards, and people who want to hear more. */
+function InterestCard({ events }: { events: Stats['events'] }) {
+  const backups = events.backup_email ?? { total: 0, people: 0, last7: 0 }
+  const list = events.updates_signup?.total ?? 0
+  return (
+    <div className="stats-card panel" data-testid="interest">
+      <h2 className="stats-title">Interest</h2>
+      <p className="stats-sub">From Connect your devices → Back up by email. Visits from shared boards and exports are under /made-with-canvas/ in Vercel Analytics.</p>
+      <div className="usage-kpis">
+        <div>
+          <div className="stats-big" data-testid="interest-list">{list}</div>
+          <div className="stats-label">on the updates list</div>
+        </div>
+        <div>
+          <div className="stats-big" data-testid="interest-backups">{backups.people}</div>
+          <div className="stats-label">people backed up their link by email</div>
+        </div>
+        <div>
+          <div className="stats-big">{backups.last7}</div>
+          <div className="stats-label">backups in the last 7 days</div>
+        </div>
+      </div>
+      <p className="stats-foot">The addresses themselves are in your Upstash database under “updates:list”; this page only shows how many.</p>
     </div>
   )
 }

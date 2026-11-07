@@ -49,6 +49,8 @@ The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
 [Vercel Web Analytics](https://vercel.com/docs/analytics) counts visits to the app, the front page and the help centre (cookieless). Only the page is sent — everything after `?` or `#` is removed first (`src/analytics.ts`), so board ids, edit keys and My Canvas links never reach it. To start collecting, open the project in Vercel → **Analytics** → **Enable**, then redeploy.
 
+**Interest and the updates list.** Under **Connect your devices**, people can email themselves their My Canvas link (it opens their own email app via `mailto:`, so the link never reaches the server) and tick **Also send me rare updates about Canvas**. Only ticked addresses are stored, in the Redis hash `updates:list` (`api/updates.js`, at most 5 sign-ups per visitor per hour). Read the list in the Upstash console when you want to send an update, and include an unsubscribe link in whatever tool you send it with. The stats page (`/#stats`) shows how many people are on the list and how many backed up their link.
+
 **Made with Canvas.** People viewing a shared board see a small "Made with Canvas" link in the view-only bar, and PNG, PDF and SVG exports carry a quiet "Made with Canvas · canvas.kawus.com" line under the board (link-preview pictures don't; they have their own badge). The link goes to `/made-with-canvas/`, which shows the front page (a rewrite in `vercel.json`). Because it's its own address, **Analytics → Pages → /made-with-canvas/** shows how many visits shared boards bring in, without any tracking parameters.
 
 ## Link previews

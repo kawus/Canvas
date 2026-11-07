@@ -88,7 +88,7 @@ export async function refreshPro() {
 }
 
 /** Smoke test: count interest in the offer (anonymous device id only). */
-export function track(event: 'locked' | 'view') {
+export function track(event: 'locked' | 'view' | 'backup_email') {
   void post('track', { event, device: getMe().id }).catch(() => {})
 }
 

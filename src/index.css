@@ -3627,3 +3627,37 @@ button:focus:not(:focus-visible) {
   font-variant-numeric: tabular-nums;
   box-shadow: 0 6px 16px -6px rgba(10, 132, 255, 0.6);
 }
+
+/* My Canvas: back up the link by email */
+.email-backup {
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 0.5px solid var(--border-strong);
+  text-align: left;
+}
+.email-backup-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.email-backup-title svg.lucide {
+  width: 15px;
+  height: 15px;
+  color: var(--text-2);
+}
+.email-backup .ghost-btn {
+  white-space: nowrap;
+}
+.email-updates {
+  padding: 8px 2px 0;
+  color: var(--text-2);
+}
+.email-note {
+  margin: 6px 2px 0;
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.45;
+}

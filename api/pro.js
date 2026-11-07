@@ -18,7 +18,7 @@ import { json, redis, redisConfig } from './_redis.js'
 
 /* ---------- Smoke-test analytics (counts only; devices are anonymous ids) ---------- */
 
-const EVENTS = ['locked', 'view', 'intent_month', 'intent_year']
+const EVENTS = ['locked', 'view', 'intent_month', 'intent_year', 'backup_email']
 const DEVICE_RE = /^[a-z0-9]{8,40}$/
 const day = (offset = 0) => new Date(Date.now() - offset * 86_400_000).toISOString().slice(0, 10)
 
@@ -42,6 +42,9 @@ async function stats() {
     const week = /** @type {(string | null)[]} */ (await redis(['MGET', ...days.map((d) => `stats:${d}:${e}`)]))
     out[e] = { total, people, last7: week.reduce((sum, v) => sum + Number(v || 0), 0) }
   }
+  // people on the "send me updates" list (counted by api/updates.js)
+  const subscribers = Number((await redis(['HLEN', 'updates:list'])) || 0)
+  out.updates_signup = { total: subscribers, people: subscribers, last7: 0 }
   return out
 }
 

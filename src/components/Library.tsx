@@ -1,9 +1,10 @@
 import qrcode from 'qrcode-generator'
-import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, MonitorSmartphone, Plus, Search, Share, Smartphone, X } from 'lucide-react'
+import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, Mail, MonitorSmartphone, Plus, Search, Share, Smartphone, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { connectMyCanvas, newBoard, openBoard } from '../boards'
 import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, pull, type BoardRow } from '../library'
 import { helpUrl } from '../help'
+import { track } from '../pro'
 import { useStore } from '../store'
 import { BoardThumb } from './BoardThumb'
 import { timeAgo } from './TopBar'
@@ -244,6 +245,7 @@ function MyCanvas({ close }: { close: () => void }) {
               <Share /> <span>Send to my other device</span>
             </button>
           )}
+          {link && <EmailBackup link={link} />}
           <p className="dialog-foot">
             Keep it private — anyone with this link can edit your boards. Save it somewhere safe, like your notes or
             password manager.{' '}
@@ -261,6 +263,77 @@ function MyCanvas({ close }: { close: () => void }) {
 }
 
 /** Paste a My Canvas link: the way into the Home Screen app, which links and QR codes can't open. */
+/**
+ * Back up the My Canvas link by email: opens your own email app with the link
+ * filled in, so it never passes through Canvas. Separately, and only if you
+ * tick the box, your email address (just that) goes on the updates list.
+ */
+function EmailBackup({ link }: { link: string }) {
+  const [email, setEmail] = useState('')
+  const [updates, setUpdates] = useState(false)
+  const [done, setDone] = useState<null | { listed: boolean | null }>(null)
+
+  const send = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const to = email.trim()
+    const subject = 'My Canvas link (backup of my boards)'
+    const body =
+      `This is my private My Canvas link. Open it on any phone, iPad or computer to get all my boards back:\n\n${link}\n\n` +
+      'Keep it private: anyone with this link can edit my boards.'
+    location.href = `mailto:${encodeURIComponent(to).replace(/%40/g, '@')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    track('backup_email')
+    let listed: boolean | null = null
+    if (updates) {
+      listed = await fetch('api/updates', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email: to }) })
+        .then((r) => r.ok)
+        .catch(() => false)
+    }
+    setDone({ listed })
+  }
+
+  return (
+    <form className="email-backup" onSubmit={(e) => void send(e)} data-testid="email-backup">
+      <div className="email-backup-title">
+        <Mail /> Back up by email
+      </div>
+      <div className="link-row">
+        <input
+          className="field"
+          type="email"
+          required
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => {
+            setEmail(e.target.value)
+            setDone(null)
+          }}
+          aria-label="Your email address"
+          data-testid="backup-email"
+        />
+        <button type="submit" className="ghost-btn" disabled={!email.trim()} data-testid="backup-send">
+          Email me the link
+        </button>
+      </div>
+      <label className="check-row email-updates">
+        <input type="checkbox" checked={updates} onChange={(e) => setUpdates(e.target.checked)} data-testid="backup-updates" />
+        Also send me rare updates about Canvas
+      </label>
+      {done ? (
+        <p className="email-note" role="status" data-testid="backup-done">
+          Your email app should open with the link filled in. Just press Send.
+          {done.listed === true && ' You’re on the updates list too.'}
+          {done.listed === false && ' (Couldn’t add you to the updates list right now. Try again later.)'}
+        </p>
+      ) : (
+        <p className="email-note">
+          Opens your own email app, so Canvas never sees your link. If you tick updates, we keep only your email address.
+        </p>
+      )}
+    </form>
+  )
+}
+
 function Connect({ close }: { close: () => void }) {
   const setPanel = useStore((s) => s.setPanel)
   const [text, setText] = useState('')
