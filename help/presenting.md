@@ -12,6 +12,8 @@ order: 3.5
 3. Do the same for the next part of the board, and the next.
 4. Tap **Play from slide 1**.
 
+Want a head start? The free [room makeover](../../templates/room-makeover-moodboard/) and [client moodboard](../../templates/client-moodboard/) templates come with their slides already marked.
+
 There's nothing to copy or rebuild: a slide is just a window onto your board, so whatever you draw inside it shows up when you present.
 
 ## How do I play it?

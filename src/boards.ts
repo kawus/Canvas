@@ -1,3 +1,4 @@
+import { cloneWithNewIds } from './actions'
 import { uploadAssets } from './assets'
 import { deleteRemote, fetchIfNewer, fetchRemote, pushRemote, type RemoteResult } from './cloud'
 import { deleteRoom, isLive, startCollab, stopCollab } from './collab'
@@ -10,6 +11,7 @@ import {
   decodeShare,
   deleteBoard,
   emptyBoard,
+  isElement,
   lastBoardId,
   listBoards,
   loadBoard,
@@ -336,6 +338,40 @@ async function importShare(data: string) {
   return true
 }
 
+/**
+ * A ready-made board from a template page (/#template=room-makeover): it opens
+ * as a brand-new board of your own, which reaches the cloud once you change it.
+ */
+async function openTemplate(name: string) {
+  if (!/^[a-z0-9-]{1,40}$/.test(name)) return false
+  type Template = { title?: unknown; elements?: unknown }
+  const data = await fetch(`templates/${name}.json`, { cache: 'no-cache' })
+    .then((res) => (res.ok ? (res.json() as Promise<Template>) : null))
+    // offline or missing: fall through to the usual board
+    .catch(() => null)
+  if (!data || !Array.isArray(data.elements)) {
+    S().showToast('That template couldn’t be found — here’s a blank board')
+    return false
+  }
+  await flushSave()
+  const now = Date.now()
+  const doc: BoardDoc = {
+    id: newId(),
+    title: typeof data.title === 'string' ? data.title.slice(0, 120) : 'Untitled',
+    elements: cloneWithNewIds(data.elements.filter(isElement), 0, 0),
+    createdAt: now,
+    updatedAt: now,
+    key: newKey(),
+  }
+  await saveBoard(doc)
+  setHash(doc.id, false)
+  lastSynced = null
+  show(doc, true)
+  S().zoomToFit()
+  S().showToast('This board is yours — make it your own')
+  return true
+}
+
 let routing: Promise<void> = Promise.resolve()
 
 /** Decide what to show based on the URL hash. Calls are serialized. */
@@ -375,7 +411,9 @@ async function route() {
     await openMyCanvas(hash.slice(3))
     return
   }
-  if (hash.startsWith('share=')) {
+  if (hash.startsWith('template=')) {
+    if (await openTemplate(hash.slice(9))) return
+  } else if (hash.startsWith('share=')) {
     if (await importShare(hash.slice(6))) return
   } else {
     // #id = view link, #id.key = owner / edit link

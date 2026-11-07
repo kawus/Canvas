@@ -160,7 +160,7 @@ export function decodeShare(data: string): { id: string; title: string; elements
   }
 }
 
-function isElement(e: unknown): e is El {
+export function isElement(e: unknown): e is El {
   if (!e || typeof e !== 'object') return false
   const t = (e as El).type
   return ['freedraw', 'rect', 'ellipse', 'line', 'arrow', 'text', 'sticky', 'image', 'link', 'swatch', 'slide'].includes(t) && typeof (e as El).id === 'string'

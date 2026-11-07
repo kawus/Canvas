@@ -15,6 +15,15 @@ Any of these work:
 
 Large photos are resized so boards stay quick to open and share. New items find free space, so they don't land on top of each other.
 
+## Is there a template to start from?
+
+Yes, two, both free:
+
+- [Room makeover moodboard](../../templates/room-makeover-moodboard/): the room today, the mood and the plan.
+- [Client moodboard](../../templates/client-moodboard/): the brief, the mood, palette and type, and next steps.
+
+Each opens as a new board of your own, with its slides already marked, so you can present it straight away.
+
 ## How do I tidy up a moodboard?
 
 Select the things you want to arrange (drag a box around them, or <kbd>⌘A</kbd> for everything) and tap **Tidy up** in the bar above the toolbar. Canvas arranges them into neat columns with even gaps: photos get the same width and keep their shape, and small things like colour swatches sit side by side. Undo with <kbd>⌘Z</kbd> if you liked it better before.

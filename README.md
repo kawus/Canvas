@@ -32,6 +32,17 @@ An animated front page for new visitors lives at **`/intro/`** (e.g. `canvas.kaw
 
 The page is plain HTML, CSS and TypeScript in `intro/`, built alongside the app.
 
+## Template pages
+
+Two landing pages, each aimed at one kind of project and built to be found in search:
+
+- `/templates/room-makeover-moodboard/`: home and interior projects
+- `/templates/client-moodboard/`: designers presenting moodboards to clients
+
+Each has a ready-made board behind **Use the free template** (`/#template=room-makeover` and `/#template=client-moodboard`). It opens as a brand-new board of the visitor's own, with its slides already marked. The boards live in `public/templates/*.json`; to change them, edit `scripts/make-templates.cjs` and run `node scripts/make-templates.cjs`. The pages share `templates/landing.css` and `templates/landing.ts`, and the moving picture is `public/media/present-teaser.mp4`.
+
+Compare the two pages in **Vercel → Analytics → Pages** to see which kind of project draws more interest. Builds on Vercel also write `sitemap.xml` and `robots.txt`, so search engines find the template pages and the help centre.
+
 ## Security notes
 
 **In place:** edit keys (only their hash is stored) guard every change and deletion; boards saved before edit keys existed can no longer be claimed by anyone (owners can *Make a copy*); My Canvas lists are encrypted in the browser; exports escape everything; link previews only ever reach public addresses (every redirect is checked); security headers stop other sites from framing Canvas; analytics never sees what's after `?` or `#`.
