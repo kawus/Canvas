@@ -44,6 +44,14 @@
     {
       "source": "/b/:id",
       "destination": "/api/share?id=:id"
+    },
+    {
+      "source": "/made-with-canvas",
+      "destination": "/intro/index.html"
+    },
+    {
+      "source": "/made-with-canvas/",
+      "destination": "/intro/index.html"
     }
   ]
 }

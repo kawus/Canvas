@@ -15,6 +15,8 @@ No. Canvas has no accounts, sign-ups or passwords, and doesn't ask for your name
 - **In the cloud:** each board's content and images, so its link works on any device. The server stores a scrambled version (a hash) of each board's edit key, never the key itself.
 - **Your list of boards (My Canvas):** encrypted on your device with a secret that exists only in your My Canvas link, then backed up. Our server stores it but can't read it.
 
+Nothing is saved until you add something. When Canvas opens, it asks the server whether the board in the address bar already exists. That's only a lookup: a new, untouched board is never stored, neither in your list of boards nor in the cloud.
+
 ## Who can see my boards?
 
 Only people who have a board's link. Links contain a long random code, not the board's name, so they can't be guessed. A View link lets people see the board; an Edit together link or your My Canvas link lets people change it. Keep those two private.

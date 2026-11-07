@@ -147,6 +147,15 @@ export function UpgradeDialog() {
 export function ViewBar() {
   return (
     <div className="view-bar panel" data-testid="view-bar">
+      {/* every shared board is a small invitation to try Canvas (its own page, so the visits can be counted) */}
+      <a className="made-with" href="/made-with-canvas/" target="_blank" rel="noopener" aria-label="Made with Canvas" data-testid="made-with">
+        <svg viewBox="0 0 24 24" aria-hidden>
+          <rect x="1" y="1" width="22" height="22" rx="6.5" />
+          <path d="M7 15.5c2.2-4.6 4.2-7 6-7 2.4 0-1.6 7 1.2 7 1.1 0 2-1 2.8-2.4" />
+        </svg>
+        <span className="made-with-text">Made with Canvas</span>
+      </a>
+      <span className="view-sep" aria-hidden />
       <span className="view-label">
         <Eye /> View only
       </span>
