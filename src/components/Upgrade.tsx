@@ -5,22 +5,22 @@ import { formatPrice, joinEarlyAccess, startCheckout, track } from '../pro'
 import { helpUrl } from '../help'
 import { useStore } from '../store'
 
-/** Canvas Pro: what you get and a way to pay (Stripe Checkout). */
+/** Canvas Pro, sold as a one-time Founder licence (Stripe Checkout). */
 export function UpgradeDialog() {
   const open = useStore((s) => s.upgradeOpen)
   const setOpen = useStore((s) => s.setUpgradeOpen)
   const config = useStore((s) => s.pro.config)
-  const [billing, setBilling] = useState<'month' | 'year'>('year')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [done, setDone] = useState(false)
   const smoke = config?.mode === 'smoke'
 
-  // smoke test: count how many people look at the offer
+  // count how many people look at the offer
   useEffect(() => {
     if (!open) return
     setDone(false)
     setBusy(false)
+    setError('')
     track('view')
   }, [open])
 
@@ -37,20 +37,18 @@ export function UpgradeDialog() {
   }, [open, setOpen])
 
   if (!open || !config?.enabled) return null
-  const monthly = formatPrice(config.month, config.currency)
-  const yearly = formatPrice(config.year, config.currency)
-  const saving = Math.round((1 - config.year / (config.month * 12)) * 100)
+  const price = formatPrice(config.founder, config.currency)
 
   const go = async () => {
     setBusy(true)
     setError('')
     try {
       if (smoke) {
-        // no payment yet: record the choice and unlock early access
-        await joinEarlyAccess(billing)
+        // no payments set up yet: record the choice and unlock early access
+        await joinEarlyAccess('founder')
         setDone(true)
         setBusy(false)
-      } else await startCheckout(billing)
+      } else await startCheckout('founder')
     } catch {
       setError('Payments are unavailable right now. Please try again.')
       setBusy(false)
@@ -68,13 +66,12 @@ export function UpgradeDialog() {
             You’re in early
           </h2>
           <p className="dialog-sub">
-            Canvas Pro is free while it’s in early access, so there’s nothing to pay. Live editing is now unlocked on
+            Canvas Pro is free while it’s in early access, so there’s nothing to pay. Everything in Pro is now unlocked on
             this device.
           </p>
           <button type="button" className="primary-btn dialog-cta" onClick={() => setOpen(false)} data-testid="early-start">
-            Start editing together
+            Back to my board
           </button>
-          <p className="dialog-foot">Pro becomes a paid plan later — you’ll see it here first.</p>
         </div>
       </div>
     )
@@ -92,48 +89,32 @@ export function UpgradeDialog() {
         <h2 id="upgrade-title" className="dialog-title">
           Canvas Pro
         </h2>
-        <p className="dialog-sub">Draw together, live.</p>
+        <p className="dialog-sub">Founder licence: pay once, keep it for good.</p>
         <ul className="pro-list">
           <li>
-            <Check /> Edit boards together in real time, with live cursors
+            <Check /> Edit boards together live, with cursors. Guests join free
           </li>
           <li>
-            <Check /> People you invite join free — only you need Pro
+            <Check /> No “Made with Canvas” mark on your shared boards and exports
           </li>
           <li>
-            <Check /> Pro comes along to all your devices with your My Canvas link
+            <Check /> Every Pro feature that comes later, at no extra cost
           </li>
           <li>
-            <Check /> Everything in Free: unlimited boards, view links, exports
+            <Check /> On all your devices, with your My Canvas link
           </li>
         </ul>
-        <div className="theme-row billing" role="radiogroup" aria-label="Billing">
-          <button
-            type="button"
-            role="radio"
-            aria-checked={billing === 'month'}
-            className={`theme-btn ${billing === 'month' ? 'is-active' : ''}`}
-            onClick={() => setBilling('month')}
-          >
-            {monthly} / month
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={billing === 'year'}
-            className={`theme-btn ${billing === 'year' ? 'is-active' : ''}`}
-            onClick={() => setBilling('year')}
-          >
-            {yearly} / year
-            {saving > 0 && <span className="save-pill">−{saving}%</span>}
-          </button>
+        <div className="founder-price" data-testid="founder-price">
+          <b>{price}</b>
+          <span>once · no subscription</span>
         </div>
         <button type="button" className="primary-btn dialog-cta" onClick={go} disabled={busy} data-testid="checkout">
-          {busy ? (smoke ? 'One moment…' : 'Opening secure checkout…') : `Continue — ${billing === 'month' ? `${monthly}/month` : `${yearly}/year`}`}
+          {busy ? (smoke ? 'One moment…' : 'Opening secure checkout…') : `Become a founder · ${price}`}
         </button>
         {error && <p className="dialog-error">{error}</p>}
         <p className="dialog-foot">
-          {smoke ? 'Cancel anytime.' : 'Secure payment by Stripe. Cancel anytime.'}{' '}
+          {smoke ? 'Free during early access.' : 'Secure payment by Stripe, with a receipt.'} You help keep Canvas
+          independent and private by design.{' '}
           <a href={helpUrl('pro/')} target="_blank" rel="noopener">
             Questions?
           </a>
@@ -145,9 +126,12 @@ export function UpgradeDialog() {
 
 /** Replaces the toolbar on boards you can only view. */
 export function ViewBar() {
+  // a founder's shared boards carry no mark
+  const ownerPro = useStore((s) => !!s.doc.pro)
   return (
     <div className="view-bar panel" data-testid="view-bar">
       {/* every shared board is a small invitation to try Canvas (its own page, so the visits can be counted) */}
+      {!ownerPro && (
       <a className="made-with" href="/made-with-canvas/" target="_blank" rel="noopener" aria-label="Made with Canvas" data-testid="made-with">
         <svg viewBox="0 0 24 24" aria-hidden>
           <rect x="1" y="1" width="22" height="22" rx="6.5" />
@@ -155,7 +139,8 @@ export function ViewBar() {
         </svg>
         <span className="made-with-text">Made with Canvas</span>
       </a>
-      <span className="view-sep" aria-hidden />
+      )}
+      {!ownerPro && <span className="view-sep" aria-hidden />}
       <span className="view-label">
         <Eye /> View only
       </span>

@@ -252,7 +252,7 @@ export function BoardMenu() {
                       void openPortal().catch(() => showToast('Couldn’t open billing — please try again'))
                     }}
                   >
-                    Manage subscription
+                    Billing & receipts
                   </MenuItem>
                   )}
                 </>
@@ -264,8 +264,9 @@ export function BoardMenu() {
                     setUpgradeOpen(true)
                   }}
                   testId="upgrade"
+                  hint="Founder licence"
                 >
-                  Upgrade to Pro
+                  Canvas Pro
                 </MenuItem>
               )}
             </>
@@ -432,7 +433,7 @@ export function ShareButton() {
                   data-testid="share-upgrade"
                 >
                   <Sparkles />
-                  <span>Upgrade to Pro</span>
+                  <span>Get Canvas Pro</span>
                 </button>
               </div>
             </div>
@@ -524,6 +525,9 @@ export function ExportButton() {
   const sel = selectedElements({ doc, selectedIds })
   const useSel = onlySelection && sel.length > 0
   const els = contentOf(useSel ? sel : doc.elements)
+  const setUpgradeOpen = useStore((s) => s.setUpgradeOpen)
+  // the "Made with Canvas" line on exports goes away with Pro
+  const markShown = useStore((s) => !!s.pro.paywall && !s.pro.active)
 
   const run = async (fn: typeof exportPdf) => {
     if (!els.length) {
@@ -569,6 +573,19 @@ export function ExportButton() {
           <MenuItem icon={<FileCode />} onClick={() => run(exportSvg)} hint="Vector">
             SVG
           </MenuItem>
+          {markShown && (
+            <button
+              type="button"
+              className="menu-note"
+              onClick={() => {
+                setOpen(false)
+                setUpgradeOpen(true)
+              }}
+              data-testid="export-mark-note"
+            >
+              Exports include a small “Made with Canvas” line. <span>Remove it with Pro</span>
+            </button>
+          )}
           {sel.length > 0 && (
             <>
               <div className="menu-sep" />

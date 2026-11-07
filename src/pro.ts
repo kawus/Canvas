@@ -16,6 +16,8 @@ export interface ProConfig {
   currency: string
   month: number
   year: number
+  /** one-time Founder licence, in the smallest currency unit */
+  founder: number
 }
 
 export function proToken(): string | null {
@@ -50,7 +52,7 @@ export function proConfig() {
       if (!r.ok || !(r.headers.get('content-type') || '').includes('json')) throw new Error('no pro api')
       return (await r.json()) as ProConfig
     })
-    .catch((): ProConfig => ({ enabled: false, mode: 'off', currency: 'usd', month: 0, year: 0 }))
+    .catch((): ProConfig => ({ enabled: false, mode: 'off', currency: 'eur', month: 0, year: 0, founder: 0 }))
   return configPromise
 }
 
@@ -92,15 +94,18 @@ export function track(event: 'locked' | 'view' | 'backup_email') {
   void post('track', { event, device: getMe().id }).catch(() => {})
 }
 
+export type Plan = 'founder' | 'month' | 'year'
+
 /** Smoke test: "buying" records the choice and unlocks free early access. */
-export async function joinEarlyAccess(interval: 'month' | 'year') {
-  const { token } = await post<{ token: string }>('beta', { interval, device: getMe().id })
+export async function joinEarlyAccess(plan: Plan) {
+  const { token } = await post<{ token: string }>('beta', { plan, device: getMe().id })
   saveToken(token)
   await refreshPro()
 }
 
-export async function startCheckout(interval: 'month' | 'year') {
-  const { url } = await post<{ url: string }>('checkout', { interval, returnUrl: location.href })
+/** Off to Stripe Checkout; it comes back with ?pro_session=… (see claimFromUrl). */
+export async function startCheckout(plan: Plan) {
+  const { url } = await post<{ url: string }>('checkout', { plan, returnUrl: location.href })
   location.href = url
 }
 
@@ -121,7 +126,7 @@ export async function claimFromUrl() {
     const { token } = await post<{ token: string }>('claim', { session })
     saveToken(token)
     await refreshPro()
-    useStore.getState().showToast('Welcome to Canvas Pro ✦')
+    useStore.getState().showToast('Thank you, founder ✦ Canvas Pro is yours for good')
   } catch {
     useStore.getState().showToast('We couldn’t confirm the payment yet — try reloading in a moment')
   }

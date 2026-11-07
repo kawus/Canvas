@@ -51,9 +51,7 @@ Compare the two pages in **Vercel → Analytics → Pages** to see which kind of
 
 **For later (from the October 2026 review):**
 
-1. *Before turning on real payments:*
-   - **One-time checkout claims.** Today, anyone who gets hold of a completed checkout's return link (`?pro_session=…`, kept in the buyer's browser history) can claim that buyer's Pro pass — including opening their billing page (invoices, cancel). Fix: remember claimed sessions in Redis and refuse a second claim (or only allow claims within an hour of paying).
-   - **A separate signing secret for Pro passes.** Passes are signed with a key derived from `STRIPE_SECRET_KEY` (or the Liveblocks key in the smoke test). Rotating the Stripe key would sign every paying customer out of Pro. Fix: add `PRO_TOKEN_SECRET` (a long random value in Vercel) and sign with that.
+1. *Done (November 2026), before real payments:* checkout return links can only be claimed for an hour after their first claim, and Pro passes are signed with their own `PRO_TOKEN_SECRET`.
 2. **The stats page is public.** Anyone who finds `/#stats` can read the smoke-test and board-sync numbers, and anyone can inflate those counters (`track`, `usage`). Fix if it matters: require a private key in the address (`/#stats=<key>`, checked against a `STATS_KEY` environment variable), and count interest per device only once.
 
 ## Visitor analytics
@@ -147,7 +145,19 @@ Check it worked: open a board, click **Share → Copy link**, and open the link 
 
 Free plan: up to 10 people on a board at once, 500 active boards and 3,000 live minutes a month, with a small Liveblocks badge. To save minutes, only boards whose live link has been shared connect, and a board disconnects when its tab has been in the background for a minute.
 
-**4. Canvas Pro: smoke test first, real payments later**
+**4. Canvas Pro: the Founder licence**
+
+Pro is sold as a one-time **Founder licence** (default €39, `FOUNDER_PRICE` in cents and `PRO_CURRENCY`). It includes live editing together, no "Made with Canvas" mark on the founder's shared boards and exports, and every later Pro feature. Founders are remembered in Redis (`founder:<customer>`) and on the Stripe customer (`metadata.canvas_founder`), so a wiped database doesn't lose them. The stats page counts **founders who paid**. The monthly/yearly subscription code is still there but isn't offered in the app.
+
+**Going live with real payments (checklist):**
+
+1. In Vercel → **Settings → Environment Variables**, add **`PRO_TOKEN_SECRET`**: a long random value (40+ characters, for example from your password manager's generator). Never change it later, or every founder is signed out.
+2. Add `PRO_CURRENCY` = `eur` and, if you want another price, `FOUNDER_PRICE` (in cents, e.g. `2900`).
+3. Test first: add `STRIPE_SECRET_KEY` with your **test** key (`sk_test_…`), redeploy, open **board menu → Canvas Pro → Become a founder** and pay with the test card `4242 4242 4242 4242`. You should come back with Pro on, and the Export menu note gone.
+4. In Stripe, turn on **Settings → Customer emails → Successful payments** so buyers get a receipt.
+5. Go live: activate your Stripe account, replace `STRIPE_SECRET_KEY` with the live key (`sk_live_…`) and redeploy.
+
+**Before payments (smoke test)**
 
 Until a Stripe key is added, Pro runs as a **smoke test** ("fake door"): people see the real offer (locked "Edit together", pricing, Continue button), but nobody is charged. Choosing a plan records the interest and unlocks free early access on that device. The same page also shows **Board sync**: how many "anything new?" checks open boards make each day (each is one small database read), with a monthly projection to compare against your Upstash plan. See the smoke-test results at **`/#stats`** on your site: how many hit the Pro feature, looked at the offer and chose monthly or yearly (counted anonymously, once per device). Set `PRO_MODE=off` in Vercel to switch the paywall off entirely.
 
@@ -158,9 +168,9 @@ To take payments:
 3. In Vercel: **Settings → Environment Variables** → add `STRIPE_SECRET_KEY`, then **Redeploy**.
 4. Try it: **Share → Edit together → Upgrade to Pro**, and pay with the test card `4242 4242 4242 4242` (any future date, any CVC).
 
-The app creates the "Canvas Pro" product and its prices in Stripe on first use ($6/month, $48/year). To change them, set `PRO_PRICE_MONTH` / `PRO_PRICE_YEAR` (in cents) and `PRO_CURRENCY` (e.g. `eur`). To take real payments, activate your Stripe account, switch to live mode, replace the key with the live one (`sk_live_…`) and redeploy.
+The app creates the "Canvas Founder licence" product and its price in Stripe on first use (and the older subscription prices, `PRO_PRICE_MONTH` / `PRO_PRICE_YEAR`, if they're ever used again). To take real payments, activate your Stripe account, switch to live mode, replace the key with the live one (`sk_live_…`) and redeploy.
 
-Adding the key ends the smoke test: early-access unlocks stop working and those people see the real offer. There are no accounts: after paying, Pro is stored in the browser, and the **My Canvas link** (board menu → Connect your devices) brings it to your other devices along with your boards. **Manage subscription** opens Stripe's billing page to change or cancel.
+Adding the key ends the smoke test: early-access unlocks stop working and those people see the real offer. There are no accounts: after paying, Pro is stored in the browser, and the **My Canvas link** (board menu → Connect your devices) brings it to your other devices along with your boards. **Billing & receipts** (board menu) opens Stripe's billing page with receipts and invoices.
 
 **Other static hosts** (Netlify, GitHub Pages, …): upload `dist/` after `npm run build`. Everything works except cloud links, which need the `api/` function.
 

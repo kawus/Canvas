@@ -82,9 +82,10 @@ export async function handle(request) {
         if (doc.id !== id || !Array.isArray(doc.elements) || typeof doc.updatedAt !== 'number') {
           return json({ error: 'invalid board' }, 400)
         }
-        // A Pro owner sharing the board pays for live editing on it
+        // A Pro owner's board: no "Made with Canvas" mark for viewers, and live editing
+        // once it's shared (live editing itself only starts when an edit link is shared)
         let proCustomer = record?.proCustomer
-        if (doc.shared === true && !proCustomer) {
+        if (!proCustomer && request.headers.get('x-pro-token')) {
           const customer = await verifyToken(request.headers.get('x-pro-token'))
           if (customer && (await isActive(customer))) proCustomer = customer
         }

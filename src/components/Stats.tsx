@@ -5,15 +5,17 @@ type Counts = { total: number; people: number; last7: number }
 type Day = { day: string; checks: number; changed: number; devices: number | null }
 type Stats = {
   mode: string
-  events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts> & Partial<Record<'backup_email' | 'updates_signup', Counts>>
+  events: Record<'locked' | 'view' | 'intent_month' | 'intent_year', Counts> &
+    Partial<Record<'intent_founder' | 'founders' | 'backup_email' | 'updates_signup', Counts>>
   usage?: Day[]
 }
 
-const ROWS: { key: 'locked' | 'view' | 'intent_month' | 'intent_year'; label: string; hint: string }[] = [
+const ROWS: { key: 'locked' | 'view' | 'intent_founder' | 'intent_month' | 'intent_year'; label: string; hint: string }[] = [
   { key: 'locked', label: 'Hit the Pro feature', hint: 'Opened “Edit together” without Pro' },
   { key: 'view', label: 'Looked at the offer', hint: 'Opened the Canvas Pro window' },
-  { key: 'intent_month', label: 'Chose monthly', hint: 'Clicked Continue on the monthly plan' },
-  { key: 'intent_year', label: 'Chose yearly', hint: 'Clicked Continue on the yearly plan' },
+  { key: 'intent_founder', label: 'Chose the founder licence', hint: 'Clicked Become a founder' },
+  { key: 'intent_month', label: 'Chose monthly (earlier offer)', hint: 'Before the founder licence' },
+  { key: 'intent_year', label: 'Chose yearly (earlier offer)', hint: 'Before the founder licence' },
 ]
 
 const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : '—')
@@ -33,7 +35,9 @@ export function StatsPage() {
   }, [])
 
   const e = stats?.events
-  const buyers = e ? e.intent_month.people + e.intent_year.people : 0
+  const none = { total: 0, people: 0, last7: 0 }
+  const buyers = e ? e.intent_month.people + e.intent_year.people + (e.intent_founder ?? none).people : 0
+  const row = (k: (typeof ROWS)[number]['key']) => (e ? (e[k as keyof Stats['events']] ?? none) : none)
 
   return (
     <div className="stats-page">
@@ -61,6 +65,12 @@ export function StatsPage() {
                 <div className="stats-big">{buyers}</div>
                 <div className="stats-label">people would buy</div>
               </div>
+              {stats.mode === 'live' && (
+                <div>
+                  <div className="stats-big" data-testid="stats-founders">{e.founders?.total ?? 0}</div>
+                  <div className="stats-label">founders who paid</div>
+                </div>
+              )}
             </div>
             <table className="stats-table">
               <thead>
@@ -78,9 +88,9 @@ export function StatsPage() {
                       <div className="stats-row-label">{r.label}</div>
                       <div className="stats-row-hint">{r.hint}</div>
                     </td>
-                    <td data-testid={`stats-${r.key}`}>{e[r.key].people}</td>
-                    <td>{e[r.key].total}</td>
-                    <td>{e[r.key].last7}</td>
+                    <td data-testid={`stats-${r.key}`}>{row(r.key).people}</td>
+                    <td>{row(r.key).total}</td>
+                    <td>{row(r.key).last7}</td>
                   </tr>
                 ))}
               </tbody>

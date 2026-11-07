@@ -120,8 +120,8 @@
       .then((c) => {
         const fmt = (n) =>
           new Intl.NumberFormat(undefined, { style: 'currency', currency: c.currency.toUpperCase(), minimumFractionDigits: n % 100 ? 2 : 0 }).format(n / 100)
-        if (c.mode === 'smoke') price.textContent = 'Canvas Pro is free while it’s in early access. Choose a plan in Canvas and live editing unlocks right away — nothing to pay.'
-        else if (c.mode === 'live') price.textContent = `${fmt(c.month)} a month, or ${fmt(c.year)} a year (save ${Math.round((1 - c.year / (c.month * 12)) * 100)}%). Prices may include tax depending on where you live.`
+        if (c.mode === 'smoke') price.textContent = 'Canvas Pro is free while it’s in early access. Tap Become a founder in Canvas and Pro unlocks right away, with nothing to pay.'
+        else if (c.mode === 'live') price.textContent = `The Founder licence is ${fmt(c.founder)}, paid once. There’s no subscription, and you keep Pro for good. Prices may include tax depending on where you live.`
         else if (c.mode === 'off') price.textContent = 'Right now everything in Canvas is free, including editing together.'
       })
       .catch(() => {})

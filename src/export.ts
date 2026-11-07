@@ -5,6 +5,7 @@ import { FONT_FAMILY, PALETTE_LIGHT } from './constants'
 import { contentOf, unionBounds } from './geometry'
 import { elementPrims, primToMarkup } from './render'
 import { textWidth } from './textMetrics'
+import { useStore } from './store'
 import type { El } from './types'
 
 const PAD = 32
@@ -21,6 +22,9 @@ async function fetchBase64(url: string) {
   }
   return btoa(bin)
 }
+
+/** Exports carry the mark unless this device has Pro. */
+const markExports = () => !useStore.getState().pro.active
 
 const esc = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
 
@@ -100,7 +104,7 @@ function download(blob: Blob, name: string) {
 }
 
 export async function exportSvg(elements: El[], title: string) {
-  const { svg } = await buildSvg(elements, { embedFont: true, background: true, mark: true })
+  const { svg } = await buildSvg(elements, { embedFont: true, background: true, mark: markExports() })
   download(new Blob([svg], { type: 'image/svg+xml' }), fileName(title, 'svg'))
 }
 
@@ -160,7 +164,7 @@ export async function boardSnapshot(elements: El[]): Promise<string | null> {
 }
 
 export async function exportPng(elements: El[], title: string) {
-  const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: true, mark: true })
+  const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: true, mark: markExports() })
   // iPad Safari caps canvases at ~16.7M pixels
   const scale = Math.min(3, Math.sqrt(16_000_000 / (width * height)), 8192 / Math.max(width, height))
   const img = new Image()
@@ -186,7 +190,7 @@ export async function exportPng(elements: El[], title: string) {
 
 export async function exportPdf(elements: El[], title: string) {
   const [{ jsPDF }, { svg2pdf }] = await Promise.all([import('jspdf'), import('svg2pdf.js')])
-  const { svg, width, height } = await buildSvg(elements, { embedFont: false, background: true, mark: true })
+  const { svg, width, height } = await buildSvg(elements, { embedFont: false, background: true, mark: markExports() })
   // PDF pages are limited to 14400pt; scale very large boards down to fit.
   const k = Math.min(1, 14400 / Math.max(width, height))
   const pw = width * k

@@ -83,7 +83,8 @@ export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<boolean>> 
   const { key, pro: _pro, ...body } = doc
   const headers: Record<string, string> = { 'Content-Type': 'application/json', 'X-Edit-Key': key ?? '' }
   const token = proToken()
-  if (token && doc.shared) headers['X-Pro-Token'] = token
+  // a Pro owner's boards carry no "Made with Canvas" mark, and their shared boards are live
+  if (token) headers['X-Pro-Token'] = token
   const res = await request(doc.id, {
     method: 'PUT',
     headers,

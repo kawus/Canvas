@@ -10,7 +10,7 @@
  * before, just without live collaboration.
  *
  * Only editors (holding the board's edit key) may join, and when payments are
- * set up (STRIPE_SECRET_KEY) only on boards shared by a Pro owner.
+ * set up (STRIPE_SECRET_KEY) only on boards whose owner has Pro.
  */
 
 /**

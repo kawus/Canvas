@@ -1,12 +1,15 @@
 /**
- * Canvas Pro: Stripe subscriptions without accounts.
+ * Canvas Pro without accounts. It's sold as a one-time Founder licence
+ * (monthly / yearly subscriptions are still supported underneath).
  *
- * Paying gives the buyer a signed "Pro token" (kept in the browser, and in a
- * private Pro link to use on other devices). The token names the Stripe
- * customer; whether Pro is active is always checked with Stripe (cached briefly).
+ * Paying gives the buyer a signed "Pro token" (kept in the browser, and carried
+ * to other devices by the My Canvas link). The token names the Stripe customer.
+ * Founders are remembered for good (in Redis and on the Stripe customer);
+ * subscriptions are checked with Stripe (cached briefly).
  *
- * Only STRIPE_SECRET_KEY is needed: the product and prices are created in
- * Stripe automatically on first use.
+ * Needed for real payments: STRIPE_SECRET_KEY, and PRO_TOKEN_SECRET (a long
+ * random value that signs the tokens, so changing the Stripe key later never
+ * signs anyone out). The products and prices are created in Stripe on first use.
  *
  * Without it the paywall runs as a smoke test ("fake door"): the offer is
  * shown and interest is counted, but nobody is charged — choosing a plan
@@ -25,9 +28,11 @@ export const paywallEnabled = () => proMode() !== 'off'
 /** Prices in the smallest currency unit; adjustable without code changes. */
 export function pricing() {
   return {
-    currency: (process.env.PRO_CURRENCY || 'usd').toLowerCase(),
+    currency: (process.env.PRO_CURRENCY || 'eur').toLowerCase(),
     month: Number(process.env.PRO_PRICE_MONTH || 600),
     year: Number(process.env.PRO_PRICE_YEAR || 4800),
+    // the one-time Founder licence (FOUNDER_PRICE, in cents: 3900 = 39.00)
+    founder: Number(process.env.FOUNDER_PRICE || 3900),
   }
 }
 
@@ -87,15 +92,36 @@ export async function priceFor(interval) {
   return created.id
 }
 
+/** The one-time Founder licence price, created on first use. */
+export async function founderPrice() {
+  const p = pricing()
+  const lookup = `canvas_founder_${p.currency}_${p.founder}`
+  const found = await stripe('GET', 'prices', { 'lookup_keys[]': lookup, active: 'true', limit: 1 })
+  if (found.data?.length) return found.data[0].id
+  const created = await stripe('POST', 'prices', {
+    currency: p.currency,
+    unit_amount: p.founder,
+    lookup_key: lookup,
+    product_data: { name: 'Canvas Founder licence' },
+  })
+  return created.id
+}
+
+/** Remember a founder for good: in Redis, and on the Stripe customer (in case Redis is ever emptied). */
+/** @param {string} customer */
+export async function markFounder(customer) {
+  if (redisConfig()) await redis(['SET', `founder:${customer}`, '1']).catch(() => {})
+  await stripe('POST', `customers/${customer}`, { metadata: { canvas_founder: '1' } }).catch((err) => console.error(err))
+}
+
 /* ---------- Pro tokens ---------- */
 
 const b64url = (/** @type {string} */ s) => Buffer.from(s).toString('base64url')
 
 async function signature(/** @type {string} */ payload) {
-  // early-access tokens stop working by themselves once real payments are set up
-  const keyData = new TextEncoder().encode(
-    await sha256(`canvas-pro:${secret() || process.env.LIVEBLOCKS_SECRET_KEY || 'canvas-early-access'}`),
-  )
+  // PRO_TOKEN_SECRET signs the tokens; without it (smoke test) a key derived from other secrets is used
+  const base = process.env.PRO_TOKEN_SECRET || secret() || process.env.LIVEBLOCKS_SECRET_KEY || 'canvas-early-access'
+  const keyData = new TextEncoder().encode(await sha256(`canvas-pro:${base}`))
   const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
   const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(payload))
   return Buffer.from(sig).toString('base64url')
@@ -120,16 +146,23 @@ export async function verifyToken(token) {
   }
 }
 
-/** Is this Stripe customer's subscription active? Cached for 10 minutes. */
+/** Does this customer have Pro: a Founder licence, or an active subscription? Cached for 10 minutes. */
 /** @param {string} customer  @param {boolean} [fresh] */
 export async function isActive(customer, fresh = false) {
   // early access during the smoke test
   if (customer.startsWith('beta_')) return proMode() === 'smoke'
   if (!secret()) return false
+  // founders keep Pro for good
+  if (redisConfig() && (await redis(['GET', `founder:${customer}`]).catch(() => null)) === '1') return true
   const cacheKey = `pro:${customer}`
   if (!fresh && redisConfig()) {
     const cached = await redis(['GET', cacheKey]).catch(() => null)
     if (cached === '1' || cached === '0') return cached === '1'
+  }
+  const person = await stripe('GET', `customers/${customer}`).catch(() => null)
+  if (person?.metadata?.canvas_founder === '1') {
+    if (redisConfig()) await redis(['SET', `founder:${customer}`, '1']).catch(() => {})
+    return true
   }
   const subs = await stripe('GET', 'subscriptions', { customer, status: 'all', limit: 10 })
   const active = (subs.data || []).some((/** @type {{status: string}} */ s) => ['active', 'trialing', 'past_due'].includes(s.status))
