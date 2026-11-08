@@ -3694,3 +3694,110 @@ button:focus:not(:focus-visible) {
   font-size: 12px;
   line-height: 1.45;
 }
+
+/* ---------- the Pencil menu (hold the Apple Pencil still) ---------- */
+.pencil-hold {
+  position: fixed;
+  z-index: 60;
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  border-radius: 50%;
+  border: 2.5px solid var(--accent);
+  pointer-events: none;
+  opacity: 0;
+  animation: pencil-hold 0.27s ease-out 0.18s forwards;
+}
+@keyframes pencil-hold {
+  from {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(1);
+  }
+}
+.pencil-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  touch-action: none;
+}
+.pencil-menu {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: var(--panel);
+  -webkit-backdrop-filter: saturate(180%) blur(22px);
+  backdrop-filter: saturate(180%) blur(22px);
+  box-shadow: var(--shadow-lg), 0 0 0 0.5px var(--border-strong);
+  animation: pencil-open 0.22s cubic-bezier(0.2, 0.9, 0.25, 1.15);
+}
+@keyframes pencil-open {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+}
+.pencil-item {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: background-color 0.12s ease, box-shadow 0.12s ease, scale 0.12s ease;
+}
+.pencil-tool {
+  width: 46px;
+  height: 46px;
+  margin: -23px 0 0 -23px;
+  color: var(--text);
+}
+.pencil-tool svg.lucide {
+  width: 21px;
+  height: 21px;
+}
+.pencil-tool.is-current {
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+}
+.pencil-tool.is-active,
+.pencil-tool:hover {
+  background: var(--accent);
+  color: #fff;
+  scale: 1.12;
+}
+.pencil-color {
+  width: 30px;
+  height: 30px;
+  margin: -15px 0 0 -15px;
+  background: var(--swatch);
+  box-shadow: inset 0 0 0 0.5px rgba(0, 0, 0, 0.15);
+}
+.pencil-color.is-current {
+  box-shadow: 0 0 0 2.5px var(--panel-solid), 0 0 0 4.5px var(--accent);
+}
+.pencil-color.is-active,
+.pencil-color:hover {
+  scale: 1.3;
+}
+.pencil-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin: -7px 0 0 -7px;
+  border-radius: 50%;
+  background: var(--swatch);
+  box-shadow: 0 0 0 3px var(--panel-solid), 0 0 0 3.5px var(--border-strong);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pencil-menu,
+  .pencil-hold {
+    animation: none;
+    opacity: 1;
+  }
+}

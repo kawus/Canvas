@@ -6,6 +6,7 @@ import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
 import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
+import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter } from './pencilMenu'
 import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
@@ -65,6 +66,8 @@ type Action =
     }
   | { kind: 'endpoint'; pointerId: number; which: 1 | 2; id: string; before: El[]; sx: number; sy: number; orig: LineEl }
   | { kind: 'erase'; pointerId: number; last: Point; hits: Set<string> }
+  /** the Pencil menu is open and the Pencil is still down: lift it on a choice to pick it */
+  | { kind: 'pencilMenu'; pointerId: number }
 
 interface PointerInfo {
   x: number
@@ -98,6 +101,8 @@ export class CanvasController {
   private pinch: { ids: [number, number]; dist: number; cx: number; cy: number; vp: Viewport } | null = null
   private lastDown: { t: number; x: number; y: number } | null = null
   private space = false
+  /** the Pencil held still at the start of a stroke: the Pencil menu opens if it stays put */
+  private hold: { pointerId: number; sx: number; sy: number; timer: number } | null = null
   private gestureZoom = 1
   private cleanup: (() => void)[] = []
 
@@ -195,6 +200,7 @@ export class CanvasController {
 
   /** Abort the current gesture and restore the board to how it was before it began. */
   cancel() {
+    this.stopHold()
     const a = this.action
     if (!a) return
     const s = S()
@@ -214,6 +220,40 @@ export class CanvasController {
     if (a.kind === 'erase') s.setErasing([])
     this.action = null
     this.updateCursor()
+  }
+
+  /* ---------- the Pencil menu (press and hold) ---------- */
+
+  private stopHold() {
+    if (!this.hold) return
+    clearTimeout(this.hold.timer)
+    this.hold = null
+    S().setPencilHold(null)
+  }
+
+  /** A Pencil stroke just began: if the Pencil stays still, the stroke becomes the Pencil menu. */
+  private startHold(e: PointerEvent, sx: number, sy: number) {
+    this.stopHold()
+    const r = this.el.getBoundingClientRect()
+    const at = { x: r.left + sx, y: r.top + sy }
+    S().setPencilHold(at)
+    const timer = window.setTimeout(() => {
+      const a = this.action
+      if (!this.hold || !a || a.pointerId !== e.pointerId) return this.stopHold()
+      this.hold = null
+      S().setPencilHold(null)
+      // the dot or mark made so far goes away
+      this.cancel()
+      this.action = { kind: 'pencilMenu', pointerId: e.pointerId }
+      S().setPencilMenu({ ...menuCenter(at.x, at.y), active: null })
+    }, HOLD_MS)
+    this.hold = { pointerId: e.pointerId, sx, sy, timer }
+  }
+
+  /** Which Pencil menu item is under this point (the menu is ordinary page content). */
+  private pencilItemAt(clientX: number, clientY: number) {
+    const el = document.elementFromPoint(clientX, clientY)?.closest('[data-pencil-item]')
+    return el?.getAttribute('data-pencil-item') ?? null
   }
 
   /* ---------- pointer down ---------- */
@@ -265,11 +305,20 @@ export class CanvasController {
     // a tap still selects, and what's already selected can still be moved or resized
     if (!readOnly && e.pointerType === 'pen' && (tool === 'select' || tool === 'hand') && !this.space && !isDouble && !this.onSelection(sx, sy, p)) {
       this.startDraw(e, p, false, { sx, sy, far: false })
+      this.startHold(e, sx, sy)
       return
     }
     if (readOnly || e.button === 1 || this.space || tool === 'hand' || (fingerInPenMode && DRAWING_TOOLS.includes(tool))) {
       this.startPan(e, sx, sy)
       return
+    }
+
+    // holding the Pencil still where it starts a mark opens the Pencil menu
+    if (e.pointerType === 'pen' && !isDouble && (tool === 'pen' || tool === 'highlighter' || tool === 'eraser' || tool === 'rect' || tool === 'ellipse' || tool === 'arrow' || tool === 'line')) {
+      queueMicrotask(() => {
+        const a = this.action
+        if (a && a.pointerId === e.pointerId && (a.kind === 'draw' || a.kind === 'erase' || a.kind === 'shape')) this.startHold(e, sx, sy)
+      })
     }
 
     switch (tool) {
@@ -518,6 +567,8 @@ export class CanvasController {
       return
     }
 
+    if (this.hold && this.hold.pointerId === e.pointerId && Math.hypot(sx - this.hold.sx, sy - this.hold.sy) > HOLD_SLOP) this.stopHold()
+
     const a = this.action
     if (!a) {
       this.hover(e, sx, sy)
@@ -526,6 +577,13 @@ export class CanvasController {
     if (a.pointerId !== e.pointerId) return
     e.preventDefault()
     const s = S()
+
+    if (a.kind === 'pencilMenu') {
+      const menu = s.pencilMenu
+      const active = this.pencilItemAt(e.clientX, e.clientY)
+      if (menu && menu.active !== active) s.setPencilMenu({ ...menu, active })
+      return
+    }
 
     switch (a.kind) {
       case 'pan': {
@@ -802,10 +860,18 @@ export class CanvasController {
       }
       return
     }
+    if (this.hold?.pointerId === e.pointerId) this.stopHold()
     const a = this.action
     if (!a || a.pointerId !== e.pointerId) return
     this.action = null
     const s = S()
+
+    if (a.kind === 'pencilMenu') {
+      const key = cancelled ? null : this.pencilItemAt(e.clientX, e.clientY)
+      if (key) choosePencil(key)
+      else if (s.pencilMenu) s.setPencilMenu({ ...s.pencilMenu, active: null })
+      return
+    }
 
     if (cancelled) {
       this.action = a

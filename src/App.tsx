@@ -17,6 +17,7 @@ import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { Welcome } from './components/Welcome'
 import { Presenter } from './components/Presenter'
+import { PencilMenu } from './components/PencilMenu'
 import { PresentButton } from './components/Slides'
 import { PALETTE_DARK, PALETTE_LIGHT } from './constants'
 import { startKeyboard } from './keyboard'
@@ -120,6 +121,7 @@ export default function App() {
       </div>
       <ShortcutsDialog />
       {presenting && <Presenter palette={palette} />}
+      <PencilMenu palette={palette} />
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />

@@ -9,6 +9,17 @@ order: 4
 
 Yes. Ink is pressure-sensitive and smooth, and the Pencil always draws — even when the Select tool is picked, so you never need to switch tools to sketch. A quick tap with the Pencil selects something instead, and dragging something that's already selected moves it. Once Canvas notices your Pencil, your fingers select and move things, one finger moves the board around on empty space, and a palm resting on the screen is ignored, so you can lean on the iPad while you draw.
 
+## Is there a Pencil menu?
+
+Yes. **Hold the Pencil still on the board** for a moment: a ring grows at its tip, then a round menu opens right there. It has the pen, highlighter, eraser and select tools, undo, and the colours.
+
+- **Slide** the Pencil onto a choice and lift it to pick it.
+- Or **lift** first, then **tap** a choice. Tap anywhere else to close the menu.
+
+If you start drawing before the ring finishes, you simply draw. Picking a colour switches to the pen (or recolours the highlighter, if that's what you're using).
+
+Some drawing apps open their menu when you squeeze an Apple Pencil Pro. Safari doesn't share the squeeze with websites yet, so in Canvas you hold the Pencil still instead.
+
 ## Which gestures can I use on a touchscreen?
 
 - **Pinch** with two fingers to zoom.

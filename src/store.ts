@@ -97,6 +97,10 @@ interface State {
   cropId: string | null
   /** presenting, starting from this slide (index in slideshow order) */
   presenting: number | null
+  /** the Apple Pencil is being held still: where (a ring grows there before the Pencil menu opens) */
+  pencilHold: { x: number; y: number } | null
+  /** the Pencil menu, open at this screen point; `active` = the choice under the Pencil */
+  pencilMenu: { x: number; y: number; active: string | null } | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -123,6 +127,8 @@ interface State {
   setTour: (tour: boolean) => void
   setCropId: (id: string | null) => void
   setPresenting: (from: number | null) => void
+  setPencilHold: (at: { x: number; y: number } | null) => void
+  setPencilMenu: (menu: { x: number; y: number; active: string | null } | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
@@ -221,6 +227,8 @@ export const useStore = create<State>((set, get) => ({
   tour: false,
   cropId: null,
   presenting: null,
+  pencilHold: null,
+  pencilMenu: null,
 
   setDoc: (doc) =>
     set(() => ({
@@ -291,6 +299,8 @@ export const useStore = create<State>((set, get) => ({
   setTour: (tour) => set({ tour }),
   setCropId: (cropId) => set({ cropId, editingId: null }),
   setPresenting: (presenting) => set({ presenting, editingId: null, draft: null, marquee: null, guides: [] }),
+  setPencilHold: (pencilHold) => set({ pencilHold }),
+  setPencilMenu: (pencilMenu) => set({ pencilMenu }),
 
   markShared: () =>
     set((s) =>
