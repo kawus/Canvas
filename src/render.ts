@@ -29,17 +29,25 @@ const pathCache = new WeakMap<FreedrawEl, string>()
 
 const avg = (a: number, b: number) => (a + b) / 2
 
+/**
+ * A smooth closed path along the outline: from midpoint to midpoint, each piece
+ * bending toward the outline point between them (a quadratic B-spline). Every
+ * curve uses a real outline point as its control, so unevenly spaced points
+ * never make kinks (the "T" shorthand guesses each bend by mirroring the last).
+ */
 function outlineToPath(points: number[][]) {
   const len = points.length
   if (len < 4) return ''
-  let a = points[0]
-  let b = points[1]
-  const c = points[2]
-  let d = `M${a[0].toFixed(2)},${a[1].toFixed(2)} Q${b[0].toFixed(2)},${b[1].toFixed(2)} ${avg(b[0], c[0]).toFixed(2)},${avg(b[1], c[1]).toFixed(2)} T`
-  for (let i = 2; i < len - 1; i++) {
-    a = points[i]
-    b = points[i + 1]
-    d += `${avg(a[0], b[0]).toFixed(2)},${avg(a[1], b[1]).toFixed(2)} `
+  const f = (n: number) => n.toFixed(2)
+  const mid = (i: number) => {
+    const a = points[i % len]
+    const b = points[(i + 1) % len]
+    return `${f(avg(a[0], b[0]))},${f(avg(a[1], b[1]))}`
+  }
+  let d = `M${mid(0)}`
+  for (let i = 1; i <= len; i++) {
+    const c = points[i % len]
+    d += `Q${f(c[0])},${f(c[1])} ${mid(i)}`
   }
   return d + 'Z'
 }
@@ -84,11 +92,65 @@ function catmullRom(p0: StrokePoint, p1: StrokePoint, p2: StrokePoint, p3: Strok
   return [x, y, p1[2] + (p2[2] - p1[2]) * t]
 }
 
+/**
+ * Clean up raw pen input before it becomes an outline. An Apple Pencil reports
+ * ~240 samples a second with a fraction of a pixel of tremor, and its pressure
+ * flickers from one sample to the next. Fed straight in, every wobble becomes
+ * a bump in the outline, which shows as jagged edges once you zoom in. So:
+ * samples that crowd together are thinned out, the path is gently smoothed
+ * (ends stay put), and pressure is smoothed so the width swells gradually.
+ * Only the drawing is affected; the saved points are untouched.
+ */
+function steadyPoints(pts: StrokePoint[], size: number): StrokePoint[] {
+  if (pts.length < 3) return pts
+  // 1. thin out samples closer together than a fraction of the stroke width
+  const minGap = Math.max(0.3, size * 0.08)
+  const kept: StrokePoint[] = [pts[0]]
+  for (let i = 1; i < pts.length - 1; i++) {
+    const last = kept[kept.length - 1]
+    if (Math.hypot(pts[i][0] - last[0], pts[i][1] - last[1]) >= minGap) kept.push(pts[i])
+  }
+  kept.push(pts[pts.length - 1])
+  if (kept.length < 3) return kept
+  // distance along the stroke at each point
+  const along = [0]
+  for (let i = 1; i < kept.length; i++) along.push(along[i - 1] + Math.hypot(kept[i][0] - kept[i - 1][0], kept[i][1] - kept[i - 1][1]))
+  const total = along[along.length - 1]
+  // 2. smooth position and pressure along the stroke (a Gaussian over a stretch tied to the pen
+  //    width: tremor goes, while any rounding of corners stays hidden inside the line itself).
+  //    Near the ends the stretch shrinks, so the stroke starts and ends exactly where it did.
+  const sigmaXY = Math.max(0.9, size * 0.33)
+  const sigmaP = Math.max(3, size * 1.5)
+  const out: StrokePoint[] = []
+  let lo = 0
+  for (let i = 0; i < kept.length; i++) {
+    const room = Math.min(along[i], total - along[i])
+    const sx = Math.min(sigmaXY, room / 2.5)
+    const reach = Math.max(sx, sigmaP) * 2.5
+    while (along[lo] < along[i] - reach) lo++
+    let wx = 0, x = 0, y = 0, wp = 0, pr = 0
+    for (let k = lo; k < kept.length && along[k] <= along[i] + reach; k++) {
+      const d = along[k] - along[i]
+      const gp = Math.exp(-(d * d) / (2 * sigmaP * sigmaP))
+      wp += gp
+      pr += kept[k][2] * gp
+      if (sx > 0.01 && Math.abs(d) <= sx * 2.5) {
+        const g = Math.exp(-(d * d) / (2 * sx * sx))
+        wx += g
+        x += kept[k][0] * g
+        y += kept[k][1] * g
+      }
+    }
+    out.push(wx > 0 ? [x / wx, y / wx, pr / wp] : [kept[i][0], kept[i][1], pr / wp])
+  }
+  return out
+}
+
 export function freedrawPath(el: FreedrawEl, complete = true) {
   const cached = pathCache.get(el)
   if (cached !== undefined) return cached
   const size = PEN_SIZE[el.size] * (el.highlight ? HIGHLIGHT_SCALE : 1)
-  const outline = getStroke(smoothPoints(el.points, Math.max(1.5, size * 0.3)), {
+  const outline = getStroke(smoothPoints(steadyPoints(el.points, size), Math.max(1.5, size * 0.3)), {
     size,
     // a highlighter keeps an even width
     thinning: el.highlight ? 0 : el.pressure ? 0.65 : 0.55,
