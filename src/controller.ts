@@ -6,7 +6,7 @@ import { MAX_ZOOM, MIN_ZOOM } from './constants'
 import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl, translateEl } from './geometry'
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
 import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
-import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter } from './pencilMenu'
+import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter, pickAt } from './pencilMenu'
 import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
@@ -245,15 +245,15 @@ export class CanvasController {
       // the dot or mark made so far goes away
       this.cancel()
       this.action = { kind: 'pencilMenu', pointerId: e.pointerId }
-      S().setPencilMenu({ ...menuCenter(at.x, at.y), active: null })
+      S().setPencilMenu({ ...menuCenter(at.x, at.y), active: null, colors: false })
     }, HOLD_MS)
     this.hold = { pointerId: e.pointerId, sx, sy, timer }
   }
 
-  /** Which Pencil menu item is under this point (the menu is ordinary page content). */
-  private pencilItemAt(clientX: number, clientY: number) {
-    const el = document.elementFromPoint(clientX, clientY)?.closest('[data-pencil-item]')
-    return el?.getAttribute('data-pencil-item') ?? null
+  /** The Pencil menu choice the Pencil points at (by direction from the menu's centre). */
+  private pencilChoice(clientX: number, clientY: number) {
+    const menu = S().pencilMenu
+    return menu ? pickAt(clientX - menu.x, clientY - menu.y, menu.colors) : null
   }
 
   /* ---------- pointer down ---------- */
@@ -580,8 +580,11 @@ export class CanvasController {
 
     if (a.kind === 'pencilMenu') {
       const menu = s.pencilMenu
-      const active = this.pencilItemAt(e.clientX, e.clientY)
-      if (menu && menu.active !== active) s.setPencilMenu({ ...menu, active })
+      if (!menu) return
+      const active = this.pencilChoice(e.clientX, e.clientY)
+      // the colours fan out while the Pencil is on the colour segment or a colour; back in the middle they fold away
+      const colors = active === 'color' || (active?.startsWith('c:') ?? false)
+      if (menu.active !== active || menu.colors !== colors) s.setPencilMenu({ ...menu, active, colors })
       return
     }
 
@@ -867,7 +870,8 @@ export class CanvasController {
     const s = S()
 
     if (a.kind === 'pencilMenu') {
-      const key = cancelled ? null : this.pencilItemAt(e.clientX, e.clientY)
+      // lift toward a choice to pick it; lifted in the middle (or on Colour), the menu stays open to tap
+      const key = cancelled ? null : this.pencilChoice(e.clientX, e.clientY)
       if (key) choosePencil(key)
       else if (s.pencilMenu) s.setPencilMenu({ ...s.pencilMenu, active: null })
       return

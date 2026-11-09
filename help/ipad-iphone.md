@@ -11,12 +11,13 @@ Yes. Ink is pressure-sensitive and smooth, and the Pencil always draws — even 
 
 ## Is there a Pencil menu?
 
-Yes. **Hold the Pencil still on the board** for a moment: a ring grows at its tip, then a round menu opens right there. It has the pen, highlighter, eraser and select tools, undo, and the colours.
+Yes. **Hold the Pencil still on the board** for a moment: a thin ring draws itself around the tip, then a ring of six choices opens right there. Going clockwise from the top: pen, highlighter, eraser, select, undo and colour.
 
-- **Slide** the Pencil onto a choice and lift it to pick it.
+- **Flick** the Pencil toward a choice and lift. You don't need to land on it exactly; the direction is enough, and the middle names what you're about to pick.
+- **Colours:** move onto the colour segment and the colours fan out beyond it. Go out to one and lift. Back in the middle, they fold away again.
 - Or **lift** first, then **tap** a choice. Tap anywhere else to close the menu.
 
-If you start drawing before the ring finishes, you simply draw. Picking a colour switches to the pen (or recolours the highlighter, if that's what you're using).
+The choices always sit in the same places, so after a while it becomes a quick flick. If you start drawing before the ring finishes, you simply draw. Picking a colour switches to the pen (or recolours the highlighter, if that's what you're using).
 
 Some drawing apps open their menu when you squeeze an Apple Pencil Pro. Safari doesn't share the squeeze with websites yet, so in Canvas you hold the Pencil still instead.
 

@@ -8,6 +8,13 @@ import { emptyBoard } from './storage'
 import type { BoardDoc, Box, El, Style, Tool, Viewport } from './types'
 
 
+export interface PencilMenuState {
+  x: number
+  y: number
+  active: string | null
+  colors: boolean
+}
+
 export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | 'keys' | null
 export type ThemePref = 'system' | 'light' | 'dark'
 /** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
@@ -99,8 +106,8 @@ interface State {
   presenting: number | null
   /** the Apple Pencil is being held still: where (a ring grows there before the Pencil menu opens) */
   pencilHold: { x: number; y: number } | null
-  /** the Pencil menu, open at this screen point; `active` = the choice under the Pencil */
-  pencilMenu: { x: number; y: number; active: string | null } | null
+  /** the Pencil menu, open at this screen point; `active` = the choice the Pencil points at; `colors` = colour arc shown */
+  pencilMenu: PencilMenuState | null
 
   setDoc: (doc: BoardDoc) => void
   setTitle: (title: string) => void
@@ -128,7 +135,7 @@ interface State {
   setCropId: (id: string | null) => void
   setPresenting: (from: number | null) => void
   setPencilHold: (at: { x: number; y: number } | null) => void
-  setPencilMenu: (menu: { x: number; y: number; active: string | null } | null) => void
+  setPencilMenu: (menu: PencilMenuState | null) => void
   undo: () => void
   redo: () => void
   setTool: (tool: Tool) => void
