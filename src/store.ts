@@ -79,6 +79,8 @@ interface State {
   snap: boolean
   /** snap to the background dot grid */
   gridSnap: boolean
+  /** soft sounds when things land, drop, go and tidy (off unless chosen) */
+  sounds: boolean
   /** set once an Apple Pencil / stylus is seen: fingers then pan instead of draw */
   penMode: boolean
   theme: ThemePref
@@ -152,6 +154,7 @@ interface State {
   setGuides: (g: Guide[]) => void
   setSnap: (on: boolean) => void
   setGridSnap: (on: boolean) => void
+  setSounds: (on: boolean) => void
   setViewport: (v: Viewport) => void
   zoomTo: (zoom: number, anchor?: [number, number]) => void
   zoomToFit: () => void
@@ -220,6 +223,7 @@ export const useStore = create<State>((set, get) => ({
   guides: [],
   snap: readFlag('canvas-snap', true),
   gridSnap: readFlag('canvas-grid', false),
+  sounds: readFlag('canvas-sounds', false),
   penMode: false,
   theme: readTheme(),
   toast: null,
@@ -421,6 +425,14 @@ export const useStore = create<State>((set, get) => ({
       /* ignore */
     }
     set({ gridSnap })
+  },
+  setSounds: (sounds) => {
+    try {
+      localStorage.setItem('canvas-sounds', sounds ? '1' : '0')
+    } catch {
+      /* ignore */
+    }
+    set({ sounds })
   },
   setViewport: (viewport) => set({ viewport }),
 

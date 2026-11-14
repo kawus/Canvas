@@ -1,3 +1,4 @@
+import { play } from '../sound'
 import { createElement, memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useAsset } from '../assets'
 import { CanvasController } from '../controller'
@@ -139,8 +140,17 @@ export function Canvas({ palette }: { palette: Palette }) {
     const prev = known.current
     const byId = new Map(elements.map((e) => [e.id, e]))
     known.current = { board: boardId, ids: new Set(byId.keys()), byId }
-    if (!prev || prev.board !== boardId || change === 'load' || change === 'live') return
+    if (!prev || prev.board !== boardId || change === 'load') return
+    // your own changes make a soft sound (not other people's): new notes arrive live, while you start typing
+    const added = (change === 'commit' || change === 'live') && elements.some((e) => !prev.ids.has(e.id) && LANDS.has(e.type))
+    if (change === 'live') {
+      if (added) play('place')
+      return
+    }
     const gone = [...prev.byId.values()].filter((e) => !byId.has(e.id))
+    // an empty text that was never written in goes quietly
+    if (change === 'commit' && gone.some((e) => !(e.type === 'text' && !e.text.trim()))) play('remove')
+    else if (added) play('place')
     if (!gone.length) return
     setGhosts((g) => [...g, ...gone])
     const ids = new Set(gone.map((e) => e.id))

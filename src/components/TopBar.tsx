@@ -26,11 +26,13 @@ import {
   Sun,
   Users,
   Trash2,
+  Volume2,
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
+import { previewSound } from '../sound'
 import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
 import { contentOf } from '../geometry'
 import { refreshPreview } from '../preview'
@@ -102,6 +104,8 @@ export function BoardMenu() {
   const setSnap = useStore((s) => s.setSnap)
   const gridSnap = useStore((s) => s.gridSnap)
   const setGridSnap = useStore((s) => s.setGridSnap)
+  const sounds = useStore((s) => s.sounds)
+  const setSounds = useStore((s) => s.setSounds)
   const editKey = useStore((s) => s.doc.key)
   const pro = useStore((s) => s.pro)
   const setUpgradeOpen = useStore((s) => s.setUpgradeOpen)
@@ -287,6 +291,17 @@ export function BoardMenu() {
             testId="grid-toggle"
           >
             Snap to grid
+          </MenuItem>
+          <MenuItem
+            icon={<Volume2 />}
+            onClick={() => {
+              setSounds(!sounds)
+              if (!sounds) previewSound()
+            }}
+            hint={sounds ? <Check className="menu-check" /> : undefined}
+            testId="sound-toggle"
+          >
+            Sounds
           </MenuItem>
           <div className="menu-sep" />
           <div className="theme-row" role="radiogroup" aria-label="Appearance">

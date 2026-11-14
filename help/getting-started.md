@@ -42,6 +42,10 @@ Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <
 
 Yes. Canvas follows your device's light or dark setting. To choose one yourself, open the **board menu** and pick **Auto**, **Light** or **Dark** at the bottom.
 
+## Can Canvas make sounds?
+
+Yes, if you'd like it to. Open the **board menu** and turn on **Sounds**. You'll hear a soft tap when you add something, a quiet thud when you drop what you dragged, a light swish when something is deleted, and a little chime when you tidy up. Sounds are off until you turn them on. On iPhone and iPad they stay quiet while your device is on silent, and they never interrupt music or other audio.
+
 ## Where do I find help inside Canvas?
 
 Tap the **?** button in the bottom-right corner. It has this help centre, the welcome tour, and a list of shortcuts that fits your device: keyboard shortcuts on a computer, touch and Apple Pencil gestures on an iPad (with a Keyboard tab for when one is attached), and touch gestures on an iPhone.

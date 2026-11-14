@@ -1,3 +1,4 @@
+import { play } from './sound'
 import { getBounds, scaleEl, translateEl } from './geometry'
 import { unitBounds, units } from './groups'
 import { useStore } from './store'
@@ -129,6 +130,7 @@ export function tidySelection() {
   const ids = new Set(s.selectedIds)
   const chosen = tidyable(s.doc.elements.filter((e) => ids.has(e.id)))
   if (units(chosen).length < 2) return
+  play('tidy')
   const start = chosen.map(getBounds).reduce((a, b) => ({
     minX: Math.min(a.minX, b.minX),
     minY: Math.min(a.minY, b.minY),

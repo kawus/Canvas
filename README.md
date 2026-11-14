@@ -22,6 +22,7 @@ A calm, minimal whiteboard for sketching, writing and simple shapes. It works wi
 - **Share (free):** a **view link** lets anyone see the board as it changes and make their own copy. Only you edit, so nobody overwrites anyone. To edit your boards on your other devices, use **Connect your devices** (board menu).
 - **Edit together (Pro):** an **edit link** invites people to edit with you in real time: cursors with names, selections and drawings as they happen, avatars of who's there. Undo only undoes your own changes. The owner needs Pro; guests join free.
 - **Welcome tour:** first-time visitors get a short animated welcome and three steps (Create, Everywhere, Share & present). On iPhone and iPad in Safari, a fourth step shows how to add Canvas to the Home Screen. It's shown once; add `?tour` to the address to see it again.
+- **A calm, warm feel:** paper tones, things lift while dragged, land softly, fade when deleted and glide when tidied (all off with reduced motion). Optional **Sounds** in the board menu, made with Web Audio (`src/sound.ts`): an "ambient" audio session, so iPhone and iPad keep them quiet on silent.
 - **Light and dark mode** (follows the system by default). On iPad you can "Add to Home Screen" to use it full-screen like an app.
 
 ## Front page (optional)
