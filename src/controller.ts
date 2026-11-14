@@ -201,6 +201,7 @@ export class CanvasController {
   /** Abort the current gesture and restore the board to how it was before it began. */
   cancel() {
     this.stopHold()
+    S().setLifted([])
     const a = this.action
     if (!a) return
     const s = S()
@@ -669,6 +670,8 @@ export class CanvasController {
             s.setElementsLive([...s.doc.elements, ...clones])
             s.select([...a.ids])
           }
+          // what's being dragged lifts off the board a little
+          s.setLifted([...a.ids])
         }
         const p = this.world(sx, sy)
         let dx = p[0] - a.start[0]
@@ -868,6 +871,7 @@ export class CanvasController {
     if (!a || a.pointerId !== e.pointerId) return
     this.action = null
     const s = S()
+    if (a.kind === 'move') s.setLifted([])
 
     if (a.kind === 'pencilMenu') {
       // lift toward a choice to pick it; lifted in the middle (or on Colour), the menu stays open to tap

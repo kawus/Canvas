@@ -15,7 +15,7 @@ import {
   StickyNote,
   Type,
 } from 'lucide-react'
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { openImagePicker } from '../images'
 import { useStore } from '../store'
 import type { Tool } from '../types'
@@ -127,6 +127,22 @@ export function Toolbar() {
     }
   }
 
+  // the highlight slides to whichever tool is picked
+  const bar = useRef<HTMLDivElement>(null)
+  const [glow, setGlow] = useState<{ x: number; y: number; w: number; h: number } | null>(null)
+  useLayoutEffect(() => {
+    const place = () => {
+      const btn = bar.current?.querySelector<HTMLElement>('.tool-btn.is-active')
+      if (!btn || !bar.current) return setGlow(null)
+      const b = btn.getBoundingClientRect()
+      const r = bar.current.getBoundingClientRect()
+      setGlow({ x: b.left - r.left + bar.current.scrollLeft, y: b.top - r.top, w: b.width, h: b.height })
+    }
+    place()
+    window.addEventListener('resize', place)
+    return () => window.removeEventListener('resize', place)
+  }, [tool, tray])
+
   const trayGroup = GROUPS.find((g) => g.id === tray)
   const insertItems = [
     { id: 'image', label: 'Image', icon: <ImagePlus />, run: () => openImagePicker() },
@@ -174,7 +190,12 @@ export function Toolbar() {
               ))}
         </div>
       )}
-      <div className="toolbar panel" role="toolbar" aria-label="Tools">
+      <div className="toolbar panel" role="toolbar" aria-label="Tools" ref={bar}>
+        <span
+          className="tool-glow"
+          aria-hidden
+          style={glow ? { transform: `translate(${glow.x}px, ${glow.y}px)`, width: glow.w, height: glow.h } : { opacity: 0 }}
+        />
         {GROUPS.map((g) => {
           const def = current(g)
           const active = g.tools.some((t) => t.tool === tool)

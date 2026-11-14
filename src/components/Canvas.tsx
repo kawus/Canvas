@@ -1,6 +1,7 @@
-import { createElement, memo, useEffect, useRef } from 'react'
+import { createElement, memo, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useAsset } from '../assets'
 import { CanvasController } from '../controller'
+import { getBounds } from '../geometry'
 import { toWorld } from '../handles'
 import { importImages } from '../images'
 import { addLink, importImageUrl, isUrl } from '../moodboard'
@@ -38,22 +39,59 @@ function ImageView({ el, palette, hash }: { el: El; palette: Palette; hash: stri
   )
 }
 
+const still = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+
 export const ElementView = memo(function ElementView({
   el,
   palette,
   faded,
   editing,
+  land,
+  lift,
+  glide,
+  exit,
 }: {
   el: El
   palette: Palette
   faded: boolean
   /** while its text is being edited, the text itself is drawn by the editor */
   editing: boolean
+  /** how it moves (on the board only; thumbnails and exports stay still): just added */
+  land?: boolean
+  /** being dragged: lifts a little */
+  lift?: boolean
+  /** moved by a commit (tidy, align, undo): eases from where it was */
+  glide?: boolean
+  /** just removed: fades away */
+  exit?: boolean
 }) {
+  const ref = useRef<SVGGElement>(null)
+  const before = useRef<ReturnType<typeof getBounds> | null>(null)
+  // glide: when a commit moves or resizes it, ease from where it was to where it is now
+  useLayoutEffect(() => {
+    const now = getBounds(el)
+    const was = before.current
+    before.current = now
+    const g = ref.current
+    if (!g || !was || !glide || still) return
+    const w = now.maxX - now.minX
+    const h = now.maxY - now.minY
+    const sx = w > 0.5 ? (was.maxX - was.minX) / w : 1
+    const sy = h > 0.5 ? (was.maxY - was.minY) / h : 1
+    const ox = was.minX - sx * now.minX
+    const oy = was.minY - sy * now.minY
+    if (Math.abs(ox) < 0.3 && Math.abs(oy) < 0.3 && Math.abs(sx - 1) < 0.002 && Math.abs(sy - 1) < 0.002) return
+    g.animate([{ transform: `translate(${ox}px, ${oy}px) scale(${sx}, ${sy})` }, { transform: 'none' }], {
+      duration: 260,
+      easing: 'cubic-bezier(0.2, 0.8, 0.3, 1)',
+    })
+  }, [el, glide])
+
+  const cls = `el ${land ? 'el-land' : ''} ${lift ? 'el-lift' : ''} ${exit ? 'el-exit' : ''}`
   const hash = el.type === 'image' ? el.asset : el.type === 'link' ? el.image : undefined
   if (hash) {
     return (
-      <g opacity={faded ? 0.25 : 1}>
+      <g ref={ref} className={cls} opacity={faded ? 0.25 : 1}>
         <ImageView el={el} palette={palette} hash={hash} />
       </g>
     )
@@ -61,13 +99,16 @@ export const ElementView = memo(function ElementView({
   let prims = elementPrims(el, palette)
   if (editing) prims = el.type === 'text' ? [] : prims.filter((p) => p.tag !== 'text')
   return (
-    <g opacity={faded ? 0.25 : 1}>
+    <g ref={ref} className={cls} opacity={faded ? 0.25 : 1}>
       {prims.map((p, i) => (
         <PrimView key={i} p={p} />
       ))}
     </g>
   )
 })
+
+/** Things that arrive by being drawn (strokes, lines, drawn shapes) don't need to land. */
+const LANDS = new Set(['sticky', 'image', 'link', 'swatch', 'text'])
 
 export function Canvas({ palette }: { palette: Palette }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -77,6 +118,36 @@ export function Canvas({ palette }: { palette: Palette }) {
   const erasing = useStore((s) => s.erasing)
   const editingId = useStore((s) => s.editingId)
   const peers = useStore((s) => s.collab.peers)
+  const change = useStore((s) => s.change)
+  const lifted = useStore((s) => s.lifted)
+  const boardId = useStore((s) => s.doc.id)
+
+  // which items just arrived (they land) and which just left (they fade away)
+  const known = useRef<{ board: string; ids: Set<string>; byId: Map<string, El> } | null>(null)
+  const [ghosts, setGhosts] = useState<El[]>([])
+  const [seen, setSeen] = useState({ board: boardId, elements, fresh: new Set<string>() })
+  let fresh = seen.fresh
+  if (seen.elements !== elements || seen.board !== boardId) {
+    fresh = new Set<string>()
+    if (seen.board === boardId && change !== 'load') {
+      const before = new Set(seen.elements.map((e) => e.id))
+      for (const el of elements) if (!before.has(el.id) && LANDS.has(el.type) && el.id !== draft?.id) fresh.add(el.id)
+    }
+    setSeen({ board: boardId, elements, fresh })
+  }
+  useLayoutEffect(() => {
+    const prev = known.current
+    const byId = new Map(elements.map((e) => [e.id, e]))
+    known.current = { board: boardId, ids: new Set(byId.keys()), byId }
+    if (!prev || prev.board !== boardId || change === 'load' || change === 'live') return
+    const gone = [...prev.byId.values()].filter((e) => !byId.has(e.id))
+    if (!gone.length) return
+    setGhosts((g) => [...g, ...gone])
+    const ids = new Set(gone.map((e) => e.id))
+    setTimeout(() => setGhosts((g) => g.filter((e) => !ids.has(e.id))), 220)
+  }, [elements, boardId, change])
+  const glide = change === 'commit' || change === 'remote'
+  const liftedSet = new Set(lifted)
 
   useEffect(() => {
     const c = new CanvasController(ref.current!)
@@ -137,7 +208,13 @@ export function Canvas({ palette }: { palette: Palette }) {
               palette={palette}
               faded={erasingSet.has(el.id)}
               editing={el.id === editingId}
+              land={fresh.has(el.id)}
+              lift={liftedSet.has(el.id)}
+              glide={glide}
             />
+          ))}
+          {ghosts.map((el) => (
+            <ElementView key={`gone-${el.id}`} el={el} palette={palette} faded={false} editing={false} exit />
           ))}
           {peers.map(
             (p) => p.draft && <ElementView key={`peer-${p.id}`} el={p.draft} palette={palette} faded={false} editing={false} />,

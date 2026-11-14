@@ -102,6 +102,8 @@ interface State {
   tour: boolean
   /** the image being cropped */
   cropId: string | null
+  /** items being dragged right now (they lift off the board a little) */
+  lifted: string[]
   /** presenting, starting from this slide (index in slideshow order) */
   presenting: number | null
   /** the Apple Pencil is being held still: where (a ring grows there before the Pencil menu opens) */
@@ -134,6 +136,7 @@ interface State {
   setTour: (tour: boolean) => void
   setCropId: (id: string | null) => void
   setPresenting: (from: number | null) => void
+  setLifted: (ids: string[]) => void
   setPencilHold: (at: { x: number; y: number } | null) => void
   setPencilMenu: (menu: PencilMenuState | null) => void
   undo: () => void
@@ -234,6 +237,7 @@ export const useStore = create<State>((set, get) => ({
   tour: false,
   cropId: null,
   presenting: null,
+  lifted: [],
   pencilHold: null,
   pencilMenu: null,
 
@@ -307,6 +311,9 @@ export const useStore = create<State>((set, get) => ({
   setCropId: (cropId) => set({ cropId, editingId: null }),
   setPresenting: (presenting) => set({ presenting, editingId: null, draft: null, marquee: null, guides: [] }),
   setPencilHold: (pencilHold) => set({ pencilHold }),
+  setLifted: (lifted) => {
+    if (lifted.length || get().lifted.length) set({ lifted })
+  },
   setPencilMenu: (pencilMenu) => set({ pencilMenu }),
 
   markShared: () =>

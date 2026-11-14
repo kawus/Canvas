@@ -7,23 +7,26 @@
 }
 
 :root {
-  --canvas: #fbfbfb;
-  --dot: #d9d9de;
-  --panel: rgba(255, 255, 255, 0.88);
-  --panel-solid: #ffffff;
-  --border: rgba(0, 0, 0, 0.07);
-  --border-strong: rgba(0, 0, 0, 0.12);
-  --text: #1d1d1f;
-  --text-2: #6e6e73;
-  --text-3: #a1a1a6;
-  --hover: rgba(0, 0, 0, 0.05);
-  --press: rgba(0, 0, 0, 0.08);
-  --accent: #0a84ff;
-  --accent-ink: #0071e3;
-  --accent-soft: rgba(10, 132, 255, 0.12);
-  --danger: #e5352b;
-  --shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.04), 0 6px 20px -4px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 0 0 0.5px rgba(0, 0, 0, 0.05), 0 2px 6px rgba(0, 0, 0, 0.05), 0 16px 40px -8px rgba(0, 0, 0, 0.16);
+  /* warm paper rather than cool grey: calm, but not clinical */
+  --canvas: #faf8f4;
+  --dot: #ddd6cb;
+  --panel: rgba(255, 253, 250, 0.9);
+  --panel-solid: #fffdfa;
+  --border: rgba(60, 40, 10, 0.08);
+  --border-strong: rgba(60, 40, 10, 0.13);
+  --text: #22201c;
+  --text-2: #736d65;
+  --text-3: #a8a198;
+  --hover: rgba(60, 40, 10, 0.05);
+  --press: rgba(60, 40, 10, 0.08);
+  /* Canvas's own ink blue (a touch deeper than the system blue) */
+  --accent: #2f6bea;
+  --accent-ink: #2559cc;
+  --accent-soft: rgba(47, 107, 234, 0.12);
+  --danger: #dc3b2e;
+  /* shadows tinted warm, like paper lying on a desk */
+  --shadow: 0 0 0 0.5px rgba(60, 40, 15, 0.05), 0 1px 2px rgba(60, 40, 15, 0.05), 0 6px 20px -4px rgba(60, 40, 15, 0.1);
+  --shadow-lg: 0 0 0 0.5px rgba(60, 40, 15, 0.06), 0 2px 6px rgba(60, 40, 15, 0.06), 0 16px 40px -8px rgba(60, 40, 15, 0.18);
   --radius: 12px;
   --gutter: max(12px, env(safe-area-inset-left));
   --btn: 36px;
@@ -31,21 +34,22 @@
 }
 
 :root[data-theme='dark'] {
-  --canvas: #161618;
-  --dot: #2e2e32;
-  --panel: rgba(38, 38, 41, 0.86);
-  --panel-solid: #252528;
-  --border: rgba(255, 255, 255, 0.07);
-  --border-strong: rgba(255, 255, 255, 0.12);
-  --text: #f5f5f7;
-  --text-2: #a1a1a6;
-  --text-3: #6e6e73;
-  --hover: rgba(255, 255, 255, 0.07);
-  --press: rgba(255, 255, 255, 0.11);
-  --accent: #0a84ff;
-  --accent-ink: #4aa3ff;
-  --accent-soft: rgba(10, 132, 255, 0.22);
-  --danger: #ff6159;
+  /* warm charcoal rather than blue-grey */
+  --canvas: #191816;
+  --dot: #34312c;
+  --panel: rgba(41, 39, 36, 0.88);
+  --panel-solid: #282623;
+  --border: rgba(255, 245, 230, 0.07);
+  --border-strong: rgba(255, 245, 230, 0.12);
+  --text: #f6f3ee;
+  --text-2: #aaa49b;
+  --text-3: #756f67;
+  --hover: rgba(255, 245, 230, 0.07);
+  --press: rgba(255, 245, 230, 0.11);
+  --accent: #4d84f5;
+  --accent-ink: #7aa4ff;
+  --accent-soft: rgba(77, 132, 245, 0.22);
+  --danger: #ff6a5c;
   --shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.5), 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px -4px rgba(0, 0, 0, 0.45);
   --shadow-lg: 0 0 0 0.5px rgba(0, 0, 0, 0.6), 0 16px 48px -8px rgba(0, 0, 0, 0.6);
   color-scheme: dark;
@@ -1024,7 +1028,7 @@ button:focus:not(:focus-visible) {
 
 /* Link cards and swatches float slightly on screen (exports stay flat) */
 .card-paper {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.05)) drop-shadow(0 6px 14px rgba(0, 0, 0, 0.07));
+  filter: drop-shadow(0 1px 1px rgba(60, 40, 15, 0.06)) drop-shadow(0 6px 14px rgba(60, 40, 15, 0.08));
 }
 :root[data-theme='dark'] .card-paper {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.45));
@@ -1032,7 +1036,7 @@ button:focus:not(:focus-visible) {
 
 /* Sticky notes get a soft paper shadow on screen (exports stay flat) */
 .sticky-paper {
-  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.08)) drop-shadow(0 4px 10px rgba(0, 0, 0, 0.08));
+  filter: drop-shadow(0 1px 1px rgba(60, 40, 15, 0.09)) drop-shadow(0 4px 10px rgba(60, 40, 15, 0.09));
 }
 :root[data-theme='dark'] .sticky-paper {
   filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.5));
@@ -3888,5 +3892,78 @@ button:focus:not(:focus-visible) {
   .pencil-hold-arc,
   .pencil-hold-track {
     animation-duration: 0.01s;
+  }
+}
+
+/* ---------- motion: things behave like paper on a desk ---------- */
+.el {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 0.2s cubic-bezier(0.2, 0.8, 0.3, 1),
+    filter 0.2s ease;
+}
+/* dragged: lifts a little, with a softer, deeper shadow */
+.el.el-lift {
+  transform: scale(1.018);
+  filter: drop-shadow(0 14px 18px rgba(60, 40, 15, 0.16)) drop-shadow(0 3px 5px rgba(60, 40, 15, 0.08));
+  transition-duration: 0.14s;
+}
+:root[data-theme='dark'] .el.el-lift {
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.5));
+}
+/* added: settles onto the board */
+.el.el-land {
+  animation: el-land 0.26s cubic-bezier(0.2, 0.9, 0.3, 1.12) both;
+}
+@keyframes el-land {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.94);
+  }
+}
+/* removed: fades and shrinks away */
+.el.el-exit {
+  pointer-events: none;
+  animation: el-exit 0.2s ease-in forwards;
+}
+@keyframes el-exit {
+  to {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+/* the toolbar's highlight slides to the tool you pick */
+.toolbar {
+  position: relative;
+}
+.toolbar .tool-glow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 10px;
+  background: var(--accent-soft);
+  pointer-events: none;
+  transition:
+    transform 0.26s cubic-bezier(0.2, 0.8, 0.3, 1),
+    width 0.26s cubic-bezier(0.2, 0.8, 0.3, 1),
+    opacity 0.2s ease;
+}
+.toolbar .tool-btn.is-active,
+.toolbar .tool-btn.is-active:hover {
+  background: transparent;
+}
+.toolbar .toolbar-slot,
+.toolbar > .tool-btn {
+  position: relative;
+  z-index: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .el,
+  .el.el-land,
+  .el.el-exit,
+  .toolbar .tool-glow {
+    animation: none;
+    transition: none;
   }
 }
