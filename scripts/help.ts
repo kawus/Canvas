@@ -158,8 +158,8 @@ function shell({ title, description, depth, body, path, search = true }: { title
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="theme-color" content="#fbfbfb" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#191816" media="(prefers-color-scheme: dark)" />
 <link rel="icon" type="image/svg+xml" href="${up}../favicon.svg" />
 <link rel="apple-touch-icon" href="${up}../apple-touch-icon.png" />
 <link rel="preload" href="${up}geist.woff2" as="font" type="font/woff2" crossorigin />

@@ -368,7 +368,7 @@ const board = $('[data-live-board]')
 const canvas = $<HTMLCanvasElement>('[data-trails]')
 const ctx = canvas.getContext('2d')!
 const PEOPLE = [
-  { name: 'You', color: '#0a84ff', ax: 0.3, ay: 0.28, fx: 0.00042, fy: 0.00061, ph: 0 },
+  { name: 'You', color: '#2f6bea', ax: 0.3, ay: 0.28, fx: 0.00042, fy: 0.00061, ph: 0 },
   { name: 'Sam', color: '#ff9f0a', ax: 0.26, ay: 0.3, fx: 0.00055, fy: 0.00037, ph: 2.1 },
   { name: 'Mia', color: '#30d158', ax: 0.34, ay: 0.22, fx: 0.00033, fy: 0.00071, ph: 4.2 },
   { name: 'Leo', color: '#bf5af2', ax: 0.22, ay: 0.32, fx: 0.00067, fy: 0.00049, ph: 1.1 },
