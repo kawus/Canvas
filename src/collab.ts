@@ -17,6 +17,8 @@ import type { El } from './types'
  */
 
 type Presence = {
+  /** the device's own id (getMe), so one person shows once however often they reconnect */
+  me?: string
   name: string
   color: string
   cursor: [number, number] | null
@@ -168,7 +170,7 @@ export async function startCollab(boardId: string) {
 
   const me = getMe()
   const { room, leave } = getClient(cfg.baseUrl).enterRoom<Presence, Storage>(`canvas-${boardId}`, {
-    initialPresence: { name: me.name, color: me.color, cursor: null, selection: [], draft: null },
+    initialPresence: { me: me.id, name: me.name, color: me.color, cursor: null, selection: [], draft: null },
     initialStorage: () => ({
       elements: new LiveMap<string, Json>(),
       order: new LiveList<Lson>([]),
@@ -186,8 +188,16 @@ export async function startCollab(boardId: string) {
       })
     }),
     room.subscribe('others', (others) => {
-      const peers: Peer[] = others
-        .filter((o) => o.presence)
+      // a phone that paused (say, for the photo picker) comes back as a new connection while the old one
+      // lingers for a moment: never show yourself, and show each person once (their latest connection)
+      const latest = new Map<string, (typeof others)[number]>()
+      for (const o of others) {
+        if (!o.presence || o.presence.me === me.id) continue
+        const who = o.presence.me ?? `c${o.connectionId}`
+        const seen = latest.get(who)
+        if (!seen || o.connectionId > seen.connectionId) latest.set(who, o)
+      }
+      const peers: Peer[] = [...latest.values()]
         .map((o) => ({
           id: o.connectionId,
           name: o.presence.name,
