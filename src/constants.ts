@@ -70,7 +70,8 @@ export const FONT_FAMILY = 'Geist'
 export const FONT_STACK = `${FONT_FAMILY}, ui-sans-serif, system-ui, -apple-system, sans-serif`
 export const LINE_HEIGHT = 1.25
 
-export const MIN_ZOOM = 0.1
+/** how far out you can zoom: 2%, so even a big board fits on a phone screen */
+export const MIN_ZOOM = 0.02
 export const MAX_ZOOM = 8
 
 export const ACCENT = '#0a84ff'

@@ -26,7 +26,7 @@ export function ZoomControls() {
   const zoomTo = useStore((s) => s.zoomTo)
   const zoomToFit = useStore((s) => s.zoomToFit)
   const step = (dir: 1 | -1) => {
-    const stops = [0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6, 8]
+    const stops = [0.02, 0.05, 0.1, 0.25, 0.5, 0.75, 1, 1.25, 1.5, 2, 3, 4, 6, 8]
     const next = dir > 0 ? stops.find((s) => s > zoom + 0.001) : [...stops].reverse().find((s) => s < zoom - 0.001)
     zoomTo(next ?? zoom)
   }

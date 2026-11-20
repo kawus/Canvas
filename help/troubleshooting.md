@@ -36,9 +36,9 @@ Safari can clear a website's storage after a while without visits. Your boards a
 - Editing together needs the board's owner to have [Canvas Pro](topic:pro).
 - A board disconnects after it's been in a background tab for about a minute. Switching back reconnects it.
 
-## Paste my link doesn't work
+## Paste link doesn't work
 
-Your browser may not allow reading the clipboard. Paste the link into the box below the button instead (press and hold, then **Paste**), and tap **Connect**. A My Canvas link contains `#me=`.
+Your browser may not allow reading the clipboard. Canvas then shows a box under the button: press and hold in it, tap **Paste**, then **Connect**. A My Canvas link contains `#me=`. Or tap **Scan code** and scan the QR code from your other device instead.
 
 ## Something else isn't working
 

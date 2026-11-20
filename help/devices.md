@@ -11,12 +11,12 @@ On your device, and in the cloud. Each board has its own link, and your browser 
 
 ## How do I get my boards on another device?
 
-Use your private **My Canvas link**. Open the **board menu → Connect your devices**. You'll see a QR code and the link. Then, on the other device, either:
+Use your private **My Canvas link**. On a device that has your boards, open **board menu → Connect your devices**. On **Add another device** you'll see a QR code. Then, on the other device, either:
 
 - **Scan the QR code** with its camera, or
-- **Paste the link** — on the new device, open Canvas, then **board menu → Connect your devices → New device? Paste the link…**, and tap **Paste my link**. On Apple devices with the same Apple ID, you can copy on one and paste on the other.
+- open Canvas there, go to **board menu → Connect your devices → Connect this one**, and tap **Scan code** (or **Paste link**, after tapping **Copy link** on the first device). On Apple devices with the same Apple ID, you can copy on one and paste on the other.
 
-You can also tap **Send to my other device** to AirDrop or message the link to yourself.
+On a phone or iPad, **Share link** lets you AirDrop or message the link to yourself.
 
 All your boards then show up in **All boards** on the new device, and you can keep editing them. If you have Canvas Pro, it comes along too.
 
@@ -35,11 +35,11 @@ If you edit the same board on two devices at the very same moment, the most rece
 The Home Screen app on iPhone and iPad keeps its own storage, separate from Safari. And a QR code scanned with the Camera app, or a link you tap, always opens in Safari, never in the app. So connect the app from inside it:
 
 1. On a device that already has your boards, open **board menu → Connect your devices**. A QR code appears.
-2. Open Canvas from your Home Screen. Until it's connected, it shows **Connect this app to your boards**. Tap **Scan code** and point it at the QR code. (Or find it any time under **board menu → Connect your devices → Scan the code from your other one**.)
+2. Open Canvas from your Home Screen. Until it's connected, it shows **Connect this app to your boards**. Tap **Scan code** and point it at the QR code. (Or find it any time under **board menu → Connect your devices → Connect this one → Scan code**.)
 
 That's it: your boards show up in the app, and the ones already there stay.
 
-The first time, your iPhone asks whether Canvas may use the camera. If you said no, allow it in **Settings → Safari → Camera**, or connect by pasting instead: tap **Copy** on your other device, then **Paste link** in the app. Apple devices on the same Apple ID share the clipboard, so a link copied on your Mac pastes straight in on your iPhone.
+The first time, your iPhone asks whether Canvas may use the camera. If you said no, allow it in **Settings → Safari → Camera**, or connect by pasting instead: tap **Copy link** on your other device, then **Paste link** in the app. Apple devices on the same Apple ID share the clipboard, so a link copied on your Mac pastes straight in on your iPhone.
 
 If you scanned with the Camera app and ended up in Safari, that's fine too: Safari is now connected. Open the Home Screen app and scan once more from there.
 
@@ -61,7 +61,7 @@ As long as one of your devices still has your boards, you can get the link again
 
 ## Can I back up my link by email?
 
-Yes. Go to **board menu → Connect your devices**, type your email address under **Back up by email**, and tap **Email me the link**. Your own email app opens with the link already filled in. Just press Send, and the link waits in your inbox for the day you need it.
+Yes. Go to **board menu → Connect your devices → Add another device**, tap **Email it to me**, type your email address and tap **Email me the link**. Your own email app opens with the link already filled in. Just press Send, and the link waits in your inbox for the day you need it.
 
 The email goes from your email app, so the link never passes through Canvas.
 

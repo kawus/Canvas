@@ -4656,3 +4656,59 @@ button:focus:not(:focus-visible) {
 .scan-paste {
   margin: 0 auto;
 }
+
+/* ---------- Connect your devices: two simple jobs, one at a time ---------- */
+.devices {
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+}
+.devices-tabs {
+  grid-template-columns: 1fr 1fr;
+  margin: 12px 0 16px;
+}
+.devices-tabs .theme-btn {
+  height: 34px;
+  font-size: 13px;
+  font-weight: 500;
+}
+.devices-sub {
+  max-width: 320px;
+  margin: 0 auto 14px;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+.devices .qr-wrap {
+  margin-bottom: 14px;
+}
+.devices-acts {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+.devices-acts .ghost-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.devices-acts svg.lucide,
+.devices-big svg.lucide {
+  width: 16px;
+  height: 16px;
+}
+.devices-big {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.devices-big > * {
+  width: 100%;
+  justify-content: center;
+}
+.devices .dialog-foot {
+  margin-top: 14px;
+}
+.devices .email-backup {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}

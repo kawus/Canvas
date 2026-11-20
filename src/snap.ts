@@ -9,7 +9,7 @@ import type { Box, El } from './types'
  */
 
 /** Grid sizes, all multiples of 8: snapping and the dots pick one to suit the zoom. */
-const GRID_SIZES = [8, 16, 24, 48, 96, 192, 384, 768, 1536]
+const GRID_SIZES = [8, 16, 24, 48, 96, 192, 384, 768, 1536, 3072]
 const fitting = (zoom: number, minScreenPx: number) => GRID_SIZES.find((s) => s * zoom >= minScreenPx) ?? GRID_SIZES[GRID_SIZES.length - 1]
 
 /** Snapping step: 8 at 100% (and closer), 16 at 50%, 24 further out, so drags never feel jittery. */

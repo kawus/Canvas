@@ -9,6 +9,7 @@ import { useStore } from '../store'
 import { feedbackCounts, seenAt } from '../feedback'
 import { BoardThumb } from './BoardThumb'
 import { QrScanner } from './ConnectApp'
+import { isPhone, touchFirst } from '../platform'
 import { timeAgo } from './TopBar'
 
 /** Close on Escape without also deselecting or switching tools. */
@@ -35,12 +36,10 @@ export function LibraryDialogs() {
     <div className="dialog-backdrop" onPointerDown={(e) => e.target === e.currentTarget && close()}>
       {panel === 'boards' || panel === 'welcome' ? (
         <AllBoards close={close} welcome={panel === 'welcome'} />
-      ) : panel === 'connect' ? (
-        <Connect close={close} />
       ) : panel === 'scan' ? (
         <QrScanner close={close} />
       ) : (
-        <MyCanvas close={close} />
+        <Devices close={close} start={panel === 'connect' || isPhone || inHomeScreenApp() ? 'here' : 'add'} />
       )}
     </div>
   )
@@ -212,11 +211,18 @@ function QrCode({ text }: { text: string }) {
   )
 }
 
-function MyCanvas({ close }: { close: () => void }) {
-  const proActive = useStore((s) => s.pro.active)
-  const setPanel = useStore((s) => s.setPanel)
+type DevicesTab = 'add' | 'here'
+
+/**
+ * Connect your devices: two simple jobs, one at a time. "Add another device"
+ * shows this device's code to scan (and the link to copy or email);
+ * "Connect this one" scans or pastes the code from another device. Phones and
+ * the Home Screen app start on connecting, computers on showing the code.
+ */
+function Devices({ close, start }: { close: () => void; start: DevicesTab }) {
+  const [tab, setTab] = useState<DevicesTab>(start)
+  const [emailing, setEmailing] = useState(false)
   const [link, setLink] = useState('')
-  const { copied, copy } = useCopy()
   const [unavailable, setUnavailable] = useState(false)
 
   useEffect(() => {
@@ -226,71 +232,161 @@ function MyCanvas({ close }: { close: () => void }) {
     })
   }, [])
 
-  const canShare = typeof navigator.share === 'function'
-
   return (
-    <div className="dialog me-dialog" role="dialog" aria-modal="true" aria-labelledby="me-title" data-testid="my-canvas">
+    <div className="dialog me-dialog devices" role="dialog" aria-modal="true" aria-labelledby="me-title" data-testid="my-canvas">
+      {emailing && (
+        <button type="button" className="icon-btn dialog-back" aria-label="Back" onClick={() => setEmailing(false)}>
+          <ArrowLeft />
+        </button>
+      )}
       <button type="button" className="icon-btn dialog-close" aria-label="Close" onClick={close}>
         <X />
       </button>
       <h2 id="me-title" className="dialog-title">
-        Your boards, everywhere
+        {emailing ? 'Email yourself the link' : 'Connect your devices'}
       </h2>
       {unavailable ? (
         <p className="dialog-sub">This needs cloud saving, which isn’t turned on for this site yet.</p>
+      ) : emailing ? (
+        <EmailBackup link={link} />
       ) : (
         <>
-          <p className="dialog-sub">
-            Open this private link on your phone, iPad or another computer to find all your boards there — and keep
-            editing them. No account needed{proActive ? '; your Pro comes along too' : ''}.
-          </p>
-          <div className="qr-wrap">{link ? <QrCode text={link} /> : <div className="qr qr-loading" />}</div>
-          {!inHomeScreenApp() && <p className="me-scan-hint">
-            Canvas on your iPhone or iPad Home Screen? Open it and tap <b>Scan code</b>. The Camera app opens Safari, which keeps separate boards.
-          </p>}
-          <div className="link-row">
-            <input className="field" readOnly value={link} onFocus={(e) => e.target.select()} aria-label="My Canvas link" data-testid="me-url" />
-            <button type="button" className="primary-btn" onClick={() => void copy(link)} disabled={!link} data-testid="me-copy">
-              {copied ? <Check /> : <Copy />} <span>{copied ? 'Copied' : 'Copy'}</span>
+          <div className="theme-row devices-tabs" role="tablist" aria-label="Connect your devices">
+            <button type="button" role="tab" aria-selected={tab === 'add'} className={`theme-btn ${tab === 'add' ? 'is-active' : ''}`} onClick={() => setTab('add')} data-testid="devices-add">
+              Add another device
+            </button>
+            <button type="button" role="tab" aria-selected={tab === 'here'} className={`theme-btn ${tab === 'here' ? 'is-active' : ''}`} onClick={() => setTab('here')} data-testid="devices-here">
+              Connect this one
             </button>
           </div>
-          {canShare && link && (
-            <button
-              type="button"
-              className="ghost-btn me-share"
-              onClick={() => void navigator.share({ title: 'My Canvas', url: link }).catch(() => {})}
-            >
-              <Share /> <span>Send to my other device</span>
-            </button>
-          )}
-          {link && <EmailBackup link={link} />}
-          <p className="dialog-foot">
-            Keep it private — anyone with this link can edit your boards. Save it somewhere safe, like your notes or
-            password manager.{' '}
-            <a href={helpUrl('devices/')} target="_blank" rel="noopener">
-              How this works
-            </a>
-          </p>
-          {canScan() && (
-            <button type="button" className="text-btn me-connect" onClick={() => setPanel('scan')} data-testid="me-scan">
-              <ScanLine /> New device? Scan the code from your other one
-            </button>
-          )}
-          <button type="button" className="text-btn me-connect" onClick={() => setPanel('connect')} data-testid="me-connect">
-            <ClipboardPaste /> {canScan() ? 'Or paste the link' : 'New device? Paste the link from your other one'}
-          </button>
+          {tab === 'add' ? <ShowCode link={link} onEmail={() => setEmailing(true)} /> : <ConnectHere />}
         </>
       )}
     </div>
   )
 }
 
-/** Paste a My Canvas link: the way into the Home Screen app, which links and QR codes can't open. */
-/**
- * Back up the My Canvas link by email: opens your own email app with the link
- * filled in, so it never passes through Canvas. Separately, and only if you
- * tick the box, your email address (just that) goes on the updates list.
- */
+/** This device's code, for another device to scan (or the link, to copy or email). */
+function ShowCode({ link, onEmail }: { link: string; onEmail: () => void }) {
+  const proActive = useStore((s) => s.pro.active)
+  const { copied, copy } = useCopy()
+  // on a phone or tablet the share sheet does it all (copy, AirDrop, messages)
+  const share = touchFirst && typeof navigator.share === 'function'
+  return (
+    <>
+      <p className="dialog-sub devices-sub">
+        Scan this with your phone, iPad or other computer{proActive ? ' (your Pro comes along)' : ''}. Canvas on a Home Screen? Scan from inside the app.
+      </p>
+      <div className="qr-wrap" data-link={link}>
+        {link ? <QrCode text={link} /> : <div className="qr qr-loading" />}
+      </div>
+      <div className="devices-acts">
+        <button
+          type="button"
+          className="ghost-btn"
+          disabled={!link}
+          onClick={() => (share ? void navigator.share({ title: 'My Canvas', url: link }).catch(() => {}) : void copy(link))}
+          data-testid="me-copy"
+        >
+          {share ? <Share /> : copied ? <Check /> : <Copy />} <span>{share ? 'Share link' : copied ? 'Copied' : 'Copy link'}</span>
+        </button>
+        <button type="button" className="ghost-btn" disabled={!link} onClick={onEmail} data-testid="me-email">
+          <Mail /> <span>Email it to me</span>
+        </button>
+      </div>
+      <p className="dialog-foot">
+        Anyone with this link can edit your boards, so keep it private.{' '}
+        <a href={helpUrl('devices/')} target="_blank" rel="noopener">
+          How this works
+        </a>
+      </p>
+    </>
+  )
+}
+
+/** Bring your boards to this device: scan the code from another one, or paste its link. */
+function ConnectHere() {
+  const setPanel = useStore((s) => s.setPanel)
+  const [typing, setTyping] = useState(false)
+  const [text, setText] = useState('')
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
+  const canRead = typeof navigator.clipboard?.readText === 'function'
+
+  const connect = async (value: string) => {
+    if (!myCanvasIn(value)) {
+      setError('That doesn’t look like a My Canvas link. Those have “#me=” in them.')
+      return
+    }
+    setBusy(true)
+    await connectMyCanvas(value)
+  }
+
+  // straight from the clipboard; only if that doesn't work, a box to paste into
+  const paste = async () => {
+    if (!canRead) return setTyping(true)
+    try {
+      const value = await navigator.clipboard.readText()
+      if (myCanvasIn(value)) return void connect(value)
+      setError('Your clipboard doesn’t hold a My Canvas link. Copy it on your other device first, or paste it below.')
+    } catch {
+      /* not allowed: paste by hand */
+    }
+    setTyping(true)
+  }
+
+  return (
+    <>
+      <p className="dialog-sub devices-sub">On your other device, open Connect your devices, then scan its code from here.</p>
+      <div className="devices-big">
+        {canScan() && (
+          <button type="button" className="primary-btn dialog-cta" onClick={() => setPanel('scan')} disabled={busy} data-testid="connect-scan">
+            <ScanLine /> <span>Scan code</span>
+          </button>
+        )}
+        <button type="button" className={`${canScan() ? 'ghost-btn' : 'primary-btn'} dialog-cta`} onClick={() => void paste()} disabled={busy} data-testid="connect-paste">
+          <ClipboardPaste /> <span>{busy ? 'Connecting…' : 'Paste link'}</span>
+        </button>
+      </div>
+      {typing && (
+        <form
+          className="link-row connect-row"
+          onSubmit={(e) => {
+            e.preventDefault()
+            void connect(text)
+          }}
+        >
+          <input
+            className="field"
+            value={text}
+            placeholder="Paste your My Canvas link"
+            autoFocus
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            onChange={(e) => {
+              setText(e.target.value)
+              setError('')
+            }}
+            aria-label="My Canvas link"
+            data-testid="connect-input"
+          />
+          <button type="submit" className="primary-btn" disabled={!text.trim() || busy} data-testid="connect-go">
+            <span>Connect</span>
+          </button>
+        </form>
+      )}
+      {error && <p className="dialog-error">{error}</p>}
+      <p className="dialog-foot">
+        Your boards come to this device, and the ones already here stay.{' '}
+        <a href={helpUrl('devices/#how-do-i-get-my-boards-on-another-device')} target="_blank" rel="noopener">
+          Help
+        </a>
+      </p>
+    </>
+  )
+}
+
 function EmailBackup({ link }: { link: string }) {
   const [email, setEmail] = useState('')
   const [updates, setUpdates] = useState(false)
@@ -316,9 +412,7 @@ function EmailBackup({ link }: { link: string }) {
 
   return (
     <form className="email-backup" onSubmit={(e) => void send(e)} data-testid="email-backup">
-      <div className="email-backup-title">
-        <Mail /> Back up by email
-      </div>
+      <p className="dialog-sub">A copy in your inbox means you can always get your boards back, even on a new phone.</p>
       <div className="link-row">
         <input
           className="field"
@@ -357,92 +451,3 @@ function EmailBackup({ link }: { link: string }) {
   )
 }
 
-function Connect({ close }: { close: () => void }) {
-  const setPanel = useStore((s) => s.setPanel)
-  const [text, setText] = useState('')
-  const [error, setError] = useState('')
-  const [busy, setBusy] = useState(false)
-  const canRead = typeof navigator.clipboard?.readText === 'function'
-
-  const connect = async (value: string) => {
-    if (!myCanvasIn(value)) {
-      setError('That doesn’t look like a My Canvas link — those have “#me=” in them.')
-      return
-    }
-    setBusy(true)
-    await connectMyCanvas(value)
-  }
-
-  const paste = async () => {
-    try {
-      const value = await navigator.clipboard.readText()
-      setText(value)
-      if (myCanvasIn(value)) void connect(value)
-      else setError('Your clipboard doesn’t hold a My Canvas link. Copy it on your other device first.')
-    } catch {
-      setError('Couldn’t read the clipboard — paste into the box instead.')
-    }
-  }
-
-  return (
-    <form
-      className="dialog me-dialog"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="connect-title"
-      data-testid="connect"
-      onSubmit={(e) => {
-        e.preventDefault()
-        void connect(text)
-      }}
-    >
-      <button type="button" className="icon-btn dialog-back" aria-label="Back" onClick={() => setPanel('me')}>
-        <ArrowLeft />
-      </button>
-      <button type="button" className="icon-btn dialog-close" aria-label="Close" onClick={close}>
-        <X />
-      </button>
-      <h2 id="connect-title" className="dialog-title">
-        Connect this device
-      </h2>
-      <p className="dialog-sub">
-        Paste the My Canvas link from your other device. Your boards will show up here, and the ones already here stay.
-      </p>
-      {canScan() && (
-        <button type="button" className="primary-btn dialog-cta" onClick={() => setPanel('scan')} disabled={busy} data-testid="connect-scan">
-          <ScanLine /> <span>Scan the code</span>
-        </button>
-      )}
-      {canRead && (
-        <button type="button" className={`${canScan() ? 'ghost-btn' : 'primary-btn'} dialog-cta`} onClick={() => void paste()} disabled={busy} data-testid="connect-paste">
-          <ClipboardPaste /> <span>{busy ? 'Connecting…' : 'Paste my link'}</span>
-        </button>
-      )}
-      <div className="link-row connect-row">
-        <input
-          className="field"
-          value={text}
-          placeholder={canRead ? 'or paste it here' : 'Paste your My Canvas link'}
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          onChange={(e) => {
-            setText(e.target.value)
-            setError('')
-          }}
-          aria-label="My Canvas link"
-          data-testid="connect-input"
-        />
-        <button type="submit" className={canRead ? 'ghost-btn' : 'primary-btn'} disabled={!text.trim() || busy} data-testid="connect-go">
-          <span>Connect</span>
-        </button>
-      </div>
-      {error && <p className="dialog-error">{error}</p>}
-      <p className="dialog-foot">Copy it on your other device under Connect your devices. Apple devices on the same Apple ID share the clipboard, so it pastes straight in here.{' '}
-        <a href={helpUrl('devices/#i-use-canvas-from-my-home-screen-how-do-i-connect-it')} target="_blank" rel="noopener">
-          Help
-        </a>
-      </p>
-    </form>
-  )
-}

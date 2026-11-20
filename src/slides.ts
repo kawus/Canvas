@@ -157,6 +157,8 @@ export interface SlideTag {
   w: number
   /** the slide's outline on screen */
   frame: { x: number; y: number; w: number; h: number }
+  /** zoomed so far out that the slide is smaller than its number: the number steps aside */
+  tiny: boolean
 }
 
 /** Where each slide's outline and number sit on screen. */
@@ -164,7 +166,7 @@ export function slideTags(els: El[], v: Viewport): SlideTag[] {
   return slidesOf(els).map((slide, i) => {
     const [x0, y0] = toScreen(v, slide.x, slide.y)
     const [x1, y1] = toScreen(v, slide.x + slide.w, slide.y + slide.h)
-    return { slide, number: i + 1, x: x0, y: y0 - TAG_H - TAG_GAP, w: TAG_H, frame: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } }
+    return { slide, number: i + 1, x: x0, y: y0 - TAG_H - TAG_GAP, w: TAG_H, frame: { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }, tiny: x1 - x0 < TAG_H * 2 }
   })
 }
 
@@ -174,6 +176,7 @@ export function slideTagAt(els: El[], v: Viewport, sx: number, sy: number, slop 
   const tags = slideTags(els, v)
   for (let i = tags.length - 1; i >= 0; i--) {
     const t = tags[i]
+    if (t.tiny) continue
     if (sx >= t.x - slop && sx <= t.x + t.w + slop && sy >= t.y - slop && sy <= t.y + TAG_H + slop) return t.slide
   }
   return null
