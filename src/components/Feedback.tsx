@@ -10,6 +10,10 @@ import {
   me,
   myLike,
   NOTE_MAX,
+  REPLY_MAX,
+  isFresh,
+  repliesOf,
+  sendReply,
   namesById,
   openNotes,
   resolveNote,
@@ -147,7 +151,8 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
     if (!byId.has(x0.target)) continue
     const x = named(x0, names)
     if (x.kind === 'like') likes.set(x.target, [...(likes.get(x.target) ?? []), x.by])
-    else if (!x.resolved) notes.set(x.target, [...(notes.get(x.target) ?? []), x])
+    // replies live inside their note's card, not as pins of their own
+    else if (x.kind === 'note' && !x.resolved) notes.set(x.target, [...(notes.get(x.target) ?? []), x])
   }
   const box = (el: El) => {
     const b = getBounds(el)
@@ -252,21 +257,43 @@ function TappedItem({ el, b, liked, chip }: { el: El; b: { x0: number; y0: numbe
 }
 
 function Bubble({ note, x, y, k, owner, palette }: { note: FbItem; x: number; y: number; k: number; owner: boolean; palette: Palette }) {
-  const W = 260
-  // beside the pin, whatever size it is at this zoom
+  const items = useFeedback((s) => s.items)
+  const on = useFeedback((s) => s.on)
+  const ref = useRef<HTMLDivElement>(null)
+  const [h, setH] = useState(160)
+  const names = namesById(items)
+  const replies = repliesOf(items, note.id).map((r) => named(r, names))
+  useLayoutEffect(() => {
+    if (ref.current) setH(ref.current.offsetHeight)
+  }, [replies.length])
+  const W = 272
+  // beside the pin, whatever size it is at this zoom, and always fully on screen
   const pin = 30 * k
   const right = x + pin + 10 + W < window.innerWidth - 8
   const left = right ? x + pin + 8 : Math.max(8, x - 8 - W)
-  const top = Math.min(Math.max(y - pin / 2 - 30, 64), window.innerHeight - 180)
+  const top = Math.min(Math.max(y - pin / 2 - 30, 64), window.innerHeight - h - 12)
   void palette
   return (
-    <div className="fb-bubble" style={{ left, top, width: W }} role="dialog" aria-label={`Note from ${note.by.name}`} data-testid="fb-bubble">
+    <div ref={ref} className="fb-bubble" style={{ left, top, width: W }} role="dialog" aria-label={`Note from ${note.by.name}`} data-testid="fb-bubble">
       <div className="fb-who">
         <Avatar who={note.by} />
         <b>{note.by.name}</b>
         <span>{timeAgo(note.at)}</span>
       </div>
       <p className="fb-text">{note.text}</p>
+      {replies.length > 0 && (
+        <div className="fb-replies" data-testid="fb-replies">
+          {replies.map((r) => (
+            <div key={r.id} className="fb-reply">
+              <Avatar who={r.by} />
+              <span>
+                <b>{r.by.name}</b> {r.text}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+      {(owner || on) && <ReplyField note={note.id} />}
       {owner && (
         <div className="fb-acts">
           <button type="button" className="fb-btn" onClick={() => resolveNote(note.id)} data-testid="fb-resolve">
@@ -275,6 +302,52 @@ function Bubble({ note, x, y, k, owner, palette }: { note: FbItem; x: number; y:
         </div>
       )}
     </div>
+  )
+}
+
+/** One short line under a note (with a name, the first time). */
+function ReplyField({ note }: { note: string }) {
+  const sending = useFeedback((s) => s.sending)
+  const error = useFeedback((s) => s.error)
+  const [text, setText] = useState('')
+  const [named, setNamedState] = useState(hasChosenName)
+  const [name, setName] = useState('')
+  const ok = text.trim().length > 0 && (named || name.trim().length > 0) && !sending
+  const send = async () => {
+    if (!ok) return
+    if (!named) {
+      chooseName(name)
+      setNamedState(true)
+    }
+    if (await sendReply(note, text)) setText('')
+  }
+  return (
+    <form
+      className="fb-reply-form"
+      onSubmit={(e) => {
+        e.preventDefault()
+        void send()
+      }}
+    >
+      {!named && (
+        <input className="fb-reply-name" placeholder="Your name" value={name} maxLength={40} autoComplete="given-name" onChange={(e) => setName(e.target.value)} data-testid="fb-reply-name" />
+      )}
+      <div className="fb-reply-row">
+        <input
+          className="fb-reply-input"
+          placeholder="Reply…"
+          value={text}
+          maxLength={REPLY_MAX}
+          enterKeyHint="send"
+          onChange={(e) => setText(e.target.value)}
+          data-testid="fb-reply-input"
+        />
+        <button type="submit" className="fb-reply-send" aria-label="Send reply" disabled={!ok} data-testid="fb-reply-send">
+          <ArrowUp />
+        </button>
+      </div>
+      {error && <p className="fb-error">{error}</p>}
+    </form>
   )
 }
 
@@ -409,7 +482,7 @@ export function FeedbackButton({ palette }: { palette: Palette }) {
   if (!owner || board !== docId || !items.length) return null
   const ids = new Set(elements.map((e) => e.id))
   const open = openNotes(items, ids)
-  const fresh = open.some((n) => n.at > seen && n.by.id !== me().id)
+  const fresh = open.some((n) => isFresh(items, n, seen))
   const toggle = () => {
     if (!panel) {
       // what's in the list now counts as seen, but stays marked until the list closes
@@ -447,7 +520,7 @@ function FeedbackPanel({ palette, seen }: { palette: Palette; seen: number }) {
   const names = namesById(items)
   const open = openNotes(items, ids).reverse().map((x) => named(x, names))
   const resolved = items.filter((x) => x.kind === 'note' && x.resolved && ids.has(x.target)).reverse().map((x) => named(x, names))
-  const fresh = open.filter((n) => n.at > seen && n.by.id !== me().id).length
+  const fresh = open.filter((n) => isFresh(items, n, seen)).length
   const liked = new Map<string, FbPerson[]>()
   for (const x of items) if (x.kind === 'like' && ids.has(x.target)) liked.set(x.target, [...(liked.get(x.target) ?? []), named(x, names).by])
   const top = [...liked].sort((a, b) => b[1].length - a[1].length).slice(0, 3)
@@ -471,9 +544,13 @@ function FeedbackPanel({ palette, seen }: { palette: Palette; seen: number }) {
           <span className="fb-row-meta">
             <Thumb el={byId.get(n.target)} palette={palette} />
             {n.by.name} · {timeAgo(n.at)}
+            {(() => {
+              const c = repliesOf(items, n.id).length
+              return c ? ` · ${c} ${c === 1 ? 'reply' : 'replies'}` : ''
+            })()}
           </span>
         </span>
-        {!done && n.at > seen && n.by.id !== me().id && <span className="fb-new" aria-label="New" />}
+        {!done && isFresh(items, n, seen) && <span className="fb-new" aria-label="New" />}
       </button>
       <button
         type="button"

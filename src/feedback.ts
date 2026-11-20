@@ -17,8 +17,10 @@ export interface FbPerson {
 }
 export interface FbItem {
   id: string
-  kind: 'like' | 'note'
+  kind: 'like' | 'note' | 'reply'
   target: string
+  /** a reply's note */
+  parent?: string
   by: FbPerson
   text?: string
   at: number
@@ -26,6 +28,7 @@ export interface FbItem {
 }
 
 export const NOTE_MAX = 280
+export const REPLY_MAX = 140
 
 interface FbState {
   /** the board this feedback belongs to (null: none loaded, or no cloud) */
@@ -103,6 +106,8 @@ export function namesById(items: FbItem[]) {
 let inflight: Promise<void> | null = null
 /** the feedback version we last downloaded for a board: checks only download again when it changed */
 let version: { board: string; v: number } | null = null
+/** bumped on every change made here: a check that started before one is out of date when it lands */
+let writes = 0
 
 /** Fetch the current board's feedback (quietly does nothing without the cloud). */
 export function loadFeedback() {
@@ -111,8 +116,9 @@ export function loadFeedback() {
   inflight = (async () => {
     try {
       const known = version?.board === id && F().board === id ? `&v=${version.v}` : ''
+      const started = writes
       const r = await fetch(endpoint(id) + known, { cache: 'no-store' })
-      if (useStore.getState().doc.id !== id) return
+      if (useStore.getState().doc.id !== id || writes !== started) return
       if (!r.ok || !isJson(r)) {
         if (F().board !== null) set({ board: null, items: [] })
         return
@@ -198,6 +204,7 @@ export function startFeedback() {
 async function post(body: object): Promise<{ item?: FbItem; removed?: string } | null> {
   const id = F().board
   if (!id) return null
+  writes++
   try {
     // the board's owner (or an editor) may add notes even with feedback switched off for viewers
     const key = useStore.getState().doc.key
@@ -244,10 +251,32 @@ export async function sendNote(target: string, text: string) {
   return true
 }
 
+/** One short line under a note. */
+export async function sendReply(parent: string, text: string) {
+  const clean = text.replace(/\s+/g, ' ').trim().slice(0, REPLY_MAX)
+  if (!clean) return false
+  set({ sending: true, error: null })
+  const res = await post({ kind: 'reply', parent, text: clean, by: me() })
+  set({ sending: false })
+  if (!res?.item) return false
+  set({ items: [...F().items, res.item] })
+  return true
+}
+
+/** A note's replies, oldest first. */
+export const repliesOf = (items: FbItem[], note: string) => items.filter((x) => x.kind === 'reply' && x.parent === note).sort((a, b) => a.at - b.at)
+
+/** Whether a note, or a reply under it, came from someone else since `seen`. */
+export function isFresh(items: FbItem[], note: FbItem, seen: number, mine = me().id) {
+  if (note.at > seen && note.by.id !== mine) return true
+  return repliesOf(items, note.id).some((r) => r.at > seen && r.by.id !== mine)
+}
+
 async function patch(body: object) {
   const s = useStore.getState()
   const id = F().board
   if (!id || !s.doc.key) return
+  writes++
   try {
     const r = await fetch(endpoint(id), {
       method: 'PATCH',

@@ -25,6 +25,10 @@ Your boards list shows **2 new** (for example) next to boards with notes you hav
 
 Yes. Select something on your board, then tap the **speech bubble** in the bar above the toolbar. Write your note, for example "Which sofa do you prefer?", and it shows as a pin on that item, for you and for everyone with the link. You can resolve your own notes like any other. Notes you write don't count as new for you.
 
+## Can people reply to a note?
+
+Yes, with one short line. Tap a note's pin and type under it in **Reply…** (up to 140 characters). Everyone who can see the note sees the replies, and new replies from others light up the blue dot next to **Share**, just like new notes. Your feedback list shows how many replies each note has. When you resolve a note, its replies are tidied away with it.
+
 ## Can I turn feedback off?
 
 Yes. Open the feedback list and switch off **Let viewers leave feedback**. People with the link then only see the board, without hearts or notes. Switch it back on at any time and the open notes return. You can still add notes yourself while it's off.

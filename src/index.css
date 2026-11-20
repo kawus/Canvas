@@ -4712,3 +4712,90 @@ button:focus:not(:focus-visible) {
   padding-top: 0;
   border-top: 0;
 }
+
+/* replies: one short line each, under the note */
+.fb-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 168px;
+  overflow-y: auto;
+  margin: 10px 0 0;
+  padding-top: 10px;
+  border-top: 0.5px solid var(--border-strong);
+}
+.fb-reply {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  font-size: 13.5px;
+  line-height: 1.38;
+  overflow-wrap: anywhere;
+}
+.fb-reply .fb-av {
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  margin-top: 1px;
+}
+.fb-reply b {
+  font-weight: 600;
+}
+.fb-reply-form {
+  margin-top: 10px;
+}
+.fb-reply-row {
+  display: flex;
+  gap: 6px;
+}
+.fb-reply-name,
+.fb-reply-input {
+  flex: 1;
+  min-width: 0;
+  height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 9px;
+  background: var(--hover);
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: none;
+  user-select: text;
+  -webkit-user-select: text;
+}
+.fb-reply-name {
+  width: 100%;
+  margin-bottom: 6px;
+}
+.fb-reply-name:focus,
+.fb-reply-input:focus {
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.fb-reply-name::placeholder,
+.fb-reply-input::placeholder {
+  color: var(--text-3);
+}
+.fb-reply-send {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--accent);
+  color: #fff;
+}
+.fb-reply-send:disabled {
+  opacity: 0.35;
+}
+.fb-reply-send svg {
+  width: 16px;
+  height: 16px;
+}
+@media (max-width: 600px) {
+  .fb-reply-name,
+  .fb-reply-input {
+    font-size: 16px; /* no zoom-in on iPhone when typing */
+  }
+}

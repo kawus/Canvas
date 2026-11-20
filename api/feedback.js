@@ -7,6 +7,7 @@
  *   GET   /api/feedback?ids=<a>,<b>,…        → { counts: { <id>: { open, latest } } }  (for the boards list)
  *   POST  /api/feedback?id=<board>           → like:  { kind: 'like', target, by, on }
  *                                              note:  { kind: 'note', target, text, by }
+ *                                              reply: { kind: 'reply', parent, text, by }  (one short line under a note)
  *   PATCH /api/feedback?id=<board>           (X-Edit-Key) → { resolve: [ids], resolved } or { on }
  *
  * Feedback is kept apart from the board itself, so leaving a note never needs
@@ -20,6 +21,7 @@ const ID_RE = /^[a-z0-9]{6,32}$/
 const TTL_SECONDS = 60 * 60 * 24 * 365
 const MAX_ITEMS = 500
 const MAX_TEXT = 280
+const MAX_REPLY = 140
 const MAX_NAME = 40
 
 /** @param {unknown} v @param {number} max */
@@ -78,7 +80,10 @@ export async function handle(request) {
         ids.map(async (b) => {
           const items = await itemsOf(b)
           const open = items.filter((x) => x.kind === 'note' && !x.resolved)
-          if (open.length) counts[b] = { open: open.length, latest: Math.max(...open.map((x) => x.at)) }
+          const openIds = new Set(open.map((x) => x.id))
+          // a new reply on an open note counts as news too
+          const replies = items.filter((x) => x.kind === 'reply' && openIds.has(x.parent))
+          if (open.length) counts[b] = { open: open.length, latest: Math.max(...open.map((x) => x.at), ...replies.map((x) => x.at)) }
         }),
       )
       return json({ counts })
@@ -119,7 +124,16 @@ export async function handle(request) {
           return json({ error: 'invalid json' }, 400)
         }
         const by = person(body?.by)
-        const target = String(body?.target ?? '')
+        let target = String(body?.target ?? '')
+        /** @type {any} */
+        let parent = null
+        if (body?.kind === 'reply') {
+          // a reply lives under its note (and on the same item)
+          const raw = typeof body.parent === 'string' && /^n[a-z0-9]{6,20}$/.test(body.parent) ? /** @type {string | null} */ (await redis(['HGET', key, body.parent])) : null
+          parent = raw ? JSON.parse(raw) : null
+          if (!parent || parent.kind !== 'note' || parent.resolved) return json({ error: 'that note is gone' }, 404)
+          target = parent.target
+        }
         if (!by || !/^[\w-]{1,64}$/.test(target)) return json({ error: 'invalid feedback' }, 400)
         if (!(await allowFeedback(request))) return tooMuch()
         if (Number(await redis(['HLEN', key])) >= MAX_ITEMS) return json({ error: 'this board has a lot of feedback already' }, 409)
@@ -138,6 +152,11 @@ export async function handle(request) {
           if (!text) return json({ error: 'empty note' }, 400)
           const nid = 'n' + [...crypto.getRandomValues(new Uint8Array(9))].map((b) => b.toString(36).padStart(2, '0')).join('').slice(0, 14)
           item = { id: nid, kind: 'note', target, text, by, at: Date.now() }
+        } else if (body.kind === 'reply') {
+          const text = clean(body.text, MAX_REPLY).replace(/\s+/g, ' ')
+          if (!text) return json({ error: 'empty reply' }, 400)
+          const rid = 'r' + [...crypto.getRandomValues(new Uint8Array(9))].map((b) => b.toString(36).padStart(2, '0')).join('').slice(0, 14)
+          item = { id: rid, kind: 'reply', parent: parent.id, target, text, by, at: Date.now() }
         } else return json({ error: 'invalid feedback' }, 400)
         await redis(['HSET', key, item.id, JSON.stringify(item)])
         await redis(['EXPIRE', key, TTL_SECONDS])
