@@ -3,7 +3,7 @@
  * There are no accounts: people give a name, and the board's owner (whoever
  * holds its edit key) resolves notes or switches feedback off.
  *
- *   GET   /api/feedback?id=<board>           → { on, items }
+ *   GET   /api/feedback?id=<board>[&v=<n>]   → { on, items, v }, or { unchanged, v } when nothing changed since version n
  *   GET   /api/feedback?ids=<a>,<b>,…        → { counts: { <id>: { open, latest } } }  (for the boards list)
  *   POST  /api/feedback?id=<board>           → like:  { kind: 'like', target, by, on }
  *                                              note:  { kind: 'note', target, text, by }
@@ -79,15 +79,28 @@ export async function handle(request) {
 
     const id = url.searchParams.get('id') ?? ''
     if (!ID_RE.test(id)) return json({ error: 'invalid id' }, 400)
+    const key = `fb:${id}`
+    const vkey = `fbv:${id}`
+    // every change bumps the board's feedback version, so open boards can check often for very little
+    const bump = async () => {
+      await redis(['INCR', vkey])
+      await redis(['EXPIRE', vkey, TTL_SECONDS])
+    }
+
+    if (request.method === 'GET') {
+      const v = Number((await redis(['GET', vkey])) ?? 0)
+      const known = url.searchParams.get('v')
+      if (known !== null && Number(known) === v) return json({ unchanged: true, v })
+      if (!Number(await redis(['EXISTS', `board:${id}`]))) return json({ error: 'not found' }, 404)
+      const off = (await redis(['GET', `fboff:${id}`])) === '1'
+      return json({ on: !off, items: await itemsOf(id), v })
+    }
+
     const raw = /** @type {string | null} */ (await redis(['GET', `board:${id}`]))
     if (!raw) return json({ error: 'not found' }, 404)
     const off = (await redis(['GET', `fboff:${id}`])) === '1'
-    const key = `fb:${id}`
 
     switch (request.method) {
-      case 'GET':
-        return json({ on: !off, items: await itemsOf(id) })
-
       case 'POST': {
         if (off) return json({ error: 'feedback is off' }, 403)
         /** @type {any} */
@@ -108,6 +121,7 @@ export async function handle(request) {
           const field = `l:${target}:${by.id}`
           if (body.on === false) {
             await redis(['HDEL', key, field])
+            await bump()
             return json({ removed: field })
           }
           item = { id: field, kind: 'like', target, by, at: Date.now() }
@@ -119,6 +133,7 @@ export async function handle(request) {
         } else return json({ error: 'invalid feedback' }, 400)
         await redis(['HSET', key, item.id, JSON.stringify(item)])
         await redis(['EXPIRE', key, TTL_SECONDS])
+        await bump()
         return json({ item })
       }
 
@@ -147,7 +162,8 @@ export async function handle(request) {
             await redis(['HSET', key, nid, JSON.stringify({ ...item, resolved: body.resolved !== false })])
           }
         }
-        return json({ on: typeof body?.on === 'boolean' ? body.on : !off, items: await itemsOf(id) })
+        await bump()
+        return json({ on: typeof body?.on === 'boolean' ? body.on : !off, items: await itemsOf(id), v: Number(await redis(['GET', vkey])) })
       }
 
       default:

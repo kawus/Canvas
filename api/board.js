@@ -115,6 +115,7 @@ export async function handle(request) {
         await redis(['DEL', `preview:${id}`])
         await redis(['DEL', `fb:${id}`])
         await redis(['DEL', `fboff:${id}`])
+        await redis(['DEL', `fbv:${id}`])
         return new Response(null, { status: 204 })
       default:
         return json({ error: 'method not allowed' }, 405)

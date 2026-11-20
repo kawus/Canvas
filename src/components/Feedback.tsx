@@ -28,6 +28,10 @@ import { glideToBox } from '../slides'
 import { useStore } from '../store'
 import type { El } from '../types'
 
+/** How far hearts and pins follow the zoom: half size at most zoomed out, one and a half at most zoomed in. */
+const MARK_MIN = 0.5
+const MARK_MAX = 1.5
+
 const F = useFeedback.getState
 const setF = useFeedback.setState
 
@@ -151,10 +155,17 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
     const [x1, y1] = toScreen(v, b.maxX, b.maxY)
     return { x0, y0, x1, y1 }
   }
+  // hearts and pins belong to the items, so they grow and shrink with the board (within limits, so they stay readable and tappable)
+  const k = Math.min(MARK_MAX, Math.max(MARK_MIN, v.zoom))
+  // an item too small on screen to carry a mark shows none (it's still in the owner's list)
+  const roomy = (b: { x0: number; y0: number; x1: number; y1: number }) => Math.min(b.x1 - b.x0, b.y1 - b.y0) >= 34 * k
   const pins: { note: FbItem; x: number; y: number }[] = []
   for (const [id, list] of notes) {
     const b = box(byId.get(id)!)
-    list.forEach((note, i) => pins.push({ note, x: b.x0 + 8 + i * 22, y: b.y1 - 8 }))
+    const fits = roomy(b)
+    list.forEach((note, i) => {
+      if (fits || note.id === open) pins.push({ note, x: b.x0 + (8 + i * 22) * k, y: b.y0 + 38 * k })
+    })
   }
   const tapped = target ? byId.get(target) : undefined
   const composing = compose === target
@@ -165,13 +176,14 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
       {tapped && <TappedItem el={tapped} b={box(tapped)} liked={myLike(items, tapped.id, mine)} chip={!composing} />}
       {[...likes].map(([id, who]) => {
         const b = box(byId.get(id)!)
+        if (!roomy(b)) return null
         const liked = who.some((p) => p.id === mine)
         return (
           <button
             key={id}
             type="button"
             className={`fb-heart ${liked ? 'is-mine' : ''}`}
-            style={{ left: b.x1 - 8, top: b.y0 + 8 }}
+            style={{ left: b.x1 - 8 * k, top: b.y0 + 8 * k, transform: `translateX(-100%) scale(${k})` }}
             title={who.map((p) => p.name).join(', ')}
             aria-label={`${who.length} ${who.length === 1 ? 'like' : 'likes'}: ${who.map((p) => p.name).join(', ')}`}
             onClick={() => !owner && void toggleLike(id)}
@@ -187,7 +199,7 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
           key={note.id}
           type="button"
           className={`fb-pin ${open === note.id ? 'is-open' : ''}`}
-          style={{ left: x, top: y, background: note.by.color }}
+          style={{ left: x, top: y, background: note.by.color, transform: `translateY(-100%) scale(${k})` }}
           aria-label={`Note from ${note.by.name}`}
           onClick={() => setF({ open: open === note.id ? null : note.id, target: null })}
           data-testid="fb-pin"
@@ -195,7 +207,7 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
           {(note.by.name.trim()[0] || '?').toUpperCase()}
         </button>
       ))}
-      {openPin && <Bubble note={openPin.note} x={openPin.x} y={openPin.y} owner={owner} palette={palette} />}
+      {openPin && <Bubble note={openPin.note} x={openPin.x} y={openPin.y} k={k} owner={owner} palette={palette} />}
     </div>
   )
 }
@@ -239,11 +251,13 @@ function TappedItem({ el, b, liked, chip }: { el: El; b: { x0: number; y0: numbe
   )
 }
 
-function Bubble({ note, x, y, owner, palette }: { note: FbItem; x: number; y: number; owner: boolean; palette: Palette }) {
+function Bubble({ note, x, y, k, owner, palette }: { note: FbItem; x: number; y: number; k: number; owner: boolean; palette: Palette }) {
   const W = 260
-  const right = x + 40 + W < window.innerWidth - 8
-  const left = right ? x + 38 : Math.max(8, x - 8 - W)
-  const top = Math.min(Math.max(y - 44, 64), window.innerHeight - 180)
+  // beside the pin, whatever size it is at this zoom
+  const pin = 30 * k
+  const right = x + pin + 10 + W < window.innerWidth - 8
+  const left = right ? x + pin + 8 : Math.max(8, x - 8 - W)
+  const top = Math.min(Math.max(y - pin / 2 - 30, 64), window.innerHeight - 180)
   void palette
   return (
     <div className="fb-bubble" style={{ left, top, width: W }} role="dialog" aria-label={`Note from ${note.by.name}`} data-testid="fb-bubble">

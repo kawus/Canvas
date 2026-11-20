@@ -101,6 +101,8 @@ export function namesById(items: FbItem[]) {
 /* ---------- loading ---------- */
 
 let inflight: Promise<void> | null = null
+/** the feedback version we last downloaded for a board: checks only download again when it changed */
+let version: { board: string; v: number } | null = null
 
 /** Fetch the current board's feedback (quietly does nothing without the cloud). */
 export function loadFeedback() {
@@ -108,13 +110,16 @@ export function loadFeedback() {
   if (inflight) return inflight
   inflight = (async () => {
     try {
-      const r = await fetch(endpoint(id), { cache: 'no-store' })
+      const known = version?.board === id && F().board === id ? `&v=${version.v}` : ''
+      const r = await fetch(endpoint(id) + known, { cache: 'no-store' })
       if (useStore.getState().doc.id !== id) return
       if (!r.ok || !isJson(r)) {
         if (F().board !== null) set({ board: null, items: [] })
         return
       }
-      const data = (await r.json()) as { on: boolean; items: FbItem[] }
+      const data = (await r.json()) as { on: boolean; items: FbItem[]; v?: number; unchanged?: boolean }
+      if (data.unchanged) return
+      if (typeof data.v === 'number') version = { board: id, v: data.v }
       const same = F().board === id
       set({ board: id, on: data.on, items: data.items, ...(same ? {} : { target: null, compose: null, open: null, panel: false }) })
     } catch {
@@ -126,8 +131,26 @@ export function loadFeedback() {
   return inflight
 }
 
-/** Keep feedback fresh while a board is open: on opening, on coming back to the tab, and every minute. */
+/**
+ * Keep feedback fresh while a board is open, on the same rhythm as the board itself:
+ * every 10 seconds while you're using it, every 30 or 60 once you've stepped away,
+ * and straight away when you come back to the window. Each check is tiny unless
+ * something changed.
+ */
 export function startFeedback() {
+  let active = Date.now()
+  let checked = Date.now()
+  const poke = () => {
+    active = Date.now()
+  }
+  const every = () => {
+    const quiet = Date.now() - active
+    return quiet < 2 * 60_000 ? 10_000 : quiet < 10 * 60_000 ? 30_000 : 60_000
+  }
+  const check = () => {
+    checked = Date.now()
+    void loadFeedback()
+  }
   let last = ''
   const unsub = useStore.subscribe((s) => {
     const id = s.loaded ? s.doc.id : ''
@@ -139,10 +162,21 @@ export function startFeedback() {
     }
   })
   const onVisible = () => {
-    if (document.visibilityState === 'visible' && useStore.getState().loaded) void loadFeedback()
+    if (document.visibilityState !== 'visible' || !useStore.getState().loaded) return
+    poke()
+    check()
   }
   document.addEventListener('visibilitychange', onVisible)
-  const timer = window.setInterval(onVisible, 60_000)
+  window.addEventListener('focus', onVisible)
+  window.addEventListener('pointerdown', poke, true)
+  window.addEventListener('keydown', poke, true)
+  window.addEventListener('wheel', poke, { capture: true, passive: true })
+  const timer = window.setInterval(() => {
+    const s = useStore.getState()
+    // only boards in the cloud can have feedback (a new board is looked at again once it's synced)
+    if (document.visibilityState !== 'visible' || !s.loaded || F().board !== s.doc.id) return
+    if (Date.now() - checked >= every()) check()
+  }, 2_000)
   // the first save of a new board puts it in the cloud: look again once it's synced
   const unsubSync = useStore.subscribe((s, prev) => {
     if (s.sync === 'saved' && prev.sync !== 'saved' && F().board === null) void loadFeedback()
@@ -151,6 +185,10 @@ export function startFeedback() {
     unsub()
     unsubSync()
     document.removeEventListener('visibilitychange', onVisible)
+    window.removeEventListener('focus', onVisible)
+    window.removeEventListener('pointerdown', poke, true)
+    window.removeEventListener('keydown', poke, true)
+    window.removeEventListener('wheel', poke, true)
     clearInterval(timer)
   }
 }
@@ -215,7 +253,8 @@ async function patch(body: object) {
       body: JSON.stringify(body),
     })
     if (!r.ok || !isJson(r)) return
-    const data = (await r.json()) as { on: boolean; items: FbItem[] }
+    const data = (await r.json()) as { on: boolean; items: FbItem[]; v?: number }
+    if (typeof data.v === 'number') version = { board: id, v: data.v }
     set({ on: data.on, items: data.items })
   } catch {
     /* offline: the next refresh shows the real state */
