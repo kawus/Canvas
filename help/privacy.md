@@ -7,12 +7,13 @@ order: 10
 
 ## Do I need an account?
 
-No. Canvas has no accounts, sign-ups or passwords, and doesn't ask for your name or email. Boards are found by their random links, which are practically impossible to guess.
+No. Canvas has no accounts, sign-ups or passwords, and never asks for your email. The only time it asks for a name is when you leave a note on someone else's board, so they know who it's from (any name will do). Boards are found by their random links, which are practically impossible to guess.
 
 ## What does Canvas store?
 
 - **On your device:** your boards, the list of your boards, and settings like your theme.
 - **In the cloud:** each board's content and images, so its link works on any device. The server stores a scrambled version (a hash) of each board's edit key, never the key itself.
+- **Feedback:** likes and notes left on a shared board, with the name the person typed, kept next to that board and deleted with it.
 - **Your list of boards (My Canvas):** encrypted on your device with a secret that exists only in your My Canvas link, then backed up. Our server stores it but can't read it.
 
 Nothing is saved until you add something. When Canvas opens, it asks the server whether the board in the address bar already exists. That's only a lookup: a new, untouched board is never stored, neither in your list of boards nor in the cloud.

@@ -9,6 +9,7 @@ description: Answers about drawing, sharing, and keeping your boards on all your
 - [I use Canvas from my Home Screen — how do I connect it?](topic:devices#i-use-canvas-from-my-home-screen-how-do-i-connect-it)
 - [Why is a board “View only”?](topic:troubleshooting#why-does-a-board-say-view-only)
 - [How do I share a board?](topic:sharing#how-do-i-share-a-board)
+- [How do people give feedback on my board?](topic:sharing#how-do-people-give-feedback-on-my-board)
 - [Can we draw on the same board at the same time?](topic:sharing#can-we-draw-on-the-same-board-at-the-same-time)
 - [Does it work with Apple Pencil?](topic:ipad-iphone#does-canvas-work-with-apple-pencil)
 - [How do I make a presentation from my board?](topic:presenting#how-do-i-make-a-presentation)

@@ -32,7 +32,7 @@ const STEPS: Step[] = [
   {
     eyebrow: 'Share & present',
     title: 'Share it, or present it',
-    text: 'Send a view link in a tap, or invite people to draw with you live. Mark parts of your board as slides, and Canvas glides from one to the next as you present.',
+    text: 'Send a view link and people can like things and leave notes, or invite them to draw with you live. Mark parts of your board as slides, and Canvas glides from one to the next as you present.',
     art: <PresentArt />,
   },
   // iPhone / iPad in Safari: nudge to the Home Screen app before the first board

@@ -1,4 +1,5 @@
 import { play } from './sound'
+import { useFeedback } from './feedback'
 import { startCrop } from './crop'
 import { groupOf, withGroups } from './groups'
 import { cloneWithNewIds, createStickyAt, createTextAt, finishEditing, isEditable, startEditing } from './actions'
@@ -896,10 +897,14 @@ export class CanvasController {
     switch (a.kind) {
       case 'pan':
         if (!a.moved && a.touch && s.tool === 'select') s.select([])
-        // on a view-only board, tapping a link card opens it
+        // on a view-only board, tapping something offers Like / Note (or, without feedback, opens a link card)
         if (!a.moved && !s.doc.key) {
           const hit = hitTopmost(s.doc.elements, this.world(a.sx, a.sy), this.tolerance(e.pointerType))
-          if (hit?.type === 'link') openLink(hit.url)
+          const fb = useFeedback.getState()
+          if (fb.board === s.doc.id && fb.on && !s.presenting) {
+            const id = hit && hit.type !== 'slide' ? hit.id : null
+            useFeedback.setState({ target: id && id !== fb.target ? id : null, open: null, compose: null })
+          } else if (hit?.type === 'link') openLink(hit.url)
         }
         break
       case 'draw': {

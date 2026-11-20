@@ -113,6 +113,8 @@ export async function handle(request) {
         if (!(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
         await redis(['DEL', key])
         await redis(['DEL', `preview:${id}`])
+        await redis(['DEL', `fb:${id}`])
+        await redis(['DEL', `fboff:${id}`])
         return new Response(null, { status: 204 })
       default:
         return json({ error: 'method not allowed' }, 405)

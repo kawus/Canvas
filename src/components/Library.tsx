@@ -6,6 +6,7 @@ import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange,
 import { helpUrl } from '../help'
 import { track } from '../pro'
 import { useStore } from '../store'
+import { feedbackCounts, seenAt } from '../feedback'
 import { BoardThumb } from './BoardThumb'
 import { timeAgo } from './TopBar'
 
@@ -51,6 +52,12 @@ function AllBoards({ close, welcome }: { close: () => void; welcome: boolean }) 
   const setPanel = useStore((s) => s.setPanel)
   const [boards, setBoards] = useState<BoardRow[] | null>(null)
   const [query, setQuery] = useState('')
+  // open notes from people you shared with, on your own boards
+  const [notes, setNotes] = useState<Record<string, { open: number; latest: number }>>({})
+  useEffect(() => {
+    const mine = (boards ?? []).filter((b) => b.key).map((b) => b.id)
+    if (mine.length) void feedbackCounts(mine).then(setNotes)
+  }, [boards])
 
   useEffect(() => {
     const load = () => void allBoards().then(setBoards)
@@ -111,6 +118,11 @@ function AllBoards({ close, welcome }: { close: () => void; welcome: boolean }) 
                 {b.count !== undefined && ` · ${items(b.count)}`}
               </span>
             </span>
+            {b.key && notes[b.id] && notes[b.id].latest > seenAt(b.id) && (
+              <span className="board-badge is-feedback" data-testid="board-feedback">
+                {notes[b.id].open} new
+              </span>
+            )}
             {!b.key && (
               <span className="board-badge">
                 <Eye /> View only

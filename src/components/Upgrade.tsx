@@ -1,9 +1,9 @@
-import { Check, Eye, Sparkles, X } from 'lucide-react'
+import { Check, Eye, Heart, Sparkles, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { duplicateBoard } from '../boards'
 import { formatPrice, joinEarlyAccess, startCheckout, track } from '../pro'
 import { helpUrl } from '../help'
 import { useStore } from '../store'
+import { useFeedback } from '../feedback'
 
 /** Canvas Pro, sold as a one-time Founder licence (Stripe Checkout). */
 export function UpgradeDialog() {
@@ -128,6 +128,11 @@ export function UpgradeDialog() {
 export function ViewBar() {
   // a founder's shared boards carry no mark
   const ownerPro = useStore((s) => !!s.doc.pro)
+  // with feedback on, the bar invites people to react instead of just saying "view only"
+  const fbBoard = useFeedback((s) => s.board)
+  const fbOn = useFeedback((s) => s.on)
+  const docId = useStore((s) => s.doc.id)
+  const feedback = fbOn && fbBoard === docId
   return (
     <div className="view-bar panel" data-testid="view-bar">
       {/* every shared board is a small invitation to try Canvas (its own page, so the visits can be counted) */}
@@ -141,12 +146,18 @@ export function ViewBar() {
       </a>
       )}
       {!ownerPro && <span className="view-sep" aria-hidden />}
-      <span className="view-label">
-        <Eye /> View only
+      <span className="view-label" data-testid="view-label">
+        {feedback ? (
+          <>
+            <Heart /> <span className="view-label-long">Tap anything to react</span>
+            <span className="view-label-short">Tap to react</span>
+          </>
+        ) : (
+          <>
+            <Eye /> View only
+          </>
+        )}
       </span>
-      <button type="button" className="primary-btn" onClick={() => void duplicateBoard()} data-testid="make-copy">
-        Make a copy
-      </button>
     </div>
   )
 }

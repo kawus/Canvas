@@ -5,6 +5,8 @@ import { routeFromHash, startPersistence } from './boards'
 import { Canvas } from './components/Canvas'
 import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
 import { PeerAvatars, PeerCursors } from './components/Presence'
+import { FeedbackButton, FeedbackLayer, NoteComposer } from './components/Feedback'
+import { startFeedback } from './feedback'
 import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
 import { Toolbar } from './components/Toolbar'
@@ -67,7 +69,9 @@ export default function App() {
     // back from Stripe Checkout, then learn whether this device has Pro
     void claimFromUrl().then(refreshPro)
     startUpdates()
+    const stopFeedback = startFeedback()
     return () => {
+      stopFeedback()
       stopPersist()
       stopKeys()
     }
@@ -86,6 +90,7 @@ export default function App() {
       <Canvas palette={palette} />
       <TextEditor palette={palette} />
       <PeerCursors />
+      <FeedbackLayer palette={palette} />
       <EmptyHint />
 
       <div className="top-left">
@@ -95,6 +100,7 @@ export default function App() {
         <PeerAvatars />
         <PresentButton />
         <ExportButton />
+        <FeedbackButton palette={palette} />
         <ShareButton />
       </div>
 
@@ -103,6 +109,7 @@ export default function App() {
         <Toast />
         {viewOnly ? <ViewBar /> : !cropping && <Toolbar />}
       </div>
+      <NoteComposer palette={palette} />
       <UpgradeDialog />
       <InsertDialog />
       <CropOverlay />

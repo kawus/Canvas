@@ -11,7 +11,7 @@ You opened it with a View link, so you can look but not change it. Usually that'
 
 - Make sure the device is connected with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device). Your boards then open with editing rights.
 
-Tap **Make a copy** to get your own editable copy of any board.
+To get your own editable copy of any board, open the **board menu** next to its name and choose **Make a copy**.
 
 ## I can't find a board
 

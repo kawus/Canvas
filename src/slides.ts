@@ -95,6 +95,18 @@ export function showSlide(slide: SlideEl) {
   }
 }
 
+/** Glide so a box sits in the middle of the screen: at the same zoom when it fits, else zoomed out to fit. */
+export function glideToBox(b: Box, rightPanel = 0) {
+  const s = S()
+  const a = visibleArea()
+  a.maxX -= rightPanel
+  const fit = Math.min((a.maxX - a.minX) / Math.max(1, b.maxX - b.minX), (a.maxY - a.minY) / Math.max(1, b.maxY - b.minY)) * 0.8
+  const zoom = Math.min(s.viewport.zoom, fit)
+  const cx = (a.minX + a.maxX) / 2
+  const cy = (a.minY + a.maxY) / 2
+  glide(s.viewport, { zoom, x: cx - ((b.minX + b.maxX) / 2) * zoom, y: cy - ((b.minY + b.maxY) / 2) * zoom })
+}
+
 let glideFrame = 0
 /** A short, smooth camera move in the editor. */
 function glide(from: Viewport, to: Viewport) {

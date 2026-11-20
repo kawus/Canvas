@@ -52,6 +52,9 @@ export const allowPreview = (request) => spend(request, 'preview', 1, PREVIEWS_P
 /** One more "send me updates" sign-up this hour. @param {Request} request */
 export const allowSignup = (request) => spend(request, 'signup', 1, 5, 3_600)
 
+/** One more like or note on someone's board (60 an hour is plenty for a person). @param {Request} request */
+export const allowFeedback = (request) => spend(request, 'feedback', 1, 60, 3_600)
+
 export const tooMuch = () =>
   new Response(JSON.stringify({ error: 'fair-use limit reached, try again later' }), {
     status: 429,
