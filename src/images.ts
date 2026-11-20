@@ -1,5 +1,8 @@
 import { hashData, saveAsset } from './assets'
+import { geometricBounds } from './geometry'
 import { boxAt, freeSpot } from './placement'
+import { isPhone } from './platform'
+import { glideToBox, isVisible } from './slides'
 import { newElementId } from './storage'
 import { useStore } from './store'
 import { arrange, placeBlock } from './tidy'
@@ -81,13 +84,17 @@ export async function importImages(files: Blob[], at?: Point) {
   const v = useStore.getState().viewport
   const added: ImageEl[] = []
   const taken: Box[] = []
+  const many = images.length > 1
+  // photos straight from a phone camera take a moment each: say so at once
+  if (many) useStore.getState().showToast(`Adding ${images.length} photos…`)
+  let failed = 0
   for (const [i, file] of images.entries()) {
     try {
       const { url, w, h } = await prepareImage(file)
       const hash = await hashData(url)
       await saveAsset(hash, url)
-      // fit within half the screen (a quarter when adding several), never upscale
-      const share = images.length > 1 ? 0.28 : 0.5
+      // fit within half the screen (a quarter when adding several, a bit more on a small phone screen), never upscale
+      const share = many ? (isPhone ? 0.42 : 0.28) : 0.5
       const fit = Math.min(1, (window.innerWidth * share) / v.zoom / w, (window.innerHeight * share) / v.zoom / h)
       const dw = w * fit
       const dh = h * fit
@@ -106,14 +113,19 @@ export async function importImages(files: Blob[], at?: Point) {
       })
     } catch (err) {
       console.error(err)
-      useStore.getState().showToast('Couldn’t read that image')
+      failed++
     }
   }
-  if (!added.length) return
+  if (!added.length) {
+    useStore.getState().showToast(many ? 'Couldn’t read those photos' : 'Couldn’t read that image')
+    return
+  }
   // several at once: they arrive neatly arranged
   let placed: El[] = added
   if (added.length > 1) {
-    const block = arrange(added, true)
+    // shaped like the screen: two columns on a phone held upright, a landscape block on a computer
+    const screenShape = window.innerWidth / Math.max(1, window.innerHeight - 220)
+    const block = arrange(added, true, Math.min(1.6, Math.max(0.55, screenShape)))
     const c = at ?? freeSpot(block.w, block.h)
     placed = placeBlock(block.els, [Math.round((c[0] - block.w / 2) / 8) * 8, Math.round((c[1] - block.h / 2) / 8) * 8])
   }
@@ -121,6 +133,13 @@ export async function importImages(files: Blob[], at?: Point) {
   st.setTool('select')
   st.commit([...st.doc.elements, ...placed])
   st.select(placed.map((a) => a.id))
+  if (many || failed) {
+    const done = `${added.length} ${added.length === 1 ? 'photo' : 'photos'} added`
+    st.showToast(failed ? `${done} · ${failed} couldn’t be read` : done)
+  }
+  // added from the picker or a paste (not dropped at a spot): make sure you see where they landed
+  const b = geometricBounds(placed)
+  if (!at && b && !isVisible(b)) glideToBox(b)
 }
 
 /** Open the system file / photo picker. Must be called from a user gesture. */

@@ -95,6 +95,15 @@ export function showSlide(slide: SlideEl) {
   }
 }
 
+/** Whether a box is fully on screen, clear of the top bar and the toolbar. */
+export function isVisible(b: Box) {
+  const v = S().viewport
+  const a = visibleArea()
+  const [x0, y0] = toScreen(v, b.minX, b.minY)
+  const [x1, y1] = toScreen(v, b.maxX, b.maxY)
+  return x0 >= a.minX && y0 >= a.minY && x1 <= a.maxX && y1 <= a.maxY
+}
+
 /** Glide so a box sits in the middle of the screen: at the same zoom when it fits, else zoomed out to fit. */
 export function glideToBox(b: Box, rightPanel = 0) {
   const s = S()

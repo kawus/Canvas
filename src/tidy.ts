@@ -85,8 +85,11 @@ function masonry(items: Item[], cols: number, colW: number) {
   return { placed, width: usedCols * colW + (usedCols - 1) * GAP, height: Math.max(...heights) }
 }
 
-/** The arranged elements, laid out from (0, 0), and the size of the block. `keepOrder` for things just added. */
-export function arrange(els: El[], keepOrder = false): { els: El[]; w: number; h: number } {
+/**
+ * The arranged elements, laid out from (0, 0), and the size of the block. `keepOrder` for things just added;
+ * `aspect` is the block shape to aim for (width / height): landscape by default, the screen's shape for new photos.
+ */
+export function arrange(els: El[], keepOrder = false, aspect = 1.6): { els: El[]; w: number; h: number } {
   const items: Item[] = units(tidyable(els)).map((u) => {
     const box = u.length > 1 ? unitBounds(u) : getBounds(u[0])
     return { els: u, box, w: box.maxX - box.minX, h: box.maxY - box.minY, scalable: u.length === 1 && u[0].type === 'image' }
@@ -101,7 +104,7 @@ export function arrange(els: El[], keepOrder = false): { els: El[]; w: number; h
   let bestScore = Infinity
   for (let cols = 1; cols <= Math.min(items.length, 8); cols++) {
     const m = masonry(ordered, cols, colW)
-    const score = Math.abs(Math.log(m.width / Math.max(m.height, 1) / 1.6))
+    const score = Math.abs(Math.log(m.width / Math.max(m.height, 1) / aspect))
     if (score < bestScore - 0.01) {
       best = m
       bestScore = score

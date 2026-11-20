@@ -18,6 +18,7 @@ import {
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { openImagePicker } from '../images'
 import { useStore } from '../store'
+import { touchFirst } from '../platform'
 import type { Tool } from '../types'
 import { IconButton } from './ui'
 
@@ -145,7 +146,8 @@ export function Toolbar() {
 
   const trayGroup = GROUPS.find((g) => g.id === tray)
   const insertItems = [
-    { id: 'image', label: 'Image', icon: <ImagePlus />, run: () => openImagePicker() },
+    // on phones and tablets they're "photos"
+    { id: 'image', label: touchFirst ? 'Photos' : 'Image', icon: <ImagePlus />, run: () => openImagePicker() },
     { id: 'link', label: 'Link', icon: <Link />, run: () => setInsert('link') },
     { id: 'color', label: 'Colour', icon: <Palette />, run: () => setInsert('color') },
   ]
@@ -215,7 +217,7 @@ export function Toolbar() {
           )
         })}
         <IconButton
-          label="Insert image, link or colour"
+          label={touchFirst ? 'Add photos, a link or a colour' : 'Insert image, link or colour'}
           kbd="I"
           active={tray === 'insert'}
           onClick={() => setTray(tray === 'insert' ? null : 'insert')}

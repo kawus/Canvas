@@ -11,9 +11,13 @@ Any of these work:
 
 - **Paste** an image you've copied (<kbd>⌘V</kbd>).
 - **Drag** image files onto the board — also straight from another website.
-- Tap **+ → Image** (or press <kbd>I</kbd>) to pick from Photos or Files.
+- Tap **+ → Image** (or press <kbd>I</kbd>) to pick from Photos or Files. On a phone or iPad it's called **+ → Photos**, and you can pick several at once.
+
+Several photos at once arrive as a neat group, shaped to fit your screen, and Canvas glides to show them if they landed out of view. While they're being added you'll see "Adding 6 photos…", then how many made it.
 
 Large photos are resized so boards stay quick to open and share. New items find free space, so they don't land on top of each other.
+
+**Collecting on the go:** with your devices connected through [My Canvas](topic:devices#how-do-i-get-my-boards-on-another-device), open the board on your phone, add photos as you find them, and arrange them later on your iPad or computer.
 
 ## Is there a template to start from?
 
