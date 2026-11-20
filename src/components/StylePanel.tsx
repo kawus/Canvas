@@ -17,6 +17,7 @@ import {
   ExternalLink,
   Palette as PaletteIcon,
   SendToBack,
+  MessageCircle,
   Trash2,
   Play,
 } from 'lucide-react'
@@ -33,6 +34,7 @@ import { canGroup, canUngroup, groupSelection, ungroupSelection, units } from '.
 import type { El, ElType, FillKey, FontSizeKey, SizeKey, Style } from '../types'
 import { formatKbd } from '../platform'
 import { IconButton, usePopover } from './ui'
+import { useFeedback } from '../feedback'
 
 const SIZES: { key: SizeKey; label: string; dot: number }[] = [
   { key: 's', label: 'Thin', dot: 4 },
@@ -89,6 +91,8 @@ export function StylePanel({ palette }: { palette: Palette }) {
   const editingId = useStore((s) => s.editingId)
   const deleteSelected = useStore((s) => s.deleteSelected)
   const busy = useStore((s) => !!s.draft || !!s.marquee)
+  // notes need the board in the cloud (where feedback lives)
+  const fbBoard = useFeedback((s) => s.board)
   const { open, setOpen, ref } = usePopover()
   const [which, setWhich] = useState<Pop>('color')
   const pop = open ? which : null
@@ -323,6 +327,19 @@ export function StylePanel({ palette }: { palette: Palette }) {
             {alignable >= 2 && (
               <IconButton label="Align" active={pop === 'align'} onClick={() => toggle('align')} className="small" testId="align">
                 <AlignCenterVertical />
+              </IconButton>
+            )}
+            {single && single.type !== 'slide' && fbBoard === doc.id && (
+              <IconButton
+                label="Add a note"
+                onClick={() => {
+                  setOpen(false)
+                  useFeedback.setState({ compose: single.id, target: null, open: null, error: null })
+                }}
+                className="small"
+                testId="add-note"
+              >
+                <MessageCircle />
               </IconButton>
             )}
             <IconButton label="More" active={pop === 'more'} onClick={() => toggle('more')} className="small" testId="more">

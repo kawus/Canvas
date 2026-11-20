@@ -55,6 +55,13 @@ async function itemsOf(/** @type {string} */ id) {
   return out.sort((a, b) => a.at - b.at)
 }
 
+/** Whether this edit key belongs to the board (owner or editor). @param {string} raw @param {string | null} editKey */
+async function holdsKey(raw, editKey) {
+  if (!editKey || editKey.length < 16) return false
+  const record = JSON.parse(raw)
+  return !!record.keyHash && (await sha256(editKey)) === record.keyHash
+}
+
 /** @param {Request} request @returns {Promise<Response>} */
 export async function handle(request) {
   if (!redisConfig()) return json({ error: 'cloud storage not configured' }, 503)
@@ -102,7 +109,8 @@ export async function handle(request) {
 
     switch (request.method) {
       case 'POST': {
-        if (off) return json({ error: 'feedback is off' }, 403)
+        // switched off: only the owner (or an editor) can still add notes
+        if (off && !(await holdsKey(raw, request.headers.get('x-edit-key')))) return json({ error: 'feedback is off' }, 403)
         /** @type {any} */
         let body
         try {
@@ -139,9 +147,7 @@ export async function handle(request) {
 
       case 'PATCH': {
         // only the owner (or an editor) may resolve notes or switch feedback off
-        const editKey = request.headers.get('x-edit-key')
-        const record = JSON.parse(raw)
-        if (!editKey || editKey.length < 16 || !record.keyHash || (await sha256(editKey)) !== record.keyHash) return json({ error: 'view only' }, 403)
+        if (!(await holdsKey(raw, request.headers.get('x-edit-key')))) return json({ error: 'view only' }, 403)
         /** @type {any} */
         let body
         try {

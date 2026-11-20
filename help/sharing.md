@@ -21,9 +21,13 @@ When people have liked something or left a note, a speech-bubble button appears 
 
 Your boards list shows **2 new** (for example) next to boards with notes you haven't seen yet.
 
+## Can I leave notes on my own board?
+
+Yes. Select something on your board, then tap the **speech bubble** in the bar above the toolbar. Write your note, for example "Which sofa do you prefer?", and it shows as a pin on that item, for you and for everyone with the link. You can resolve your own notes like any other. Notes you write don't count as new for you.
+
 ## Can I turn feedback off?
 
-Yes. Open the feedback list and switch off **Let viewers leave feedback**. People with the link then only see the board, without hearts or notes. Switch it back on at any time and the open notes return.
+Yes. Open the feedback list and switch off **Let viewers leave feedback**. People with the link then only see the board, without hearts or notes. Switch it back on at any time and the open notes return. You can still add notes yourself while it's off.
 
 Feedback never appears in exports, presentations or link previews.
 

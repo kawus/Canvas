@@ -199,7 +199,9 @@ async function post(body: object): Promise<{ item?: FbItem; removed?: string } |
   const id = F().board
   if (!id) return null
   try {
-    const r = await fetch(endpoint(id), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    // the board's owner (or an editor) may add notes even with feedback switched off for viewers
+    const key = useStore.getState().doc.key
+    const r = await fetch(endpoint(id), { method: 'POST', headers: { 'Content-Type': 'application/json', ...(key ? { 'X-Edit-Key': key } : {}) }, body: JSON.stringify(body) })
     if (!r.ok || !isJson(r)) {
       const msg = r.status === 429 ? 'That’s a lot of feedback for now. Try again in a while.' : r.status === 403 ? 'Feedback is turned off for this board.' : 'Couldn’t send that. Check your connection and try again.'
       set({ error: msg })
