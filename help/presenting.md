@@ -1,6 +1,6 @@
 ---
 title: Presenting
-description: Turn parts of your board into slides and play them as a presentation.
+description: Turn parts of your whiteboard into slides and present them: Canvas glides from slide to slide, so everyone sees how the ideas fit together.
 icon: Presentation
 order: 3.5
 ---

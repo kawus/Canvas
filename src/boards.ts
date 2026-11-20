@@ -65,7 +65,7 @@ function setHash(id: string, push: boolean) {
 }
 
 function setTitle(doc: BoardDoc) {
-  document.title = doc.title && doc.title !== 'Untitled' ? `${doc.title} — Canvas` : 'Canvas'
+  document.title = doc.title && doc.title !== 'Untitled' ? `${doc.title} — Canvas` : 'Canvas · Free online whiteboard, no sign-up'
 }
 
 function show(doc: BoardDoc, isPersisted: boolean, keepViewport = false) {

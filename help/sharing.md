@@ -1,6 +1,6 @@
 ---
 title: Sharing & editing together
-description: View links, feedback from others, and drawing live together.
+description: Share a board with a link, collect likes and notes from people without an account, and draw on the same board together, live.
 icon: Share2
 order: 6
 ---

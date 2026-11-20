@@ -1,6 +1,6 @@
 ---
 title: Keyboard shortcuts
-description: Every shortcut, for working faster on a computer or an iPad with a keyboard.
+description: Every keyboard shortcut in Canvas, for drawing, editing, aligning and moving around faster on a computer or an iPad with a keyboard.
 icon: Keyboard
 order: 9
 ---

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>Canvas — a calm whiteboard for your ideas</title>
+    <title>Canvas — a calm, free online whiteboard (no sign-up)</title>
     <meta name="description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
     <!-- link previews in messaging and social apps (__SITE__ = the site's address, filled in at build time) -->
     <meta property="og:type" content="website" />
@@ -12,6 +12,18 @@
     <meta property="og:description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
     <meta property="og:url" content="__SITE__/intro/" />
     <link rel="canonical" href="__SITE__/intro/" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Canvas",
+      "url": "__SITE__/",
+      "description": "A calm, free online whiteboard for sketching, planning, moodboards and presenting. No sign-up, private by design.",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Any (web browser): Mac, Windows, iPad, iPhone, Android",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+    }
+    </script>
     <meta property="og:image" content="__SITE__/og.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -242,6 +254,7 @@
 
     <footer class="foot">
       <span>Canvas</span>
+      <a href="../templates/">Templates</a>
       <a href="../templates/room-makeover-moodboard/">Room makeover template</a>
       <a href="../templates/client-moodboard/">Client moodboard template</a>
       <a href="../help/">Help centre</a>

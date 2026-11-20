@@ -1,6 +1,6 @@
 ---
 title: Your boards on all devices
-description: Keep your boards on your phone, iPad and computers without an account, using your private My Canvas link.
+description: Keep your boards on your phone, iPad and computers without an account: connect them with a QR code or your private My Canvas link.
 icon: MonitorSmartphone
 order: 5
 ---

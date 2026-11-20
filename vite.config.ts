@@ -23,8 +23,9 @@ export default defineConfig({
         const help = readdirSync(resolve(import.meta.dirname, 'help'))
           .filter((f) => f.endsWith('.md') && !f.startsWith('_'))
           .map((f) => `help/${f.replace(/\.md$/, '')}/`)
-        const pages = ['', 'intro/', 'templates/room-makeover-moodboard/', 'templates/client-moodboard/', 'help/', ...help]
-        const urls = pages.map((p) => `  <url><loc>${SITE}/${p}</loc></url>`).join('\n')
+        const pages = ['', 'intro/', 'templates/', 'templates/room-makeover-moodboard/', 'templates/client-moodboard/', 'help/', ...help]
+        const day = new Date().toISOString().slice(0, 10)
+        const urls = pages.map((p) => `  <url><loc>${SITE}/${p}</loc><lastmod>${day}</lastmod></url>`).join('\n')
         this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` })
         this.emitFile({ type: 'asset', fileName: 'robots.txt', source: `User-agent: *\nAllow: /\nDisallow: /api/\nSitemap: ${SITE}/sitemap.xml\n` })
       },
@@ -37,6 +38,7 @@ export default defineConfig({
         index: resolve(import.meta.dirname, 'index.html'),
         intro: resolve(import.meta.dirname, 'intro/index.html'),
         // template pages: a landing page per kind of project, each with a ready-made board
+        templates: resolve(import.meta.dirname, 'templates/index.html'),
         'template-room': resolve(import.meta.dirname, 'templates/room-makeover-moodboard/index.html'),
         'template-client': resolve(import.meta.dirname, 'templates/client-moodboard/index.html'),
       },

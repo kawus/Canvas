@@ -6,8 +6,23 @@
       name="viewport"
       content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
-    <title>Canvas</title>
-    <meta name="description" content="Sketch, plan and make moodboards on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
+    <title>Canvas · Free online whiteboard, no sign-up</title>
+    <meta name="description" content="A calm, free online whiteboard for sketching, planning, moodboards and presenting. Works in the browser on Mac, iPad with Apple Pencil, and iPhone. No sign-up, private by design." />
+    <link rel="canonical" href="__SITE__/" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "Canvas",
+      "url": "__SITE__/",
+      "description": "A calm, free online whiteboard for sketching, planning, moodboards and presenting. No sign-up, private by design.",
+      "applicationCategory": "DesignApplication",
+      "operatingSystem": "Any (web browser): Mac, Windows, iPad, iPhone, Android",
+      "browserRequirements": "Requires JavaScript",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+      "featureList": "Infinite whiteboard, sticky notes, shapes and arrows, Apple Pencil drawing, moodboards with photos, links and colour palettes, present your board as slides, feedback with likes and notes, live editing together, export to PDF, PNG and SVG, no account"
+    }
+    </script>
     <!-- link previews in messaging and social apps (__SITE__ = the site's address, filled in at build time) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Canvas" />
@@ -29,6 +44,12 @@
     <link rel="manifest" href="./manifest.webmanifest" />
   </head>
   <body>
+    <!-- what this page is, for screen readers and search engines (the board itself is drawn by the app) -->
+    <div class="sr-only" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap">
+      <h1>Canvas: a calm, free online whiteboard</h1>
+      <p>Sketch, plan, make moodboards and present them, right in your browser on Mac, iPad with Apple Pencil, and iPhone. No sign-up, private by design.</p>
+      <a href="intro/">About Canvas</a> <a href="templates/">Free templates</a> <a href="help/">Help</a>
+    </div>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

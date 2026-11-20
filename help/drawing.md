@@ -1,6 +1,6 @@
 ---
 title: Drawing & tools
-description: The toolbar, shapes, sticky notes, text, arrows, styles and alignment.
+description: Draw with a mouse, finger or Apple Pencil, add shapes, sticky notes, text and arrows, change colours and line weights, and line things up neatly.
 icon: PenTool
 order: 2
 ---

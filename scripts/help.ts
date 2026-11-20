@@ -34,7 +34,7 @@ interface Topic {
   icon: string
   order: number
   html: string
-  questions: { id: string; title: string; text: string }[]
+  questions: { id: string; title: string; text: string; answer: string }[]
 }
 
 interface Page {
@@ -92,7 +92,7 @@ function render(markdown: string, depth: number) {
         const inner = this.parser.parseInline(tokens)
         if (level !== 2) return `<h${level}>${inner}</h${level}>\n`
         const id = slugify(inner)
-        questions.push({ id, title: plain(inner), text: '' })
+        questions.push({ id, title: plain(inner), text: '', answer: '' })
         return `<h2 id="${id}"><a class="anchor" href="#${id}" aria-label="Link to this question">#</a>${inner}</h2>\n`
       },
       link(this: { parser: { parseInline: (t: Tokens.Link['tokens']) => string } }, { href, tokens }: Tokens.Link) {
@@ -112,7 +112,8 @@ function render(markdown: string, depth: number) {
   const parts = html.split(/<h2 id="/)
   parts.slice(1).forEach((part, i) => {
     const body = part.slice(part.indexOf('</h2>') + 5)
-    questions[i].text = plain(body).slice(0, 400)
+    questions[i].answer = plain(body)
+    questions[i].text = questions[i].answer.slice(0, 400)
   })
   return { html, questions }
 }
@@ -139,7 +140,7 @@ function loadTopics(): Topic[] {
 
 const THEME_SCRIPT = `<script>try{var t=localStorage.getItem('canvas-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>`
 
-function shell({ title, description, depth, body, path, search = true }: { title: string; description: string; depth: number; body: string; path: string; search?: boolean }) {
+function shell({ title, description, depth, body, path, search = true, data = [] }: { title: string; description: string; depth: number; body: string; path: string; search?: boolean; data?: object[] }) {
   const up = '../'.repeat(depth)
   return `<!doctype html>
 <html lang="en">
@@ -149,6 +150,8 @@ function shell({ title, description, depth, body, path, search = true }: { title
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}" />
+${SITE ? `<link rel="canonical" href="${SITE}/${path}" />` : ''}
+${data.map((d) => `<script type="application/ld+json">${JSON.stringify(d).replace(/</g, '\\u003c')}</script>`).join('\n')}
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="Canvas" />
 <meta property="og:title" content="${escape(title)}" />
@@ -230,7 +233,28 @@ function topicPage(topic: Topic, topics: Topic[]): Page {
 </div>`
   return {
     file: `help/${topic.slug}/index.html`,
-    html: shell({ title: `${topic.title} — Canvas Help`, description: topic.description, depth: 1, body, path: `help/${topic.slug}/` }),
+    html: shell({
+      title: `${topic.title} — Canvas whiteboard help`,
+      description: topic.description,
+      depth: 1,
+      body,
+      path: `help/${topic.slug}/`,
+      data: [
+        {
+          '@context': 'https://schema.org',
+          '@type': 'FAQPage',
+          mainEntity: topic.questions.map((q) => ({ '@type': 'Question', name: q.title, acceptedAnswer: { '@type': 'Answer', text: q.answer } })),
+        },
+        {
+          '@context': 'https://schema.org',
+          '@type': 'BreadcrumbList',
+          itemListElement: [
+            { '@type': 'ListItem', position: 1, name: 'Help', item: `${SITE}/help/` },
+            { '@type': 'ListItem', position: 2, name: topic.title, item: `${SITE}/help/${topic.slug}/` },
+          ],
+        },
+      ],
+    }),
   }
 }
 
@@ -257,7 +281,7 @@ function indexPage(topics: Topic[]): Page {
 </main>`
   return {
     file: 'help/index.html',
-    html: shell({ title: 'Canvas Help', description: data.description ?? 'Answers to your questions about Canvas.', depth: 0, body: page, path: 'help/', search: false }),
+    html: shell({ title: 'Canvas Help: answers about the calm online whiteboard', description: data.description ?? 'Answers to your questions about Canvas.', depth: 0, body: page, path: 'help/', search: false }),
   }
 }
 

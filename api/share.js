@@ -70,6 +70,7 @@ export async function handle(request) {
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow, noarchive, nosnippet, noimageindex" />
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}" />
 <meta property="og:type" content="website" />
@@ -81,7 +82,7 @@ export async function handle(request) {
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="theme-color" content="#fbfbfb" />
+<meta name="theme-color" content="#faf8f4" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 <script>
   // on to the board; an edit key in the #fragment comes along (it never reaches the server)
@@ -97,6 +98,8 @@ export async function handle(request) {
   return new Response(page, {
     headers: {
       'content-type': 'text/html; charset=utf-8',
+      // people's boards never show up in search results, even if a link is posted somewhere public
+      'x-robots-tag': 'noindex, nofollow, noarchive, nosnippet, noimageindex',
       // previews may be a few minutes behind a rename; saves a database read per click
       'cache-control': 'public, max-age=0, s-maxage=300, stale-while-revalidate=86400',
     },

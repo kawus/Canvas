@@ -1,6 +1,6 @@
 ---
 title: Troubleshooting
-description: Fixes for view-only boards, missing boards, syncing and live editing.
+description: Fixes for view-only boards, missing boards, syncing between devices, pasting your link, live editing and the Home Screen app.
 icon: Wrench
 order: 11
 ---

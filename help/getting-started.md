@@ -1,6 +1,6 @@
 ---
 title: Getting started
-description: What Canvas is, your first board, and how saving works.
+description: What Canvas is, how to start your first board, how saving works without an account, and the basics of moving around the whiteboard.
 icon: Sparkles
 order: 1
 ---

@@ -1,6 +1,6 @@
 ---
 title: Exporting
-description: Save your board as a PDF, PNG image or SVG.
+description: Save your board as a vector PDF, a PNG image or an SVG, export just a selection, and share a copy of a board as a link.
 icon: Download
 order: 8
 ---

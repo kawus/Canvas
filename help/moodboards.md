@@ -1,6 +1,6 @@
 ---
 title: Images, links & colours
-description: Build moodboards with photos, link cards and colour swatches.
+description: Make a moodboard: add photos, paste links as preview cards, pull a colour palette out of a photo, crop images and tidy everything into neat columns.
 icon: Images
 order: 3
 ---

@@ -1,6 +1,6 @@
 ---
 title: Privacy & your data
-description: What Canvas stores, where, and for how long.
+description: What Canvas stores and where, who can see your boards, how long they are kept, and why shared boards never show up in search results.
 icon: ShieldCheck
 order: 10
 ---
@@ -23,6 +23,10 @@ Nothing is saved until you add something. When Canvas opens, it asks the server 
 Only people who have a board's link. Links contain a long random code, not the board's name, so they can't be guessed. A View link lets people see the board; an Edit together link or your My Canvas link lets people change it. Keep those two private.
 
 When you paste a board link into a messaging or social app, the app shows a preview with the board's name, how many items it has and a small picture of the board (saved when you open Share), so it briefly reads those from Canvas. It never gets the edit key. Boards you haven't shared don't have a picture.
+
+## Can my boards show up in Google or other search engines?
+
+No. Even if someone posts a link to your board somewhere public, search engines are told not to list it, not to keep a copy and not to show its preview picture. The same goes for everything Canvas's server sends. Your board's edit key sits after the `#` in its link, which browsers never send to any server, search engines included. Only people you give a link to can find your board.
 
 ## How long are boards kept?
 

@@ -1,6 +1,6 @@
 ---
 title: iPad, Apple Pencil & iPhone
-description: Drawing with Pencil, touch gestures, and using Canvas from your Home Screen.
+description: Use Canvas on iPad and iPhone: draw with Apple Pencil, open the Pencil menu, use touch gestures, and add Canvas to your Home Screen.
 icon: TabletSmartphone
 order: 4
 ---

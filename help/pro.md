@@ -1,6 +1,6 @@
 ---
 title: Canvas Pro
-description: The Founder licence: what's included, what it costs, and using it on all your devices.
+description: The Canvas Founder licence: live editing together, no “Made with Canvas” mark, every future Pro feature, one payment and no subscription.
 icon: Gem
 order: 7
 ---
