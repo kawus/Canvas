@@ -77,10 +77,12 @@ export const ElementView = memo(function ElementView({
     if (!g || !was || !glide || still) return
     const w = now.maxX - now.minX
     const h = now.maxY - now.minY
-    const sx = w > 0.5 ? (was.maxX - was.minX) / w : 1
-    const sy = h > 0.5 ? (was.maxY - was.minY) / h : 1
-    const ox = was.minX - sx * now.minX
-    const oy = was.minY - sy * now.minY
+    // photos may ease their size too; everything else only slides, so text and outlines never stretch
+    const resize = el.type === 'image'
+    const sx = resize && w > 0.5 ? (was.maxX - was.minX) / w : 1
+    const sy = resize && h > 0.5 ? (was.maxY - was.minY) / h : 1
+    const ox = resize ? was.minX - sx * now.minX : (was.minX + was.maxX) / 2 - (now.minX + now.maxX) / 2
+    const oy = resize ? was.minY - sy * now.minY : (was.minY + was.maxY) / 2 - (now.minY + now.maxY) / 2
     if (Math.abs(ox) < 0.3 && Math.abs(oy) < 0.3 && Math.abs(sx - 1) < 0.002 && Math.abs(sy - 1) < 0.002) return
     g.animate([{ transform: `translate(${ox}px, ${oy}px) scale(${sx}, ${sy})` }, { transform: 'none' }], {
       duration: 260,
@@ -219,8 +221,9 @@ export function Canvas({ palette }: { palette: Palette }) {
               faded={erasingSet.has(el.id)}
               editing={el.id === editingId}
               land={fresh.has(el.id)}
-              lift={liftedSet.has(el.id)}
-              glide={glide}
+              // slide frames stay put: their numbers are drawn separately and would come apart from them
+              lift={el.type !== 'slide' && liftedSet.has(el.id)}
+              glide={glide && el.type !== 'slide'}
             />
           ))}
           {ghosts.map((el) => (
