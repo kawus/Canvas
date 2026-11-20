@@ -1,13 +1,14 @@
 import qrcode from 'qrcode-generator'
-import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, Mail, MonitorSmartphone, Plus, Search, Share, Smartphone, X } from 'lucide-react'
+import { ArrowLeft, Check, ClipboardPaste, Copy, Eye, LaptopMinimal, Mail, MonitorSmartphone, Plus, ScanLine, Search, Share, Smartphone, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { connectMyCanvas, newBoard, openBoard } from '../boards'
-import { allBoards, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, pull, type BoardRow } from '../library'
+import { allBoards, canScan, inHomeScreenApp, libraryAvailable, myCanvasIn, myCanvasLink, onLibraryChange, pull, type BoardRow } from '../library'
 import { helpUrl } from '../help'
 import { track } from '../pro'
 import { useStore } from '../store'
 import { feedbackCounts, seenAt } from '../feedback'
 import { BoardThumb } from './BoardThumb'
+import { QrScanner } from './ConnectApp'
 import { timeAgo } from './TopBar'
 
 /** Close on Escape without also deselecting or switching tools. */
@@ -36,6 +37,8 @@ export function LibraryDialogs() {
         <AllBoards close={close} welcome={panel === 'welcome'} />
       ) : panel === 'connect' ? (
         <Connect close={close} />
+      ) : panel === 'scan' ? (
+        <QrScanner close={close} />
       ) : (
         <MyCanvas close={close} />
       )}
@@ -180,8 +183,8 @@ function HomeScreenTip() {
       <div className="home-tip-text">
         <strong>Use Canvas from your Home Screen?</strong>
         <span>
-          It keeps its own storage, so connect it too: copy your link, open the app, then tap the menu → Connect your
-          devices → Paste it.
+          It keeps its own storage, so connect it too: open the app and tap Scan code, or copy your link here and
+          paste it there.
         </span>
         <button type="button" className="ghost-btn" onClick={() => void myCanvasLink().then(copy)} data-testid="tip-copy">
           {copied ? <Check /> : <Copy />} <span>{copied ? 'Copied — now open the app' : 'Copy my link'}</span>
@@ -242,6 +245,9 @@ function MyCanvas({ close }: { close: () => void }) {
             editing them. No account needed{proActive ? '; your Pro comes along too' : ''}.
           </p>
           <div className="qr-wrap">{link ? <QrCode text={link} /> : <div className="qr qr-loading" />}</div>
+          {!inHomeScreenApp() && <p className="me-scan-hint">
+            Canvas on your iPhone or iPad Home Screen? Open it and tap <b>Scan code</b>. The Camera app opens Safari, which keeps separate boards.
+          </p>}
           <div className="link-row">
             <input className="field" readOnly value={link} onFocus={(e) => e.target.select()} aria-label="My Canvas link" data-testid="me-url" />
             <button type="button" className="primary-btn" onClick={() => void copy(link)} disabled={!link} data-testid="me-copy">
@@ -265,8 +271,13 @@ function MyCanvas({ close }: { close: () => void }) {
               How this works
             </a>
           </p>
+          {canScan() && (
+            <button type="button" className="text-btn me-connect" onClick={() => setPanel('scan')} data-testid="me-scan">
+              <ScanLine /> New device? Scan the code from your other one
+            </button>
+          )}
           <button type="button" className="text-btn me-connect" onClick={() => setPanel('connect')} data-testid="me-connect">
-            <ClipboardPaste /> New device? Paste the link from your other one
+            <ClipboardPaste /> {canScan() ? 'Or paste the link' : 'New device? Paste the link from your other one'}
           </button>
         </>
       )}
@@ -397,8 +408,13 @@ function Connect({ close }: { close: () => void }) {
       <p className="dialog-sub">
         Paste the My Canvas link from your other device. Your boards will show up here, and the ones already here stay.
       </p>
+      {canScan() && (
+        <button type="button" className="primary-btn dialog-cta" onClick={() => setPanel('scan')} disabled={busy} data-testid="connect-scan">
+          <ScanLine /> <span>Scan the code</span>
+        </button>
+      )}
       {canRead && (
-        <button type="button" className="primary-btn dialog-cta" onClick={() => void paste()} disabled={busy} data-testid="connect-paste">
+        <button type="button" className={`${canScan() ? 'ghost-btn' : 'primary-btn'} dialog-cta`} onClick={() => void paste()} disabled={busy} data-testid="connect-paste">
           <ClipboardPaste /> <span>{busy ? 'Connecting…' : 'Paste my link'}</span>
         </button>
       )}

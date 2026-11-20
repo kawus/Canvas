@@ -32,13 +32,16 @@ If you edit the same board on two devices at the very same moment, the most rece
 
 ## I use Canvas from my Home Screen — how do I connect it?
 
-The Home Screen app on iPhone and iPad keeps its own storage, separate from Safari, and links and QR codes always open in Safari. So connect it by pasting your link:
+The Home Screen app on iPhone and iPad keeps its own storage, separate from Safari. And a QR code scanned with the Camera app, or a link you tap, always opens in Safari, never in the app. So connect the app from inside it:
 
-1. On a device that already has your boards, open **board menu → Connect your devices** and tap **Copy**.
-2. Open Canvas from your Home Screen.
-3. Open **board menu → Connect your devices → New device? Paste the link…** and tap **Paste my link**.
+1. On a device that already has your boards, open **board menu → Connect your devices**. A QR code appears.
+2. Open Canvas from your Home Screen. Until it's connected, it shows **Connect this app to your boards**. Tap **Scan code** and point it at the QR code. (Or find it any time under **board menu → Connect your devices → Scan the code from your other one**.)
 
-If you scanned the QR code and ended up in Safari, Canvas shows a note there with a **Copy my link** button — copy it, then follow steps 2 and 3.
+That's it: your boards show up in the app, and the ones already there stay.
+
+The first time, your iPhone asks whether Canvas may use the camera. If you said no, allow it in **Settings → Safari → Camera**, or connect by pasting instead: tap **Copy** on your other device, then **Paste link** in the app. Apple devices on the same Apple ID share the clipboard, so a link copied on your Mac pastes straight in on your iPhone.
+
+If you scanned with the Camera app and ended up in Safari, that's fine too: Safari is now connected. Open the Home Screen app and scan once more from there.
 
 ## Do I need to connect each browser?
 

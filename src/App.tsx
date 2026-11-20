@@ -6,6 +6,7 @@ import { Canvas } from './components/Canvas'
 import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
 import { PeerAvatars, PeerCursors } from './components/Presence'
 import { FeedbackButton, FeedbackLayer, NoteComposer } from './components/Feedback'
+import { ConnectAppCard } from './components/ConnectApp'
 import { startFeedback } from './feedback'
 import { StylePanel } from './components/StylePanel'
 import { TextEditor } from './components/TextEditor'
@@ -110,6 +111,7 @@ export default function App() {
         {viewOnly ? <ViewBar /> : !cropping && <Toolbar />}
       </div>
       <NoteComposer palette={palette} />
+      {!welcome && <ConnectAppCard />}
       <UpgradeDialog />
       <InsertDialog />
       <CropOverlay />

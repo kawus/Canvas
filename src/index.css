@@ -4547,3 +4547,112 @@ button:focus:not(:focus-visible) {
     animation: none;
   }
 }
+
+/* ---------- connecting the Home Screen app: a card, and scanning a code inside Canvas ---------- */
+.connect-card {
+  position: absolute;
+  top: calc(64px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 25;
+  width: min(380px, calc(100% - 24px));
+  transform: translateX(-50%);
+  padding: 14px 16px 14px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  animation: fb-sheet 0.24s cubic-bezier(0.2, 0.9, 0.3, 1.05) both;
+}
+.connect-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 28px;
+  font-size: 15px;
+}
+.connect-card-head svg.lucide {
+  width: 18px;
+  height: 18px;
+  color: var(--accent-ink);
+}
+.connect-card-head b {
+  font-weight: 600;
+}
+.connect-card p {
+  margin: 6px 0 12px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-2);
+}
+.connect-card-x {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 30px;
+  height: 30px;
+}
+.connect-card-x svg.lucide {
+  width: 16px;
+  height: 16px;
+  color: var(--text-3);
+}
+.connect-card-acts {
+  display: flex;
+  gap: 8px;
+}
+.connect-card-acts > * {
+  flex: 1;
+  justify-content: center;
+  gap: 6px;
+}
+.connect-card-acts svg.lucide {
+  width: 16px;
+  height: 16px;
+}
+.me-scan-hint {
+  margin: -4px 8px 14px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-3);
+  text-align: center;
+}
+.me-scan-hint b {
+  color: var(--text-2);
+  font-weight: 600;
+}
+.scan-dialog {
+  width: min(400px, calc(100vw - 24px));
+}
+.scan-view {
+  position: relative;
+  aspect-ratio: 1;
+  margin: 4px 0 12px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #111;
+}
+.scan-view video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.scan-frame {
+  position: absolute;
+  inset: 16%;
+  border-radius: 18px;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9), 0 0 0 999px rgba(0, 0, 0, 0.28);
+}
+.scan-note {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(17, 17, 19, 0.82);
+  color: #fff;
+  font-size: 13px;
+  text-align: center;
+}
+.scan-paste {
+  margin: 0 auto;
+}

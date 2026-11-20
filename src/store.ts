@@ -15,7 +15,7 @@ export interface PencilMenuState {
   colors: boolean
 }
 
-export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | 'keys' | null
+export type Panel = 'boards' | 'welcome' | 'me' | 'connect' | 'scan' | 'keys' | null
 export type ThemePref = 'system' | 'light' | 'dark'
 /** Cloud sync state of the current board. 'idle' when cloud storage isn't available. */
 export type SyncStatus = 'idle' | 'loading' | 'saving' | 'saved' | 'offline' | 'too-large' | 'error'

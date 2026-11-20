@@ -279,6 +279,7 @@ export async function adoptLibrary(link: string): Promise<'same' | 'adopted' | '
   if (!m) return 'invalid'
   const [, id, secret] = m
   const current = await ensureIdentity()
+  markConnected()
   if (current.id === id && current.secret === secret) {
     await pull()
     return 'same'
@@ -288,7 +289,49 @@ export async function adoptLibrary(link: string): Promise<'same' | 'adopted' | '
   await setLocal('library', identity)
   await pull()
   await pushLibrary()
+  // the other device may still be saving its list (scanned the moment its code appeared): look again shortly
+  for (const ms of [4000, 12000]) setTimeout(() => void pull(), ms)
   return 'adopted'
+}
+
+/** Opened from the Home Screen on iPhone / iPad (or as an installed app), not in a browser tab. */
+export function inHomeScreenApp() {
+  return (navigator as Navigator & { standalone?: boolean }).standalone === true || window.matchMedia('(display-mode: standalone)').matches
+}
+
+/** Whether a camera may be used here to scan a code. */
+export const canScan = () => typeof navigator.mediaDevices?.getUserMedia === 'function'
+
+/** This browser (or app) has been connected to a My Canvas library from another device. */
+export function isConnected() {
+  try {
+    return localStorage.getItem('canvas-connected') === '1'
+  } catch {
+    return false
+  }
+}
+function markConnected() {
+  try {
+    localStorage.setItem('canvas-connected', '1')
+  } catch {
+    /* ignore */
+  }
+}
+
+/** "Not now" on the Home Screen app's connect card: ask again in two weeks. */
+export function dismissConnectCard() {
+  try {
+    localStorage.setItem('canvas-connect-later', String(Date.now() + 14 * 864e5))
+  } catch {
+    /* ignore */
+  }
+}
+export function connectCardDismissed() {
+  try {
+    return Number(localStorage.getItem('canvas-connect-later') || 0) > Date.now()
+  } catch {
+    return false
+  }
 }
 
 /** iPhone / iPad Safari in a tab: the Home Screen app keeps its own, separate storage. */
