@@ -10,7 +10,9 @@
  * on the card, e.g. "album=123"), checked here before it's used.
  */
 
-export type MediaKind = 'video' | 'audio'
+import { parsePlace } from './places'
+
+export type MediaKind = 'video' | 'audio' | 'map'
 /** wide (videos), square (music), tall (TikTok, YouTube Shorts) */
 export type MediaShape = 'wide' | 'square' | 'tall'
 export interface Media {
@@ -53,6 +55,22 @@ export function parseMedia(raw: string, player?: string): Media | null {
   if (u.protocol !== 'https:' && u.protocol !== 'http:') return null
   const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '')
   const parts = u.pathname.split('/').filter(Boolean)
+
+  // places: the live map opens when the card's map is tapped (Google's own map; OpenStreetMap for Apple Maps, which has none to embed)
+  const spot = parsePlace(raw)
+  if (spot && (spot.lat !== undefined || spot.name)) {
+    const map = (service: string, embed: string): Media => ({ kind: 'map', shape: 'wide', service, embed, size: [640, 440] })
+    if (spot.service === 'Google Maps') {
+      const q = spot.name ? encodeURIComponent(spot.name) : `${spot.lat},${spot.lng}`
+      const ll = spot.lat !== undefined ? `&ll=${spot.lat},${spot.lng}` : ''
+      return map('Google Maps', `https://maps.google.com/maps?q=${q}${ll}&z=16&output=embed`)
+    }
+    if (spot.lat === undefined || spot.lng === undefined) return null
+    const dx = 0.006
+    const dy = 0.0035
+    const bbox = [spot.lng - dx, spot.lat - dy, spot.lng + dx, spot.lat + dy].map((n) => n.toFixed(5)).join(',')
+    return map('Apple Maps', `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${spot.lat},${spot.lng}`)
+  }
 
   // YouTube and YouTube Music
   if (host === 'youtu.be') return youtube(parts[0], u.searchParams.get('t'), false)
@@ -165,6 +183,8 @@ export const PLAYER_HOSTS = [
   'bandcamp.com',
   'widget.deezer.com',
   'www.mixcloud.com',
+  'maps.google.com',
+  'www.openstreetmap.org',
 ]
 
 const cache = new Map<string, Media | null>()

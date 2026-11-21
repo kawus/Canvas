@@ -29,6 +29,7 @@ import {
 import { getBounds } from '../geometry'
 import { toScreen } from '../handles'
 import { glideToBox } from '../slides'
+import { fontById } from '../fonts'
 import { useStore } from '../store'
 import type { El } from '../types'
 
@@ -53,6 +54,10 @@ function describe(el: El): string {
       return 'a photo'
     case 'swatch':
       return `the ${el.hex.toUpperCase()} swatch`
+    case 'font':
+      return `the ${fontById(el.font)?.name ?? 'font'} font`
+    case 'voice':
+      return 'a voice note'
     case 'link':
       return el.title ? `“${short(el.title)}”` : 'a link'
     case 'sticky':

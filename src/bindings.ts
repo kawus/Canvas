@@ -18,7 +18,9 @@ export function isFrame(el: El | undefined): el is FrameEl {
       el.type === 'image' ||
       el.type === 'text' ||
       el.type === 'link' ||
-      el.type === 'swatch')
+      el.type === 'swatch' ||
+      el.type === 'font' ||
+      el.type === 'voice')
   )
 }
 

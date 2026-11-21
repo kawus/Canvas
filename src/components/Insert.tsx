@@ -1,6 +1,7 @@
 import { Link, Palette } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { parseMedia, SERVICES } from '../media'
+import { parsePlace } from '../places'
 import { addLink, addSwatch, normalizeUrl } from '../moodboard'
 import { useStore } from '../store'
 
@@ -30,12 +31,13 @@ export function InsertDialog() {
     return () => window.removeEventListener('keydown', onKey, true)
   }, [insert, setInsert])
 
-  if (!insert) return null
+  if (insert !== 'link' && insert !== 'color') return null
   const close = () => setInsert(null)
   const normalizedHex = hex.startsWith('#') ? hex : `#${hex}`
   // no need to say which service: it's recognised from the link
   const typed = insert === 'link' ? normalizeUrl(url) : null
-  const media = typed ? parseMedia(typed) : null
+  const spot = typed ? parsePlace(typed) : null
+  const media = typed && !spot ? parseMedia(typed) : null
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -85,6 +87,10 @@ export function InsertDialog() {
             {urlError ? (
               <p className="insert-hint is-error" data-testid="link-error">
                 That doesn’t look like a web address — try something like apple.com
+              </p>
+            ) : spot ? (
+              <p className="insert-hint is-media" data-testid="link-media">
+                {spot.service} place · a map card you can explore
               </p>
             ) : media ? (
               <p className="insert-hint is-media" data-testid="link-media">

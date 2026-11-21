@@ -68,7 +68,7 @@ export function loadAsset(hash: string): Promise<string | undefined> {
     try {
       const res = await fetch(`api/asset?id=${hash}`)
       const text = res.ok ? await res.text() : ''
-      if (text.startsWith('data:image/')) {
+      if (text.startsWith('data:image/') || text.startsWith('data:audio/')) {
         uploaded.add(hash)
         await saveAsset(hash, text)
         return text

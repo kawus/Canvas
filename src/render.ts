@@ -11,6 +11,7 @@ import {
   STROKE_WIDTH,
   type Palette,
 } from './constants'
+import { fontById, fontFamily } from './fonts'
 import { boxTextLayout, CARD_INSET, linkLayout } from './layout'
 import { firstBaseline } from './textMetrics'
 import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint } from './types'
@@ -262,6 +263,56 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
           lines: [{ text: el.hex.toUpperCase(), x: el.x + 10, y: el.y + el.h - labelH / 2 + labelSize * 0.36 }],
         },
       ]
+    }
+    case 'font': {
+      // a big "Aa", a sample line in the font, and its name
+      const f = fontById(el.font)
+      const family = `${fontFamily(el.font)}, ${FONT_STACK}`
+      const pad = 16
+      const aa = Math.min(el.h * 0.4, el.w * 0.32, 96)
+      const sampleSize = Math.min(18, Math.max(12, el.w / 16))
+      const room = Math.max(4, Math.floor((el.w - pad * 2) / (sampleSize * 0.52)))
+      const raw = el.sample?.trim() || 'The quick brown fox jumps over the lazy dog'
+      const sample = raw.length > room ? `${raw.slice(0, room - 1).trimEnd()}…` : raw
+      const nameSize = 11.5
+      return [
+        cardPrim(el, dark),
+        { tag: 'text', attrs: { fontFamily: family, fontSize: aa, fill: palette.ink }, lines: [{ text: 'Aa', x: el.x + pad - aa * 0.04, y: el.y + pad + aa * 0.82 }] },
+        { tag: 'text', attrs: { fontFamily: family, fontSize: sampleSize, fill: palette.ink }, lines: [{ text: sample, x: el.x + pad, y: el.y + el.h - pad - nameSize * 1.6 - 6 }] },
+        {
+          tag: 'text',
+          attrs: { fontFamily: FONT_STACK, fontSize: nameSize, fill: palette.gray },
+          lines: [{ text: f ? `${f.name} · ${f.category}` : el.font, x: el.x + pad, y: el.y + el.h - pad + 1 }],
+        },
+      ]
+    }
+    case 'voice': {
+      // a play button, the waveform and the length
+      const r = Math.min(el.h * 0.34, 22)
+      const cx = el.x + 12 + r
+      const cy = el.y + el.h / 2
+      const t = r * 0.42
+      const out: Prim[] = [
+        { ...cardPrim(el, dark), attrs: { ...cardPrim(el, dark).attrs, rx: el.h / 2, ry: el.h / 2 } },
+        { tag: 'circle', attrs: { cx, cy, r, fill: palette.ink } },
+        { tag: 'path', attrs: { d: `M${cx - t * 0.62},${cy - t} L${cx + t},${cy} L${cx - t * 0.62},${cy + t} Z`, fill: dark ? '#1d1d1f' : '#ffffff' } },
+      ]
+      const left = cx + r + 12
+      const right = el.x + el.w - 52
+      const peaks = el.peaks?.length ? el.peaks : [0.3]
+      const n = Math.max(4, Math.floor((right - left) / 5))
+      for (let i = 0; i < n; i++) {
+        const v = peaks[Math.floor((i / n) * peaks.length)] ?? 0.3
+        const bh = Math.max(3, Math.min(1, Math.max(0, v)) * el.h * 0.5)
+        out.push({ tag: 'rect', attrs: { x: left + i * 5, y: cy - bh / 2, width: 3, height: bh, rx: 1.5, ry: 1.5, fill: palette.gray, fillOpacity: 0.7 } })
+      }
+      const sec = Math.max(0, Math.round(el.duration))
+      out.push({
+        tag: 'text',
+        attrs: { fontFamily: FONT_STACK, fontSize: 13, fill: palette.gray },
+        lines: [{ text: `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`, x: el.x + el.w - 44, y: cy + 4.5 }],
+      })
+      return out
     }
     case 'sticky':
       return [

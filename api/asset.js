@@ -1,5 +1,5 @@
 /**
- * Image storage for boards, content-addressed.
+ * Image (and voice note) storage for boards, content-addressed.
  *
  *   GET /api/asset?id=<hash>   → 200 data URL (text) | 404
  *   PUT /api/asset?id=<hash>   → 204                (body: data URL)
@@ -15,7 +15,7 @@ import { json, redis, redisConfig } from './_redis.js'
 const MAX_BYTES = 4_000_000
 const TTL_SECONDS = 60 * 60 * 24 * 400
 const ID_RE = /^[a-f0-9]{24}$/
-const DATA_RE = /^data:image\/(png|jpeg|gif|webp);base64,[A-Za-z0-9+/=]+$/
+const DATA_RE = /^data:(image\/(png|jpeg|gif|webp)|audio\/(webm|mp4|ogg|mpeg|aac|x-m4a)(;codecs=[\w.]+)?);base64,[A-Za-z0-9+/=]+$/
 
 /** @param {string} text */
 async function hashOf(text) {

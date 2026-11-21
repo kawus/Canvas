@@ -72,11 +72,9 @@ The plan is in [instagram-plan.md](instagram-plan.md). Its dates started on Wed 
 ## Ideas for what to build next
 
 1. **More templates** (each one is a new way in from Google): kitchen renovation moodboard, wedding moodboard. (Brand identity is done.) Follow `docs/templates.md`.
-2. **More things to collect on a board** (in the family of photos, links, colours, videos and music). Each is chosen and built on its own:
-   - **Font cards:** **+ → Font**, pick from a curated set of about 30 typefaces stored on Canvas itself (nothing sent to Google). The card shows a big "Aa", the font's name and a sample line. Pairs with colour swatches in the brand and client templates, where "Palette & type" currently means typing a font name.
-   - **Place cards:** recognised from a pasted Google Maps or Apple Maps link, just like videos and music (no extra button): the place's name, address and a small map; tapping opens directions. For venues, trips, shops and shoot locations. The map must not send visitors' details to Google (a stored map picture, not a live map).
-   - **Voice notes:** **+ → Voice note**: hold to record a short note (up to about a minute) that sits on the board as a small play button with its length. For explaining a board to a client, or feedback without typing. Stored like images; the microphone is only asked for when someone records.
-3. Works offline (the Home Screen app opens without internet).
-4. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
+2. Works offline (the Home Screen app opens without internet).
+3. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
+
+Built: font cards, place cards (maps from OpenStreetMap, addresses from its Nominatim service, both used lightly as their rules allow, with credit on the map) and voice notes.
 
 Decided against for now: a "send photos from your phone" QR handoff (people rarely use two devices at once; adding photos on the phone directly was polished instead); more shapes and board background colours (they'd chip away at the simplicity).

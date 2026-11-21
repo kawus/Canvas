@@ -15,6 +15,7 @@ No. Canvas has no accounts, sign-ups or passwords, and never asks for your email
 - **In the cloud:** each board's content and images, so its link works on any device. The server stores a scrambled version (a hash) of each board's edit key, never the key itself.
 - **Ideas you suggest:** on the [What's new](app:changelog/) page, the idea and, only if you add it, your email address, so you can hear when it's ready. Your email is never shown to anyone else. Votes are counted once per device, without knowing who you are.
 - **Earlier versions:** a copy of each board as it was, kept at most once an hour while people work on it, for 30 days, with the name of whoever saved it. Only people who can edit the board can see them, and they're deleted with the board.
+- **Voice notes:** recordings you add to a board are stored with it, like photos, and anyone with the board's link can play them. The microphone is only used while you record.
 - **Feedback:** likes and notes left on a shared board, with the name the person typed, kept next to that board and deleted with it.
 - **Your list of boards (My Canvas):** encrypted on your device with a secret that exists only in your My Canvas link, then backed up. Our server stores it but can't read it.
 
@@ -53,6 +54,10 @@ Backing up your link by email doesn't share your address with Canvas: it opens y
 - **Vercel Web Analytics** counts page visits, anonymously and without cookies.
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
+
+Place cards: the map picture is drawn from OpenStreetMap when you add the card, and OpenStreetMap's Nominatim looks up the address (Canvas's server asks, not your browser). After that, the board never contacts a map service until someone taps a map to explore it; then Google Maps (for Google links) or OpenStreetMap (for Apple Maps links) loads.
+
+Font cards use typefaces stored on Canvas itself; nothing is fetched from Google Fonts.
 
 Videos and music on a board (YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer, Mixcloud) load nothing from those services until someone presses play. Only then does that service's own player open in the card, under its own privacy policy. YouTube plays in its privacy-enhanced mode and Vimeo is asked not to track.
 

@@ -2,6 +2,7 @@ import { loadAsset } from './assets'
 import fontWoff2Url from './assets/fonts/Geist-Variable.woff2?url'
 import fontTtfUrl from './assets/fonts/Geist-Regular.ttf?url'
 import { FONT_FAMILY, PALETTE_LIGHT } from './constants'
+import { fontFamily, fontFile } from './fonts'
 import { contentOf, unionBounds } from './geometry'
 import { elementPrims, primToMarkup } from './render'
 import { textWidth } from './textMetrics'
@@ -11,7 +12,7 @@ import type { El } from './types'
 const PAD = 32
 
 /** Free text, sticky notes and shape labels all need the font embedded. */
-const hasText = (els: El[]) => els.some((e) => ('text' in e && !!e.text) || e.type === 'link' || e.type === 'swatch')
+const hasText = (els: El[]) => els.some((e) => ('text' in e && !!e.text) || e.type === 'link' || e.type === 'swatch' || e.type === 'font' || e.type === 'voice')
 
 async function fetchBase64(url: string) {
   const buf = await (await fetch(url)).arrayBuffer()
@@ -65,7 +66,16 @@ export async function buildSvg(all: El[], opts: { embedFont: boolean; background
   let defs = ''
   if (opts.embedFont && (hasText(elements) || mark)) {
     const data = await fetchBase64(fontWoff2Url)
-    defs = `<defs><style>@font-face{font-family:'${FONT_FAMILY}';src:url(data:font/woff2;base64,${data}) format('woff2');font-weight:100 900;}</style></defs>`
+    // font cards carry their own typeface too
+    let faces = ''
+    for (const id of new Set(elements.flatMap((e) => (e.type === 'font' ? [e.font] : [])))) {
+      try {
+        faces += `@font-face{font-family:'${fontFamily(id)}';src:url(data:font/woff2;base64,${await fetchBase64(fontFile(id))}) format('woff2');}`
+      } catch {
+        /* that card falls back to the board's font */
+      }
+    }
+    defs = `<defs><style>@font-face{font-family:'${FONT_FAMILY}';src:url(data:font/woff2;base64,${data}) format('woff2');font-weight:100 900;}${faces}</style></defs>`
   }
   const assets = new Map<string, string>()
   for (const el of elements) {
@@ -78,7 +88,9 @@ export async function buildSvg(all: El[], opts: { embedFont: boolean; background
   const body = elements
     .flatMap((el) => elementPrims(el, PALETTE_LIGHT, (h) => assets.get(h)))
     .map((p) => {
-      if (p.tag === 'text') p.attrs.fontFamily = FONT_FAMILY
+      // (a font card's own typeface stays)
+      if (p.tag === 'text' && !String(p.attrs.fontFamily).startsWith('CanvasFont-')) p.attrs.fontFamily = FONT_FAMILY
+      else if (p.tag === 'text') p.attrs.fontFamily = String(p.attrs.fontFamily).split(',')[0]
       return primToMarkup(p)
     })
     .join('')

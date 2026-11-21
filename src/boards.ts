@@ -110,7 +110,7 @@ async function push(doc: BoardDoc) {
   if (S().cloud) S().setSync('saving')
   // images are stored separately; make sure the cloud has them before the board points at them
   const images = doc.elements.flatMap((e) =>
-    e.type === 'image' ? [e.asset, ...(e.src ? [e.src] : [])] : e.type === 'link' && e.image ? [e.image] : [],
+    e.type === 'image' ? [e.asset, ...(e.src ? [e.src] : [])] : e.type === 'link' && e.image ? [e.image] : e.type === 'voice' ? [e.asset] : [],
   )
   if (images.length && S().cloud !== false) await uploadAssets(images)
   const r = await pushRemote(doc)

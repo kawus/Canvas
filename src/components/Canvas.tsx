@@ -8,6 +8,7 @@ import { importImages } from '../images'
 import { addLink, importImageUrl, isUrl } from '../moodboard'
 import { elementPrims, type Prim } from '../render'
 import { dotSpacing } from '../snap'
+import { loadFont } from '../fonts'
 import { useStore } from '../store'
 import type { El } from '../types'
 import type { Palette } from '../constants'
@@ -114,13 +115,17 @@ export const ElementView = memo(function ElementView({
 })
 
 /** Things that arrive by being drawn (strokes, lines, drawn shapes) don't need to land. */
-const LANDS = new Set(['sticky', 'image', 'link', 'swatch', 'text'])
+const LANDS = new Set(['sticky', 'image', 'link', 'swatch', 'font', 'voice', 'text'])
 
 export function Canvas({ palette }: { palette: Palette }) {
   const ref = useRef<HTMLDivElement>(null)
   // an earlier version, while one is on show (Earlier versions)
   const elements = useStore((s) => s.earlier?.elements ?? s.doc.elements)
   const playing = useStore((s) => s.playing)
+  // font cards: their typefaces load when a board shows them
+  useEffect(() => {
+    for (const el of elements) if (el.type === 'font') void loadFont(el.font)
+  }, [elements])
   const draft = useStore((s) => s.draft)
   const viewport = useStore((s) => s.viewport)
   const erasing = useStore((s) => s.erasing)

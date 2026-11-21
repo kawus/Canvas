@@ -3,6 +3,8 @@
  *
  *   GET /api/unfurl?url=<page>     → { url, title, description, site, image }   (Open Graph tags)
  *   GET /api/unfurl?image=<image>  → data URL of the image (text)
+ *   GET /api/unfurl?place=1&lat=…&lng=…&q=…  → { lat, lng, name, address }   (OpenStreetMap's Nominatim)
+ *   GET /api/unfurl?tiles=16/1/2,16/1/3…  → { tiles: [data URL | null] }  (OpenStreetMap map tiles, at most 16)
  *
  * Browsers can't read other sites directly, so the app asks this function.
  * Only public http(s) addresses are fetched, with a size and time limit.
@@ -225,22 +227,90 @@ async function deezer(url) {
  * @param {URL} url
  */
 async function expand(url) {
-  const short = { 'on.soundcloud.com': 'soundcloud.com', 'spotify.link': 'open.spotify.com', 'vm.tiktok.com': 'tiktok.com', 'vt.tiktok.com': 'tiktok.com', 'link.deezer.com': 'deezer.com' }
+  const short = { 'on.soundcloud.com': 'soundcloud.com', 'spotify.link': 'open.spotify.com', 'vm.tiktok.com': 'tiktok.com', 'vt.tiktok.com': 'tiktok.com', 'link.deezer.com': 'deezer.com', 'maps.app.goo.gl': 'google.com' }
   const host = url.hostname.replace(/^www\./, '')
   const want = /** @type {Record<string, string>} */ (short)[host] ?? (host === 'tiktok.com' && url.pathname.startsWith('/t/') ? 'tiktok.com' : '')
   if (!want) return url
   try {
     const { res, url: landed } = await publicFetch(url, { method: 'HEAD', headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT) })
     void res
-    return landed.hostname.replace(/^(www|m)\./, '') === want ? new URL(landed.origin + landed.pathname) : url
+    // (maps links keep their query: it holds the place)
+    if (landed.hostname.replace(/^(www|m)\./, '') !== want) return url
+    return want === 'google.com' ? landed : new URL(landed.origin + landed.pathname)
   } catch {
     return url
   }
 }
 
+/** Google Maps or Apple Maps: the place is in the link itself (their pages aren't fetched). @param {URL} url */
+function mapsLink(url) {
+  const host = url.hostname.replace(/^www\./, '')
+  if ((/^google\.[a-z.]{2,6}$/.test(host) && url.pathname.startsWith('/maps')) || /^maps\.google\.[a-z.]{2,6}$/.test(host)) return 'Google Maps'
+  if (host === 'maps.apple.com' || host === 'maps.apple') return 'Apple Maps'
+  return ''
+}
+
+const NOMINATIM = 'https://nominatim.openstreetmap.org'
+
+/** "12 Bankside, London": the useful part of an OpenStreetMap address. @param {any} a */
+function shortAddress(a) {
+  if (!a) return ''
+  const street = [a.house_number, a.road || a.pedestrian || a.square].filter(Boolean).join(' ')
+  const town = a.city || a.town || a.village || a.suburb || a.municipality || a.county || ''
+  return [street, town, street || town ? '' : a.country].filter(Boolean).join(', ')
+}
+
+/**
+ * Where a place is and what it's called: from its coordinates (reverse) or its name (search).
+ * @param {URLSearchParams} params
+ */
+async function place(params) {
+  const lat = Number(params.get('lat'))
+  const lng = Number(params.get('lng'))
+  const q = (params.get('q') || '').slice(0, 200)
+  const has = params.get('lat') !== null && Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 85 && Math.abs(lng) <= 180
+  if (!has && !q) return null
+  const api = has
+    ? `${NOMINATIM}/reverse?format=jsonv2&addressdetails=1&zoom=18&lat=${lat}&lon=${lng}`
+    : `${NOMINATIM}/search?format=jsonv2&addressdetails=1&limit=1&q=${encodeURIComponent(q)}`
+  const res = await fetch(api, { headers: { 'User-Agent': UA, 'Accept-Language': 'en' }, signal: AbortSignal.timeout(TIMEOUT) })
+  if (!res.ok) return has ? { lat, lng, name: q, address: '' } : null
+  /** @type {any} */
+  let d = await res.json()
+  if (Array.isArray(d)) d = d[0]
+  if (!d || d.error) return has ? { lat, lng, name: q, address: '' } : null
+  return {
+    lat: has ? lat : Number(d.lat),
+    lng: has ? lng : Number(d.lon),
+    name: (q || d.name || '').slice(0, 200),
+    address: shortAddress(d.address).slice(0, 200),
+  }
+}
+
+/** OpenStreetMap map tiles, for a place card's map picture. @param {string} list */
+async function tiles(list) {
+  const wanted = list.split(',').slice(0, 16)
+  return Promise.all(
+    wanted.map(async (t) => {
+      const m = /^(\d{1,2})\/(\d{1,7})\/(\d{1,7})$/.exec(t)
+      if (!m || Number(m[1]) > 19) return null
+      try {
+        const res = await fetch(`https://tile.openstreetmap.org/${m[1]}/${m[2]}/${m[3]}.png`, { headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT) })
+        if (!res.ok) return null
+        const bytes = await readLimited(res, 400_000)
+        return `data:image/png;base64,${Buffer.from(bytes).toString('base64')}`
+      } catch {
+        return null
+      }
+    }),
+  )
+}
+
 /** @param {URL} start */
 async function preview(start) {
   const url = await expand(start)
+  const maps = mapsLink(url)
+  if (maps) return { url: url.href, title: '', description: '', site: maps, image: '' }
   const embedded = await oembed(url).catch(() => null)
   if (embedded) return embedded
   const empty = { url: url.href, title: '', description: '', site: url.hostname.replace(/^www\./, ''), image: '' }
@@ -304,6 +374,9 @@ export async function handle(request) {
   const params = new URL(request.url).searchParams
   try {
     if (!(await allowPreview(request))) return tooMuch()
+    if (params.get('place')) return json((await place(params)) ?? { error: 'not found' }, 200)
+    const list = params.get('tiles')
+    if (list) return json({ tiles: await tiles(list) })
     const page = params.get('url')
     if (page) {
       const url = publicUrl(page)

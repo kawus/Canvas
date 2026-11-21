@@ -26,6 +26,8 @@ export function getBounds(el: El): Box {
     case 'image':
     case 'link':
     case 'swatch':
+    case 'font':
+    case 'voice':
     case 'slide':
       b = { minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h }
       break
@@ -51,7 +53,7 @@ export function getBounds(el: El): Box {
 /** Half of the visual stroke thickness, used to pad bounds and hit areas. */
 export function strokeHalf(el: El) {
   if (el.type === 'freedraw') return (PEN_SIZE[el.size] * (el.highlight ? HIGHLIGHT_SCALE : 1)) / 2
-  if (el.type === 'text' || el.type === 'sticky' || el.type === 'image' || el.type === 'link' || el.type === 'swatch' || el.type === 'slide') return 0
+  if (el.type === 'text' || el.type === 'sticky' || el.type === 'image' || el.type === 'link' || el.type === 'swatch' || el.type === 'font' || el.type === 'voice' || el.type === 'slide') return 0
   return STROKE_WIDTH[el.size] / 2
 }
 
@@ -121,6 +123,8 @@ export function hitTest(el: El, p: Point, tol: number): boolean {
     case 'image':
     case 'link':
     case 'swatch':
+    case 'font':
+    case 'voice':
       return true
     case 'rect': {
       if (el.fill !== 'none' || el.text) return true
@@ -203,7 +207,9 @@ export function scaleEl<T extends El>(el: T, from: Box, to: Box, uniformText: bo
     case 'sticky':
     case 'image':
     case 'link':
-    case 'swatch': {
+    case 'swatch':
+    case 'font':
+    case 'voice': {
       const b = normalizeBox(mx(el.x), my(el.y), mx(el.x + el.w), my(el.y + el.h))
       return { ...el, x: b.minX, y: b.minY, w: b.maxX - b.minX, h: b.maxY - b.minY }
     }

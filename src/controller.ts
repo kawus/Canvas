@@ -995,6 +995,12 @@ export class CanvasController {
     if (s.presenting) return false
     const elements = s.earlier?.elements ?? s.doc.elements
     const hit = hitTopmost(elements, this.world(sx, sy), this.tolerance(pointerType))
+    // a voice note plays (or stops) with a tap anywhere on it
+    if (hit?.type === 'voice') {
+      s.select([])
+      s.setPlaying(s.playing === hit.id ? null : hit.id)
+      return true
+    }
     if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return false
     const art = linkLayout(hit).image
     const [x, y] = this.world(sx, sy)

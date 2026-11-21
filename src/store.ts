@@ -113,7 +113,7 @@ interface State {
   pro: ProState
   upgradeOpen: boolean
   /** "+" menu dialogs */
-  insert: 'link' | 'color' | null
+  insert: 'link' | 'color' | 'font' | 'voice' | null
   /** dialogs: All boards, My Canvas link, pasting a link from another device, All boards after opening the link */
   panel: Panel
   /** replaying the welcome tour */
@@ -149,7 +149,7 @@ interface State {
   setKey: (key: string) => void
   setPro: (pro: Partial<ProState>) => void
   setUpgradeOpen: (open: boolean) => void
-  setInsert: (insert: 'link' | 'color' | null) => void
+  setInsert: (insert: 'link' | 'color' | 'font' | 'voice' | null) => void
   setPanel: (panel: Panel) => void
   setTour: (tour: boolean) => void
   setCropId: (id: string | null) => void
@@ -410,7 +410,7 @@ export const useStore = create<State>((set, get) => ({
     const elements = s.doc.elements.map((el) => {
       if (!ids.has(el.id)) return el
       const next = { ...el } as El & Record<string, unknown>
-      if (patch.color && el.type !== 'image' && el.type !== 'link' && el.type !== 'swatch' && el.type !== 'slide') next.color = patch.color
+      if (patch.color && el.type !== 'image' && el.type !== 'link' && el.type !== 'swatch' && el.type !== 'font' && el.type !== 'voice' && el.type !== 'slide') next.color = patch.color
       if (patch.stickyColor && el.type === 'sticky') next.color = patch.stickyColor
       if (patch.highlightColor && el.type === 'freedraw' && el.highlight) next.color = patch.highlightColor
       if (patch.size && 'size' in el) next.size = patch.size

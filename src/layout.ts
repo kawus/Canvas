@@ -143,7 +143,8 @@ export function linkLayout(el: LinkEl): LinkLayout {
         : Math.min(artW * 0.56, h * 0.62)
   const image = hasArt ? { x: el.x + CARD_INSET, y: el.y + CARD_INSET, w: artW, h: imgH } : null
   let play: LinkLayout['play'] = null
-  if (media && image) {
+  // (maps have no play button: tapping the map opens it)
+  if (media && image && media.kind !== 'map') {
     if (media.kind === 'video') {
       const r = Math.max(12, Math.min(30, Math.min(image.w, image.h) * 0.13))
       play = { x: image.x + image.w / 2, y: image.y + image.h / 2, r }

@@ -18,7 +18,9 @@ import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
+import { FontPicker } from './components/FontPicker'
 import { MediaLayer } from './components/MediaPlayer'
+import { VoiceRecorder } from './components/VoiceRecorder'
 import { Versions } from './components/Versions'
 import { Welcome } from './components/Welcome'
 import { Presenter } from './components/Presenter'
@@ -120,6 +122,8 @@ export default function App() {
       {!welcome && <ConnectAppCard />}
       <UpgradeDialog />
       <InsertDialog />
+      <FontPicker />
+      <VoiceRecorder />
       <CropOverlay />
       <LibraryDialogs />
       <Analytics beforeSend={pageOnly} />

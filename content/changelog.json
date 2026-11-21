@@ -118,6 +118,18 @@
           "name": "Videos & music",
           "text": "Paste a video from YouTube, Vimeo, Loom or TikTok, or music from Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer or Mixcloud, and it plays right on the board.",
           "added": "2026-11-21"
+        },
+        {
+          "id": "places",
+          "name": "Place cards",
+          "text": "Paste a Google Maps or Apple Maps link for a card with a calm map, the name and address; tap the map to explore it.",
+          "added": "2026-11-21"
+        },
+        {
+          "id": "fonts",
+          "name": "Font cards",
+          "text": "Pick from 30 free typefaces for a card with a big \"Aa\", your sample text and the font's name.",
+          "added": "2026-11-21"
         }
       ]
     },
@@ -160,6 +172,12 @@
           "name": "Replies",
           "text": "Answer a note in one short line, right under it.",
           "added": "2026-11-20"
+        },
+        {
+          "id": "voice",
+          "name": "Voice notes",
+          "text": "Record a note of up to a minute; it sits on the board and anyone with the link can play it.",
+          "added": "2026-11-21"
         },
         {
           "id": "ownnotes",
@@ -311,11 +329,23 @@
   "releases": [
     {
       "date": "2026-11-21",
-      "title": "Videos and music, earlier versions, straighten shapes and more",
+      "title": "Videos, music, places, fonts and voice notes",
       "items": [
         {
-          "text": "Videos and music play on the board: paste a link from YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer or Mixcloud and tap the picture to play.",
+          "text": "Videos and music play on the board: paste a link from YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer or Mixcloud and tap the picture: the service’s own full player opens in its place.",
           "feature": "media"
+        },
+        {
+          "text": "Place cards: paste a Google Maps or Apple Maps link for a card with a calm map, the place's name and address. Tap the map to explore it right on the board.",
+          "feature": "places"
+        },
+        {
+          "text": "Font cards: + → Font offers 30 free typefaces, each shown in its own font, for the palette and type part of a moodboard.",
+          "feature": "fonts"
+        },
+        {
+          "text": "Voice notes: + → Voice note records up to a minute that anyone with the link can play.",
+          "feature": "voice"
         },
         {
           "text": "Earlier versions: see a board as it was at any hour in the last 30 days and restore it in one tap. If someone else changed it, their name is next to the time.",

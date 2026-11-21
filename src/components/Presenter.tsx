@@ -10,7 +10,7 @@ import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { Box } from '../types'
 import { ElementView } from './Canvas'
-import { Player, playerBox } from './MediaPlayer'
+import { Player, playerBox, VoicePlayer } from './MediaPlayer'
 
 /**
  * Presentation mode. Each slide fills the screen; moving to the next one flies
@@ -341,6 +341,7 @@ export function Presenter({ palette }: { palette: Palette }) {
     const z = vw() / c[2]
     const p: [number, number] = [(sx - (vw() / 2 - c[0] * z)) / z, (sy - (vh() / 2 - c[1] * z)) / z]
     const hit = hitTopmost(content, p, 6 / z)
+    if (hit?.type === 'voice') return hit.id
     if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return null
     const art = linkLayout(hit).image
     return art && p[0] >= art.x && p[0] <= art.x + art.w && p[1] >= art.y && p[1] <= art.y + art.h ? hit.id : null
@@ -386,6 +387,11 @@ export function Presenter({ palette }: { palette: Palette }) {
       {playingEl?.type === 'link' && playBox && (
         <div className="media-layer">
           <Player el={playingEl} box={playBox} onStop={() => setPlaying(null)} />
+        </div>
+      )}
+      {playingEl?.type === 'voice' && cam && (
+        <div className="media-layer">
+          <VoicePlayer el={playingEl} box={toScreen({ minX: playingEl.x, minY: playingEl.y, maxX: playingEl.x + playingEl.w, maxY: playingEl.y + playingEl.h })} onStop={() => setPlaying(null)} />
         </div>
       )}
       {settled && (

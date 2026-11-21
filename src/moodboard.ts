@@ -3,10 +3,11 @@ import { boxIntersects, geometricBounds } from './geometry'
 import { importImages, prepareImage } from './images'
 import { hostOf, wrapText } from './layout'
 import { mediaOf } from './media'
+import { drawMap, parsePlace, type Place } from './places'
 import { freeSpot } from './placement'
 import { newElementId } from './storage'
 import { useStore } from './store'
-import type { El, ImageEl, LinkEl, Point, SwatchEl } from './types'
+import type { El, FontEl, ImageEl, LinkEl, Point, SwatchEl, VoiceEl } from './types'
 
 /**
  * Moodboard pieces: link cards with previews, images straight from the web,
@@ -119,6 +120,9 @@ export async function addLink(raw: string, at?: Point) {
     /* offline or no server: a plain card still works */
   }
   if (p.isImage && p.image) return importImageUrl(p.image, at)
+  // a place on Google Maps or Apple Maps
+  const spot = parsePlace(p.url || url) ?? parsePlace(url)
+  if (spot) return addPlace(spot, p.url || url, at)
   // a video or a song: it plays on the board (music gets a square cover)
   // Bandcamp: the number its player needs, read from the page by the server
   const player = p.player && /^(album|track)=\d{1,15}$/.test(p.player) ? p.player : undefined
@@ -161,6 +165,79 @@ export async function addLink(raw: string, at?: Point) {
     ...(media ? { site: media.service } : p.site ? { site: p.site } : {}),
     ...(image ? { image } : {}),
   }
+  place([el])
+}
+
+/** A place card: a calm map with a pin, the place's name and address; it opens the maps link. */
+async function addPlace(spot: Place, url: string, at?: Point) {
+  let { name = '', lat, lng } = spot
+  let address = ''
+  try {
+    const q = new URLSearchParams({ place: '1', ...(lat !== undefined ? { lat: String(lat), lng: String(lng) } : {}), ...(name ? { q: name } : {}) })
+    const res = await fetch(`api/unfurl?${q}`, { signal: AbortSignal.timeout(12000) })
+    if (res.ok) {
+      const g = (await res.json()) as { lat?: number; lng?: number; name?: string; address?: string }
+      if (Number.isFinite(g.lat)) [lat, lng] = [g.lat, g.lng]
+      name ||= g.name ?? ''
+      address = g.address ?? ''
+    }
+  } catch {
+    /* offline: a plain card still opens the link */
+  }
+  let image: string | undefined
+  if (lat !== undefined && lng !== undefined) {
+    const data = await drawMap(lat, lng, async (tiles) => {
+      try {
+        const res = await fetch(`api/unfurl?tiles=${tiles.join(',')}`, { signal: AbortSignal.timeout(15000) })
+        return res.ok ? ((await res.json()) as { tiles: (string | null)[] }).tiles : []
+      } catch {
+        return []
+      }
+    }).catch(() => null)
+    if (data) {
+      image = await hashData(data)
+      await saveAsset(image, data)
+    }
+  }
+  // the name often repeats the start of the address
+  if (address && name && address.toLowerCase().startsWith(name.toLowerCase())) address = address.slice(name.length).replace(/^[,\s]+/, '')
+  const title = name || address || 'A place'
+  const description = name ? address : ''
+  const h = cardHeight(title, description, !!image)
+  const [cx, cy] = at ?? freeSpot(CARD_W, h)
+  const el: LinkEl = {
+    id: newElementId(),
+    type: 'link',
+    color: 'ink',
+    x: cx - CARD_W / 2,
+    y: cy - h / 2,
+    w: CARD_W,
+    h,
+    url,
+    title,
+    ...(description ? { description } : {}),
+    site: spot.service,
+    ...(image ? { image } : {}),
+  }
+  place([el])
+}
+
+/** A font card: a big "Aa", a sample line and the font's name. */
+export const FONT_W = 300
+export const FONT_H = 168
+export function addFont(font: string, sample?: string, at?: Point) {
+  const [cx, cy] = at ?? freeSpot(FONT_W, FONT_H)
+  const text = sample?.trim().slice(0, 120)
+  const el: FontEl = { id: newElementId(), type: 'font', color: 'ink', x: cx - FONT_W / 2, y: cy - FONT_H / 2, w: FONT_W, h: FONT_H, font, ...(text ? { sample: text } : {}) }
+  place([el])
+}
+
+/** A voice note: a pill with a play button, its waveform and length. */
+export function addVoice(asset: string, duration: number, peaks: number[], at?: Point) {
+  const w = Math.round(Math.min(320, 200 + duration * 2))
+  const h = 64
+  const [cx, cy] = at ?? freeSpot(w, h)
+  const el: VoiceEl = { id: newElementId(), type: 'voice', color: 'ink', x: cx - w / 2, y: cy - h / 2, w, h, asset, duration: Math.round(duration * 10) / 10, peaks }
   place([el])
 }
 

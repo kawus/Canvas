@@ -75,7 +75,7 @@ const TOOL_TYPE: Partial<Record<string, ElType>> = {
 type Pop = 'color' | 'size' | 'fill' | 'font' | 'align' | 'more'
 type ColorField = 'color' | 'stickyColor' | 'highlightColor'
 
-const hasInk = (e: El) => e.type !== 'image' && e.type !== 'link' && e.type !== 'swatch' && e.type !== 'slide'
+const hasInk = (e: El) => e.type !== 'image' && e.type !== 'link' && e.type !== 'swatch' && e.type !== 'font' && e.type !== 'voice' && e.type !== 'slide'
 const isHighlight = (e: El) => e.type === 'freedraw' && !!e.highlight
 
 /**

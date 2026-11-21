@@ -109,6 +109,34 @@ export interface SwatchEl extends Base {
   hex: string
 }
 
+/** A typeface, shown as a card with a big "Aa", its name and a sample line (see fonts.ts). */
+export interface FontEl extends Base {
+  type: 'font'
+  x: number
+  y: number
+  w: number
+  h: number
+  /** the font's id in fonts.ts */
+  font: string
+  /** the sample line, in the font */
+  sample?: string
+}
+
+/** A short voice recording with a play button (stored like images). */
+export interface VoiceEl extends Base {
+  type: 'voice'
+  x: number
+  y: number
+  w: number
+  h: number
+  /** the recording, stored like images (content hash) */
+  asset: string
+  /** length in seconds */
+  duration: number
+  /** loudness along the recording, 0–1, for the little waveform */
+  peaks: number[]
+}
+
 /**
  * A slide: a 16:9 part of the board that presentation mode flies between.
  * Only a frame (drawn as a dashed outline while editing); it never shows in
@@ -125,9 +153,9 @@ export interface SlideEl extends Base {
   order: number
 }
 
-export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl | LinkEl | SwatchEl | SlideEl
+export type El = FreedrawEl | BoxEl | LineEl | TextEl | StickyEl | ImageEl | LinkEl | SwatchEl | FontEl | VoiceEl | SlideEl
 /** Elements with a box that arrows can attach to */
-export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl | LinkEl | SwatchEl
+export type FrameEl = BoxEl | StickyEl | ImageEl | TextEl | LinkEl | SwatchEl | FontEl | VoiceEl
 export type ElType = El['type']
 
 export type Tool =

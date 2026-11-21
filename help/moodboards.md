@@ -1,6 +1,6 @@
 ---
 title: Images, links & colours
-description: Make a moodboard: add photos, paste links as preview cards, pull a colour palette out of a photo, crop images and tidy everything into neat columns.
+description: Make a moodboard: add photos, links, videos, music, places, fonts and voice notes, pull a colour palette out of a photo, crop images and tidy everything into neat columns.
 icon: Images
 order: 3
 ---
@@ -54,6 +54,27 @@ Yes. Add the link the same way, with **+ → Link** or by pasting it onto the bo
 Videos get a wide card with the video's picture, TikToks and YouTube Shorts a tall one, and music a square card with the cover. Short links from the apps' Share buttons work too. **Tap the picture** to play. The card turns into the service's own full player, just as it looks on Spotify, YouTube or SoundCloud, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first. The **×** in the player's corner, or <kbd>Esc</kbd>, stops it and brings the card back. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
 
 Spotify, Apple Music and Deezer play whole songs only for people who are signed in to them in that browser; everyone else hears a 30-second preview. Podcasts, YouTube, Vimeo, Loom, TikTok, SoundCloud, Bandcamp and Mixcloud play in full (on Bandcamp, as far as the artist allows).
+
+## Can I add a place, like a venue or a shop?
+
+Yes. Copy the link from **Google Maps** or **Apple Maps** (their Share button works) and add it like any link: **+ → Link**, or paste it onto the board. Canvas makes a **place card** with a calm map, a pin, the place's name and address.
+
+- **Tap the map** to explore it: Google Maps links open Google's own map, right on the board. Apple Maps links open an OpenStreetMap map, because Apple doesn't offer a map for other websites. The **×** or <kbd>Esc</kbd> brings the card back.
+- **Double-click (or tap) the card's name** to open the place in your maps app, for directions.
+
+The map picture on the card is drawn once from OpenStreetMap when you add it, so simply looking at the board never contacts Google, Apple or anyone else.
+
+## How do I add a font?
+
+Tap **+ → Font** and pick from 30 free typefaces: sans serif, serif, display, mono and handwriting. Each name is shown in its own font, and you can search. Add your own sample text if you like (a brand line works well), then **Add**. The card shows a big "Aa", your sample and the font's name, and it comes along in PDF and PNG exports. It's made for the palette and type part of a moodboard or brand board.
+
+The fonts are stored on Canvas itself, so nothing is fetched from Google or other font services.
+
+## Can I leave a voice note?
+
+Yes. Tap **+ → Voice note**, then the microphone, and talk for up to a minute. Tap the square to stop: the note lands on the board as a small card with its length. Tap it to play, tap again (or <kbd>Esc</kbd>) to stop. People with a View link can play it too, so it's a quick way to walk a client through a board.
+
+Your browser asks once whether Canvas may use the microphone. It's only used while you record.
 
 ## Why does a link card have no picture?
 
