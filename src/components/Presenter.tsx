@@ -347,7 +347,8 @@ export function Presenter({ palette }: { palette: Palette }) {
             <rect ref={hole} rx={4} fill="#000" />
           </mask>
         </defs>
-        <rect width="100%" height="100%" fill="url(#present-dots)" />
+        {/* the dot grid is for working: it fades away as the presentation starts */}
+        <rect className="presenter-grid" width="100%" height="100%" fill="url(#present-dots)" />
         <g ref={world}>
           {content.map((el) => (
             <ElementView key={el.id} el={el} palette={palette} faded={false} editing={false} />

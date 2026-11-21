@@ -18,7 +18,7 @@ There's nothing to copy or rebuild: a slide is just a window onto your board, so
 
 ## How do I play it?
 
-Tap **Present → Play**. The show fills the screen and starts by zooming in from the whole board to your first slide. Then:
+Tap **Present → Play**. The show fills the screen and starts by zooming in from the whole board to your first slide. The dotted background fades away, so only your board is on show. Then:
 
 - **Next slide:** <kbd>→</kbd>, <kbd>Space</kbd>, or click/tap anywhere. On a phone or iPad you can also swipe left.
 - **Previous slide:** <kbd>←</kbd>, tap the left edge of the screen, or swipe right.

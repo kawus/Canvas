@@ -329,6 +329,10 @@
         },
         {
           "text": "Each template page now shows its own board, exactly as it opens, in light and dark."
+        },
+        {
+          "text": "When you present, the dotted background fades away, so only your board is on show.",
+          "feature": "slides"
         }
       ]
     },

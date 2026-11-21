@@ -3542,6 +3542,15 @@ button:focus:not(:focus-visible) {
 .presenter-veil {
   fill: var(--canvas);
 }
+/* the dot grid is for working: it fades away as the presentation starts */
+.presenter-grid {
+  animation: grid-away 0.9s ease-out 0.15s both;
+}
+@keyframes grid-away {
+  to {
+    opacity: 0;
+  }
+}
 .presenter-ring {
   fill: none;
   stroke: var(--accent);
@@ -4880,4 +4889,10 @@ button:focus:not(:focus-visible) {
   color: var(--accent-ink);
   font-size: 11px;
   font-weight: 650;
+}
+@media (prefers-reduced-motion: reduce) {
+  .presenter-grid {
+    animation: none;
+    opacity: 0;
+  }
 }
