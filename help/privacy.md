@@ -55,7 +55,7 @@ Backing up your link by email doesn't share your address with Canvas: it opens y
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
 
-Place cards: the map picture is drawn from OpenStreetMap when you add the card, and OpenStreetMap's Nominatim looks up the address (Canvas's server asks, not your browser). After that, the board never contacts a map service until someone taps a map to explore it; then Google Maps (for Google links) or OpenStreetMap (for Apple Maps links) loads.
+Place cards are a live map from Google Maps (for Google links) or OpenStreetMap (for Apple Maps links), so when a board with them is open, the map loads from that service, which can see the visit. The address, and the map picture used in exports, come from OpenStreetMap when you add the card (Canvas's server asks, not your browser).
 
 Font cards use typefaces stored on Canvas itself; nothing is fetched from Google Fonts.
 

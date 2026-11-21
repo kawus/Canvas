@@ -62,12 +62,11 @@ Spotify, Apple Music and Deezer play whole songs only for people who are signed 
 
 ## Can I add a place, like a venue or a shop?
 
-Yes. Tap **+ → Place**, type its name (for example "Tate Modern London") and press **Search**, then **Add**. Or paste a link from **Google Maps** or **Apple Maps** (their Share button works) into **+ → Place**, **+ → Link**, or straight onto the board. Canvas makes a **place card** with a calm map, a pin, the place's name and address.
+Yes. Tap **+ → Place**, type its name (for example "Tate Modern London") and press **Search**, then **Add**. Or paste a link from **Google Maps** or **Apple Maps** (their Share button works) into **+ → Place**, **+ → Link**, or straight onto the board. Canvas makes a **place card** that is a live map, right on the board: Google's own map for Google Maps links (with the place's name, rating and **Open in Maps** for directions), and an OpenStreetMap map for Apple Maps links, because Apple doesn't offer a map for other websites.
 
-- **Tap the map** to explore it: Google Maps links open Google's own map, right on the board. Apple Maps links open an OpenStreetMap map, because Apple doesn't offer a map for other websites. The **×** or <kbd>Esc</kbd> brings the card back.
-- **Double-click (or tap) the card's name** to open the place in your maps app, for directions.
-
-The map picture on the card is drawn once from OpenStreetMap when you add it, so simply looking at the board never contacts Google, Apple or anyone else.
+- **On your board:** tap the card once to select it, then drag, zoom or use the map. A press and drag on a card that isn't selected moves it.
+- **People with a View link** can use the map straight away, and so can you while presenting.
+- In PDF and PNG exports, the card shows a calm map picture with the place's name.
 
 ## How do I add a font?
 

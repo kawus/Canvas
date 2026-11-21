@@ -204,15 +204,17 @@ export async function addPlace(spot: Place, url: string, at?: Point) {
   if (address && name && address.toLowerCase().startsWith(name.toLowerCase())) address = address.slice(name.length).replace(/^[,\s]+/, '')
   const title = name || address || 'A place'
   const description = name ? address : ''
-  const h = cardHeight(title, description, !!image)
-  const [cx, cy] = at ?? freeSpot(CARD_W, h)
+  // the card is the live map, at its own size (the picture shows while it loads, and in exports)
+  const live = mediaOf(url)
+  const [w, h] = isEmbed(live) ? live.size : [CARD_W, cardHeight(title, description, !!image)]
+  const [cx, cy] = at ?? freeSpot(w, h)
   const el: LinkEl = {
     id: newElementId(),
     type: 'link',
     color: 'ink',
-    x: cx - CARD_W / 2,
+    x: cx - w / 2,
     y: cy - h / 2,
-    w: CARD_W,
+    w,
     h,
     url,
     title,

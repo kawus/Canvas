@@ -122,7 +122,7 @@
         {
           "id": "places",
           "name": "Place cards",
-          "text": "+ → Place finds a place by name, or paste a maps link, for a card with a calm map, the name and address; tap the map to explore it.",
+          "text": "+ → Place finds a place by name, or paste a maps link, for a live map right on the board.",
           "added": "2026-11-21"
         },
         {
@@ -346,7 +346,7 @@
           "feature": "media"
         },
         {
-          "text": "Place cards: + → Place finds a place by name (or paste a Google Maps or Apple Maps link) for a card with a calm map, the name and address. Tap the map to explore it right on the board.",
+          "text": "Place cards: + → Place finds a place by name (or paste a Google Maps or Apple Maps link) for a live map right on the board: Google's own map, or OpenStreetMap for Apple Maps links.",
           "feature": "places"
         },
         {

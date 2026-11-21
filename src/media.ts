@@ -57,10 +57,10 @@ export function parseMedia(raw: string, player?: string): Media | null {
   const host = u.hostname.toLowerCase().replace(/^(www|m)\./, '')
   const parts = u.pathname.split('/').filter(Boolean)
 
-  // places: the live map opens when the card's map is tapped (Google's own map; OpenStreetMap for Apple Maps, which has none to embed)
+  // places: a live map on the card (Google's own map; OpenStreetMap for Apple Maps, which has none to embed)
   const spot = parsePlace(raw)
   if (spot && (spot.lat !== undefined || spot.name)) {
-    const map = (service: string, embed: string): Media => ({ kind: 'map', shape: 'wide', service, embed, size: [640, 440] })
+    const map = (service: string, embed: string): Media => ({ kind: 'map', shape: 'wide', service, embed, size: [420, 300] })
     if (spot.service === 'Google Maps') {
       const q = spot.name ? encodeURIComponent(spot.name) : `${spot.lat},${spot.lng}`
       const ll = spot.lat !== undefined ? `&ll=${spot.lat},${spot.lng}` : ''
@@ -189,8 +189,8 @@ export const PLAYER_HOSTS = [
 ]
 
 const cache = new Map<string, Media | null>()
-/** The card is the service's own player (videos and music; maps show a picture and open live when tapped). */
-export const isEmbed = (m: Media | null): m is Media => !!m && m.kind !== 'map'
+/** The card is the service's own player or map, live on the board (videos, music and places). */
+export const isEmbed = (m: Media | null): m is Media => !!m
 
 /** A card that plays: parseMedia, checked and remembered (it runs on every render of every link card). */
 export function mediaOf(url: string, player?: string) {

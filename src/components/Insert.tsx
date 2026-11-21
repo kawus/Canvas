@@ -90,7 +90,7 @@ export function InsertDialog() {
               </p>
             ) : spot ? (
               <p className="insert-hint is-media" data-testid="link-media">
-                {spot.service} place · a map card you can explore
+                {spot.service} place · a live map on the board
               </p>
             ) : media ? (
               <p className="insert-hint is-media" data-testid="link-media">

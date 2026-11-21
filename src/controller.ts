@@ -10,8 +10,6 @@ import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
 import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
 import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter, pickAt } from './pencilMenu'
-import { linkLayout } from './layout'
-import { mediaOf } from './media'
 import { startVoice } from './voice'
 import { slideTagAt } from './slides'
 import { newElementId } from './storage'
@@ -1007,15 +1005,8 @@ export class CanvasController {
       }
       return true
     }
-    // (videos and music are their own players; a place card's map opens live)
-    if (hit?.type !== 'link' || mediaOf(hit.url, hit.player)?.kind !== 'map') return false
-    const art = linkLayout(hit).image
-    const [x, y] = this.world(sx, sy)
-    if (!art || x < art.x || x > art.x + art.w || y < art.y || y > art.y + art.h) return false
-    // its player takes the card's place (no selection frame around it)
-    s.select([])
-    s.setPlaying(hit.id)
-    return true
+    // (videos, music and places are live on the card itself)
+    return false
   }
 
   private defaultShape(type: 'rect' | 'ellipse' | 'line' | 'arrow', p: Point): El {

@@ -106,7 +106,7 @@ function PlacePickerOpen() {
         ) : (
           <p className={`insert-hint ${state === 'none' || state === 'offline' ? 'is-error' : ''}`}>
             {isMapsLink
-              ? 'A maps link · it becomes a card with a map'
+              ? 'A maps link · it becomes a live map on the board'
               : state === 'searching'
                 ? 'Looking it up…'
                 : state === 'none'

@@ -2,8 +2,6 @@ import { ChevronLeft, ChevronRight, LayoutGrid, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Palette } from '../constants'
 import { contentOf, hitTopmost, unionBounds } from '../geometry'
-import { linkLayout } from '../layout'
-import { mediaOf } from '../media'
 import { startVoice } from '../voice'
 import { touchFirst } from '../platform'
 import { slideBox, slidesOf, stopPresenting } from '../slides'
@@ -12,7 +10,6 @@ import { useStore } from '../store'
 import type { Box } from '../types'
 import { ElementView, VoiceOverlay } from './Canvas'
 import { EmbedFrame, embedsOf } from './Embeds'
-import { Player, playerBox } from './MediaPlayer'
 
 /**
  * Presentation mode. Each slide fills the screen; moving to the next one flies
@@ -352,15 +349,8 @@ export function Presenter({ palette }: { palette: Palette }) {
     const p: [number, number] = [(sx - (vw() / 2 - c[0] * z)) / z, (sy - (vh() / 2 - c[1] * z)) / z]
     const hit = hitTopmost(content, p, 6 / z)
     if (hit?.type === 'voice') return hit.id
-    if (hit?.type !== 'link' || mediaOf(hit.url, hit.player)?.kind !== 'map') return null
-    const art = linkLayout(hit).image
-    return art && p[0] >= art.x && p[0] <= art.x + art.w && p[1] >= art.y && p[1] <= art.y + art.h ? hit.id : null
+    return null
   }
-  const playingEl = playing && !moving && cam ? content.find((e) => e.id === playing) : undefined
-  const playBox =
-    playingEl?.type === 'link'
-      ? playerBox(playingEl, (x, y) => [x * zoom + (vw() / 2 - cam![0] * zoom), y * zoom + (vh() / 2 - cam![1] * zoom)], zoom)
-      : null
 
   return (
     <div
@@ -405,11 +395,6 @@ export function Presenter({ palette }: { palette: Palette }) {
             const r = toScreen({ minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h })
             return r.left < vw() && r.top < vh() && r.left + r.width > 0 && r.top + r.height > 0 ? <EmbedFrame key={el.id} el={el} left={r.left} top={r.top} scale={zoom} live /> : null
           })}
-        </div>
-      )}
-      {playingEl?.type === 'link' && playBox && (
-        <div className="media-layer">
-          <Player el={playingEl} box={playBox} onStop={() => setPlaying(null)} />
         </div>
       )}
       {settled && (

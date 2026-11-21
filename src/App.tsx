@@ -20,7 +20,6 @@ import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { FontPicker } from './components/FontPicker'
 import { Launcher } from './components/Launcher'
-import { MediaLayer } from './components/MediaPlayer'
 import { PlacePicker } from './components/PlacePicker'
 import { VoiceRecorder } from './components/VoiceRecorder'
 import { Versions } from './components/Versions'
@@ -98,7 +97,6 @@ export default function App() {
   return (
     <div className={`app ${loaded ? 'is-loaded' : ''} ${focus ? 'is-focus' : ''} ${versions ? 'is-versions' : ''} ${earlier ? 'is-earlier' : ''}`}>
       <Canvas palette={palette} />
-      <MediaLayer />
       <TextEditor palette={palette} />
       <PeerCursors />
       <FeedbackLayer palette={palette} />
