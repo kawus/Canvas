@@ -323,6 +323,9 @@
         {
           "text": "Ideas & requests: vote for the ideas you want most, or suggest your own, right on this page.",
           "feature": "ideas"
+        },
+        {
+          "text": "The welcome page shows the latest Canvas: likes, notes and replies, the templates, hold to straighten, focus mode and more."
         }
       ]
     },

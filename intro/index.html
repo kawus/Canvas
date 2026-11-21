@@ -4,12 +4,12 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Canvas — a calm, free online whiteboard (no sign-up)</title>
-    <meta name="description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
+    <meta name="description" content="A calm, free whiteboard for sketching, moodboards and presenting, with likes, notes and replies from anyone you share with. Mac, iPad and iPhone. No sign-up." />
     <!-- link previews in messaging and social apps (__SITE__ = the site's address, filled in at build time) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Canvas" />
     <meta property="og:title" content="Canvas — a calm whiteboard for your ideas" />
-    <meta property="og:description" content="Sketch, plan, make moodboards and present them, on a calm, minimal whiteboard. Works on Mac, iPad and iPhone. No sign-up." />
+    <meta property="og:description" content="Sketch, make moodboards, present them and gather feedback, on a calm, minimal whiteboard. Mac, iPad and iPhone. No sign-up." />
     <meta property="og:url" content="__SITE__/intro/" />
     <link rel="canonical" href="__SITE__/intro/" />
     <script type="application/ld+json">
@@ -43,6 +43,8 @@
       </a>
       <nav class="nav-links">
         <a href="#draw">How it works</a>
+        <a href="../templates/">Templates</a>
+        <a href="../changelog/">What’s new</a>
         <a href="../help/">Help</a>
       </nav>
       <a class="btn btn-small" href="../?from=intro" data-open>Open Canvas</a>
@@ -72,7 +74,7 @@
           <span class="line">Think out loud,</span>
           <span class="line">on a <span class="calm">calm<svg class="calm-line" viewBox="0 0 300 40" preserveAspectRatio="none" aria-hidden="true"><path d="M6 26 C 70 10, 140 34, 200 18 S 270 14, 294 22" pathLength="1" /></svg></span> canvas.</span>
         </h1>
-        <p class="hero-sub" data-rise style="--d: 1.1s">A minimal whiteboard for sketching, planning and moodboards. On your Mac, iPad and iPhone — no account needed.</p>
+        <p class="hero-sub" data-rise style="--d: 1.1s">A minimal whiteboard for sketching, moodboards and presenting, with feedback from anyone you share with. On your Mac, iPad and iPhone, no account needed.</p>
         <div class="hero-cta" data-rise style="--d: 1.25s">
           <a class="btn btn-big" href="../?from=intro" data-open data-magnetic>
             <span>Start drawing</span>
@@ -89,7 +91,7 @@
           <div class="copy" data-reveal>
             <p class="eyebrow">Draw</p>
             <h2>Draws like <span class="nowrap"><span class="hl">ink<i data-ink-highlight></i></span>.</span></h2>
-            <p class="lead">Pressure, smoothing and palm rejection. Pick up an Apple Pencil and it simply feels right — your hand, only neater.</p>
+            <p class="lead">Pressure, smoothing and palm rejection: pick up an Apple Pencil and it simply feels right. Draw a rough circle or box and hold for a moment, and it settles into a clean one.</p>
           </div>
           <div class="paper" data-paper>
             <svg class="ink-svg" viewBox="0 0 800 520" aria-hidden="true">
@@ -182,11 +184,38 @@
       </section>
 
       <!-- 4. Everywhere -->
+      <!-- Feedback: a heart, a note, a reply -->
+      <section class="block feedback" id="feedback">
+        <div class="copy center" data-reveal>
+          <p class="eyebrow">Feedback</p>
+          <h2>Likes, notes and replies.<br /><span class="muted">Right on the board.</span></h2>
+          <p class="lead">Send a view link. Friends and clients like what they love and leave notes with just a name, no account. Reply in a line, then resolve it.</p>
+        </div>
+        <div class="fb-board" data-feedback aria-hidden="true">
+          <div class="fb-photo fb-p1 photo photo-dune"></div>
+          <div class="fb-photo fb-p2 photo photo-fern">
+            <span class="fb-heart" data-fb-heart><svg viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" /></svg><b data-fb-likes>1</b></span>
+          </div>
+          <div class="fb-photo fb-p3 photo photo-sea"></div>
+          <div class="fb-swatches">
+            <div class="swatch-card" style="--c: #c56b3e"><i></i><b>#C56B3E</b><span class="fb-pin">M</span></div>
+            <div class="swatch-card" style="--c: #e9d8a6"><i></i><b>#E9D8A6</b></div>
+            <div class="swatch-card" style="--c: #2f4858"><i></i><b>#2F4858</b></div>
+          </div>
+          <div class="fb-bubble">
+            <p class="fb-who"><i style="--c: #e8833a">M</i><b>Mia</b><span>just now</span></p>
+            <p class="fb-text">Love this for the wall behind the sofa</p>
+            <p class="fb-reply"><i style="--c: #2f6bea">A</i><span><b>Alex</b> <span data-fb-typed></span></span></p>
+          </div>
+          <div class="cursor c-fb" data-fb-cursor style="--c: #e8833a"><svg viewBox="0 0 20 22"><path d="M1 1 L1 18 L5.5 13.6 L9 21 L12 19.7 L8.6 12.6 L15 12.6 Z" /></svg><span>Mia</span></div>
+        </div>
+      </section>
+
       <section class="block everywhere" data-reveal data-loop>
         <div class="copy center">
           <p class="eyebrow">Everywhere</p>
           <h2>Every device.<br /><span class="muted">No account.</span></h2>
-          <p class="lead">Boards save as you go. Your private My Canvas link brings every board to your phone, iPad and computer — and keeps them in step.</p>
+          <p class="lead">Boards save as you go. Scan a code and every board is on your phone, iPad and computer too, Home Screen app included, and they stay in step.</p>
         </div>
         <div class="devices" aria-hidden="true">
           <svg class="sync-arc" viewBox="0 0 1000 200" preserveAspectRatio="none"><path d="M230 170 C 360 10, 520 10, 640 120 S 820 110, 880 150" pathLength="1" /></svg>
@@ -201,7 +230,7 @@
         <div class="copy center" data-reveal>
           <p class="eyebrow">Together</p>
           <h2>Share a link.<br /><span class="muted">Think together.</span></h2>
-          <p class="lead">Anyone can view your board with a link, as it changes. Invite people to draw with you live — only you need Pro, guests join free.</p>
+          <p class="lead">Anyone can follow your board with a link as it changes, and leave feedback. Or invite people to draw with you live: only you need Pro, guests join free.</p>
         </div>
         <div class="live-board" data-live-board aria-hidden="true">
           <canvas data-trails></canvas>
@@ -214,29 +243,54 @@
         <h2 class="center" data-reveal>Small things,<br /><span class="muted">done properly.</span></h2>
         <div class="feature-grid">
           <div class="feature" data-reveal style="--i: 0">
-            <svg viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
-            <h3>Export anywhere</h3><p>Crisp PDF, PNG and SVG — the whole board or just a selection.</p>
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" /><path d="M5 19 19 5" stroke-dasharray="2 3" /></svg>
+            <h3>Hold to straighten</h3><p>Draw a rough circle, box or line and hold still: it settles into a clean shape.</p>
           </div>
           <div class="feature" data-reveal style="--i: 1">
-            <svg viewBox="0 0 24 24"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /><circle cx="13" cy="7" r="1" /><rect x="8" y="2" width="14" height="14" rx="2" /></svg>
-            <h3>Photos & links</h3><p>Paste a link and get a card with its preview. Drop in photos and crop them.</p>
+            <svg viewBox="0 0 24 24"><path d="M15.707 21.293a1 1 0 0 1-1.414 0l-1.586-1.586a1 1 0 0 1 0-1.414l5.586-5.586a1 1 0 0 1 1.414 0l1.586 1.586a1 1 0 0 1 0 1.414z" /><path d="m18 13-1.375-6.874a1 1 0 0 0-.746-.776L3.235 2.028a1 1 0 0 0-1.207 1.207L5.35 15.879a1 1 0 0 0 .776.746L13 18" /><path d="m2.3 2.3 7.286 7.286" /><circle cx="11" cy="11" r="2" /></svg>
+            <h3>Pencil menu</h3><p>Hold your Apple Pencil still for a ring of tools and colours, right at its tip.</p>
           </div>
           <div class="feature" data-reveal style="--i: 2">
+            <svg viewBox="0 0 24 24"><path d="M3 7V5a2 2 0 0 1 2-2h2" /><path d="M17 3h2a2 2 0 0 1 2 2v2" /><path d="M21 17v2a2 2 0 0 1-2 2h-2" /><path d="M7 21H5a2 2 0 0 1-2-2v-2" /><circle cx="12" cy="12" r="1" /></svg>
+            <h3>Focus mode</h3><p>Press F and every button fades away. Just you and the board.</p>
+          </div>
+          <div class="feature" data-reveal style="--i: 3">
+            <svg viewBox="0 0 24 24"><path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /><path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /><circle cx="13" cy="7" r="1" /><rect x="8" y="2" width="14" height="14" rx="2" /></svg>
+            <h3>Photos & links</h3><p>Paste a link for a card with its preview. Drop in photos, several at once, and crop them.</p>
+          </div>
+          <div class="feature" data-reveal style="--i: 4">
             <svg viewBox="0 0 24 24"><path d="M12 22a1 1 0 0 1 0-20 10 9 0 0 1 10 9 5 5 0 0 1-5 5h-2.25a1.75 1.75 0 0 0-1.4 2.8l.3.4a1.75 1.75 0 0 1-1.4 2.8z" /><circle cx="13.5" cy="6.5" r=".5" /><circle cx="17.5" cy="10.5" r=".5" /><circle cx="6.5" cy="12.5" r=".5" /><circle cx="8.5" cy="7.5" r=".5" /></svg>
             <h3>Colour palettes</h3><p>Pull the main colours out of any photo as swatches with their hex codes.</p>
           </div>
-          <div class="feature" data-reveal style="--i: 3">
+          <div class="feature" data-reveal style="--i: 5">
             <svg viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /><path d="M3 9h18" /><path d="M3 15h18" /><path d="M9 3v18" /><path d="M15 3v18" /></svg>
             <h3>Snaps into line</h3><p>Smart guides, equal spacing and an 8-point grid keep everything tidy.</p>
           </div>
-          <div class="feature" data-reveal style="--i: 4">
-            <svg viewBox="0 0 24 24"><path d="M3 7V5c0-1.1.9-2 2-2h2" /><path d="M17 3h2c1.1 0 2 .9 2 2v2" /><path d="M21 17v2c0 1.1-.9 2-2 2h-2" /><path d="M7 21H5c-1.1 0-2-.9-2-2v-2" /><rect width="7" height="5" x="7" y="7" rx="1" /><rect width="7" height="5" x="10" y="12" rx="1" /></svg>
-            <h3>Group & arrange</h3><p>Group things, connect them with arrows that follow, align with a tap.</p>
+          <div class="feature" data-reveal style="--i: 6">
+            <svg viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /><path d="M14 2v5a1 1 0 0 0 1 1h5" /><path d="M10 9H8" /><path d="M16 13H8" /><path d="M16 17H8" /></svg>
+            <h3>Export anywhere</h3><p>Crisp PDF, PNG and SVG of the whole board or just a selection.</p>
           </div>
-          <div class="feature" data-reveal style="--i: 5">
-            <svg viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></svg>
-            <h3>Light & dark</h3><p>Calm in daylight, easy on the eyes at night. It follows your device.</p>
+          <div class="feature" data-reveal style="--i: 7">
+            <svg viewBox="0 0 24 24"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z" /></svg>
+            <h3>A calm feel</h3><p>Warm paper tones in light and dark, gentle motion, and soft sounds if you like.</p>
           </div>
+          <div class="feature" data-reveal style="--i: 8">
+            <svg viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+            <h3>Private by design</h3><p>No account, nothing personal sent anywhere, and your boards never show up in search.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Templates -->
+      <section class="block templates-strip">
+        <div class="copy center" data-reveal>
+          <p class="eyebrow">Templates</p>
+          <h2>Start from a board<br /><span class="muted">that’s ready to go.</span></h2>
+        </div>
+        <div class="feature-grid">
+          <a class="feature tpl-card" href="../templates/room-makeover-moodboard/" data-reveal style="--i: 0"><span class="tpl-tag">Home projects</span><h3>Room makeover</h3><p>Photos, colours, materials and a plan, then walk everyone through it.</p><span class="tpl-go">See the template →</span></a>
+          <a class="feature tpl-card" href="../templates/client-moodboard/" data-reveal style="--i: 1"><span class="tpl-tag">Designers</span><h3>Client moodboard</h3><p>Brief, mood, palette and type, presented without building a deck.</p><span class="tpl-go">See the template →</span></a>
+          <a class="feature tpl-card" href="../templates/brand-identity-moodboard/" data-reveal style="--i: 2"><span class="tpl-tag">Brands</span><h3>Brand identity</h3><p>What the brand stands for, mood, logo directions, palette and type.</p><span class="tpl-go">See the template →</span></a>
         </div>
       </section>
 

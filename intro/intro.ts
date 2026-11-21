@@ -478,3 +478,47 @@ window.addEventListener(
   { passive: true },
 )
 layout()
+
+/* ---------- Feedback: a heart, a note pin, a reply that types itself ---------- */
+
+const fb = $('[data-feedback]')
+const fbHeart = $('[data-fb-heart]', fb)
+const fbLikes = $('[data-fb-likes]', fb)
+const fbTyped = $('[data-fb-typed]', fb)
+const FB_REPLY = 'Same. Ordering a sample this week.'
+const fbFinal = () => {
+  fb.classList.add('s-like', 's-pin', 's-note', 's-reply')
+  fbLikes.textContent = '2'
+  fbTyped.textContent = FB_REPLY
+}
+if (still) fbFinal()
+else {
+  let timers: number[] = []
+  const at = (ms: number, fn: () => void) => timers.push(window.setTimeout(fn, ms))
+  const play = () => {
+    fb.classList.remove('s-like', 's-pin', 's-note', 's-reply')
+    fbLikes.textContent = '1'
+    fbTyped.textContent = ''
+    at(1300, () => fb.classList.add('s-like'))
+    at(2300, () => {
+      // a second person likes it too
+      fbLikes.textContent = '2'
+      fbHeart.classList.remove('is-bump')
+      void fbHeart.offsetWidth
+      fbHeart.classList.add('is-bump')
+    })
+    at(2800, () => fb.classList.add('s-pin'))
+    at(4100, () => fb.classList.add('s-note'))
+    at(5300, () => fb.classList.add('s-reply'))
+    for (let i = 1; i <= FB_REPLY.length; i++) at(5600 + i * 45, () => (fbTyped.textContent = FB_REPLY.slice(0, i)))
+    at(5600 + FB_REPLY.length * 45 + 3800, play)
+  }
+  new IntersectionObserver(
+    ([e]) => {
+      timers.forEach(clearTimeout)
+      timers = []
+      if (e.isIntersecting) play()
+    },
+    { threshold: 0.35 },
+  ).observe(fb)
+}
