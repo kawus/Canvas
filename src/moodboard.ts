@@ -2,7 +2,7 @@ import { hashData, loadAsset, saveAsset } from './assets'
 import { boxIntersects, geometricBounds } from './geometry'
 import { importImages, prepareImage } from './images'
 import { hostOf, wrapText } from './layout'
-import { mediaOf } from './media'
+import { isEmbed, mediaOf } from './media'
 import { drawMap, parsePlace, type Place } from './places'
 import { freeSpot } from './placement'
 import { newElementId } from './storage'
@@ -146,15 +146,16 @@ export async function addLink(raw: string, at?: Point) {
   }
   const title = p.title || hostOf(p.url)
   const desc = p.description && p.description !== media?.service && p.description !== p.site ? p.description : ''
-  const h = cardHeight(title, desc, !!image || !!media, w, shape)
-  const [cx, cy] = at ?? freeSpot(w, h)
+  // videos and music: the card is the service's own player, at its own size
+  const [w2, h] = isEmbed(media) ? media.size : [w, cardHeight(title, desc, !!image || !!media, w, shape)]
+  const [cx, cy] = at ?? freeSpot(w2, h)
   const el: LinkEl = {
     id: newElementId(),
     type: 'link',
     color: 'ink',
-    x: cx - w / 2,
+    x: cx - w2 / 2,
     y: cy - h / 2,
-    w,
+    w: w2,
     h,
     // keep the address that plays (a short link may have led somewhere else)
     url: media && !mediaOf(p.url || '', player) ? url : p.url || url,
@@ -169,7 +170,7 @@ export async function addLink(raw: string, at?: Point) {
 }
 
 /** A place card: a calm map with a pin, the place's name and address; it opens the maps link. */
-async function addPlace(spot: Place, url: string, at?: Point) {
+export async function addPlace(spot: Place, url: string, at?: Point) {
   let { name = '', lat, lng } = spot
   let address = ''
   try {

@@ -6,7 +6,7 @@ import { useStore } from '../store'
 
 const MAX_SECONDS = 60
 
-/** + → Voice note: tap to record (up to a minute), tap again to put it on the board. */
+/** + → Voice: tap to record (up to a minute), tap again to put it on the board. */
 export function VoiceRecorder() {
   const open = useStore((s) => s.insert === 'voice')
   if (!open) return null
@@ -130,7 +130,7 @@ function VoiceRecorderOpen() {
       <div className="dialog insert-dialog voice-dialog" role="dialog" aria-label="Record a voice note" data-testid="voice-dialog">
         <div className="insert-head">
           <Mic />
-          <h2 className="insert-title">Voice note</h2>
+          <h2 className="insert-title">Voice</h2>
         </div>
         {state === 'unsupported' ? (
           <p className="insert-hint">This browser can’t record sound. Try Safari, Chrome or Firefox.</p>

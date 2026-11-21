@@ -116,13 +116,13 @@
         {
           "id": "media",
           "name": "Videos & music",
-          "text": "Paste a video from YouTube, Vimeo, Loom or TikTok, or music from Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer or Mixcloud, and it plays right on the board.",
+          "text": "Paste a video from YouTube, Vimeo, Loom or TikTok, or music from Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer or Mixcloud: the card is the service's own player.",
           "added": "2026-11-21"
         },
         {
           "id": "places",
           "name": "Place cards",
-          "text": "Paste a Google Maps or Apple Maps link for a card with a calm map, the name and address; tap the map to explore it.",
+          "text": "+ → Place finds a place by name, or paste a maps link, for a card with a calm map, the name and address; tap the map to explore it.",
           "added": "2026-11-21"
         },
         {
@@ -332,11 +332,11 @@
       "title": "Videos, music, places, fonts and voice notes",
       "items": [
         {
-          "text": "Videos and music play on the board: paste a link from YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer or Mixcloud and tap the picture: the service’s own full player opens in its place.",
+          "text": "Videos and music on the board: paste a link from YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer or Mixcloud and the card is that service's own player, exactly as you know it.",
           "feature": "media"
         },
         {
-          "text": "Place cards: paste a Google Maps or Apple Maps link for a card with a calm map, the place's name and address. Tap the map to explore it right on the board.",
+          "text": "Place cards: + → Place finds a place by name (or paste a Google Maps or Apple Maps link) for a card with a calm map, the name and address. Tap the map to explore it right on the board.",
           "feature": "places"
         },
         {

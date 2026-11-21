@@ -59,7 +59,7 @@ Place cards: the map picture is drawn from OpenStreetMap when you add the card, 
 
 Font cards use typefaces stored on Canvas itself; nothing is fetched from Google Fonts.
 
-Videos and music on a board (YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer, Mixcloud) load nothing from those services until someone presses play. Only then does that service's own player open in the card, under its own privacy policy. YouTube plays in its privacy-enhanced mode and Vimeo is asked not to track.
+Video and music cards (YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer, Mixcloud) are that service's own player, so when a board with them is open, the player loads from that service, which can see the visit under its own privacy policy. Nothing plays by itself. YouTube uses its privacy-enhanced mode and Vimeo is asked not to track. Boards without video or music cards contact none of them. Place names you search for with **+ → Place** are looked up by Canvas's server with OpenStreetMap's Nominatim.
 
 ## Does Canvas track me?
 

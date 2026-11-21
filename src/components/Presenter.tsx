@@ -10,6 +10,7 @@ import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { Box } from '../types'
 import { ElementView } from './Canvas'
+import { EmbedFrame, embedsOf } from './Embeds'
 import { Player, playerBox, VoicePlayer } from './MediaPlayer'
 
 /**
@@ -342,7 +343,7 @@ export function Presenter({ palette }: { palette: Palette }) {
     const p: [number, number] = [(sx - (vw() / 2 - c[0] * z)) / z, (sy - (vh() / 2 - c[1] * z)) / z]
     const hit = hitTopmost(content, p, 6 / z)
     if (hit?.type === 'voice') return hit.id
-    if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return null
+    if (hit?.type !== 'link' || mediaOf(hit.url, hit.player)?.kind !== 'map') return null
     const art = linkLayout(hit).image
     return art && p[0] >= art.x && p[0] <= art.x + art.w && p[1] >= art.y && p[1] <= art.y + art.h ? hit.id : null
   }
@@ -384,6 +385,15 @@ export function Presenter({ palette }: { palette: Palette }) {
         <rect ref={ring} className="presenter-ring" rx={4} strokeOpacity={0} />
       </svg>
 
+      {/* videos and music are their own players here too, once the camera has settled */}
+      {!moving && cam && (
+        <div className="embed-layer">
+          {embedsOf(content).map((el) => {
+            const r = toScreen({ minX: el.x, minY: el.y, maxX: el.x + el.w, maxY: el.y + el.h })
+            return r.left < vw() && r.top < vh() && r.left + r.width > 0 && r.top + r.height > 0 ? <EmbedFrame key={el.id} el={el} left={r.left} top={r.top} scale={zoom} live /> : null
+          })}
+        </div>
+      )}
       {playingEl?.type === 'link' && playBox && (
         <div className="media-layer">
           <Player el={playingEl} box={playBox} onStop={() => setPlaying(null)} />

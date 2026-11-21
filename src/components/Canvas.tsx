@@ -9,6 +9,7 @@ import { addLink, importImageUrl, isUrl } from '../moodboard'
 import { elementPrims, type Prim } from '../render'
 import { dotSpacing } from '../snap'
 import { loadFont } from '../fonts'
+import { Embeds } from './Embeds'
 import { useStore } from '../store'
 import type { El } from '../types'
 import type { Palette } from '../constants'
@@ -246,6 +247,7 @@ export function Canvas({ palette }: { palette: Palette }) {
           {draft && <ElementView el={draft} palette={palette} faded={false} editing={false} />}
         </g>
       </svg>
+      <Embeds elements={elements} />
       <Overlay />
     </div>
   )

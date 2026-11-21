@@ -113,7 +113,7 @@ interface State {
   pro: ProState
   upgradeOpen: boolean
   /** "+" menu dialogs */
-  insert: 'link' | 'color' | 'font' | 'voice' | null
+  insert: 'link' | 'color' | 'font' | 'voice' | 'place' | null
   /** dialogs: All boards, My Canvas link, pasting a link from another device, All boards after opening the link */
   panel: Panel
   /** replaying the welcome tour */
@@ -149,7 +149,7 @@ interface State {
   setKey: (key: string) => void
   setPro: (pro: Partial<ProState>) => void
   setUpgradeOpen: (open: boolean) => void
-  setInsert: (insert: 'link' | 'color' | 'font' | 'voice' | null) => void
+  setInsert: (insert: 'link' | 'color' | 'font' | 'voice' | 'place' | null) => void
   setPanel: (panel: Panel) => void
   setTour: (tour: boolean) => void
   setCropId: (id: string | null) => void

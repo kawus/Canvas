@@ -1001,7 +1001,8 @@ export class CanvasController {
       s.setPlaying(s.playing === hit.id ? null : hit.id)
       return true
     }
-    if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return false
+    // (videos and music are their own players; a place card's map opens live)
+    if (hit?.type !== 'link' || mediaOf(hit.url, hit.player)?.kind !== 'map') return false
     const art = linkLayout(hit).image
     const [x, y] = this.world(sx, sy)
     if (!art || x < art.x || x > art.x + art.w || y < art.y || y > art.y + art.h) return false

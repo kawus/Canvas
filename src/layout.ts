@@ -142,17 +142,9 @@ export function linkLayout(el: LinkEl): LinkLayout {
         ? Math.min((artW * 16) / 9, h * 0.8)
         : Math.min(artW * 0.56, h * 0.62)
   const image = hasArt ? { x: el.x + CARD_INSET, y: el.y + CARD_INSET, w: artW, h: imgH } : null
-  let play: LinkLayout['play'] = null
-  // (maps have no play button: tapping the map opens it)
-  if (media && image && media.kind !== 'map') {
-    if (media.kind === 'video') {
-      const r = Math.max(12, Math.min(30, Math.min(image.w, image.h) * 0.13))
-      play = { x: image.x + image.w / 2, y: image.y + image.h / 2, r }
-    } else {
-      const r = Math.max(11, Math.min(22, image.w * 0.085))
-      play = { x: image.x + image.w - r - 8, y: image.y + image.h - r - 8, r }
-    }
-  }
+  // videos and music are the service's own player and maps open when tapped: no play button of our own
+  const play: LinkLayout['play'] = null
+
   const lines: CardText[] = []
   const bottom = el.y + h - CARD_PAD
   const siteSize = 11.5

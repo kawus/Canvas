@@ -2,8 +2,9 @@
  * Videos and music that play on the board. A link card whose address belongs to
  * one of these services becomes playable; the player itself always comes from
  * the service, worked out here from the link (never stored with the board), so
- * a shared board can't point a player anywhere else. Nothing is loaded from the
- * service until someone presses play.
+ * a shared board can't point a player anywhere else. Video and music cards are
+ * the service's own embedded player (Embeds.tsx), so they load from it when a
+ * board shows them; nothing starts playing by itself.
  *
  * Bandcamp's player needs a number its links don't contain: Canvas reads it
  * from the page when the link is added and keeps only that number (`player`
@@ -41,7 +42,7 @@ function youtube(id: string | null | undefined, start: string | null, music: boo
   if (!id || !ID.test(id)) return null
   const t = start ? parseInt(start.replace(/s$/, ''), 10) : 0
   // youtube-nocookie: YouTube's privacy-enhanced mode
-  const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0${t > 0 ? `&start=${t}` : ''}`
+  const embed = `https://www.youtube-nocookie.com/embed/${id}?playsinline=1&rel=0${t > 0 ? `&start=${t}` : ''}`
   return music ? audio('YouTube Music', embed, [512, 288]) : video('YouTube', embed, short ? 'tall' : 'wide')
 }
 
@@ -89,12 +90,12 @@ export function parseMedia(raw: string, player?: string): Media | null {
     const id = nums[0]
     const after = parts[parts.indexOf(id) + 1]
     const hash = u.searchParams.get('h') ?? (after && /^[0-9a-f]{6,20}$/.test(after) ? after : null)
-    return video('Vimeo', `https://player.vimeo.com/video/${id}?autoplay=1&dnt=1${hash ? `&h=${hash}` : ''}`)
+    return video('Vimeo', `https://player.vimeo.com/video/${id}?dnt=1${hash ? `&h=${hash}` : ''}`)
   }
 
   // Loom
   if (host === 'loom.com' && (parts[0] === 'share' || parts[0] === 'embed') && parts[1] && /^[0-9a-f]{16,40}$/.test(parts[1])) {
-    return video('Loom', `https://www.loom.com/embed/${parts[1]}?autoplay=1`)
+    return video('Loom', `https://www.loom.com/embed/${parts[1]}`)
   }
 
   // Spotify (open.spotify.com/track/…, also with a language part like /intl-de/)
@@ -120,7 +121,7 @@ export function parseMedia(raw: string, player?: string): Media | null {
   // SoundCloud (soundcloud.com/artist/track or /artist/sets/playlist)
   if (host === 'soundcloud.com' && parts.length >= 2 && !['discover', 'search', 'you', 'upload', 'settings'].includes(parts[0])) {
     const clean = `https://soundcloud.com/${parts.slice(0, parts[1] === 'sets' ? 3 : 2).join('/')}`
-    return audio('SoundCloud', `https://w.soundcloud.com/player/?url=${encodeURIComponent(clean)}&auto_play=true&visual=true&hide_related=true&show_comments=false`, [320, 320])
+    return audio('SoundCloud', `https://w.soundcloud.com/player/?url=${encodeURIComponent(clean)}&auto_play=false&visual=true&hide_related=true&show_comments=false`, [320, 320])
   }
 
   // TikTok (tiktok.com/@name/video/123…): a tall card
@@ -128,7 +129,7 @@ export function parseMedia(raw: string, player?: string): Media | null {
     const i = parts.indexOf('video')
     const id = i >= 0 ? parts[i + 1] : parts[0] === 'embed' ? parts[parts.length - 1] : null
     if (!id || !/^\d{10,25}$/.test(id)) return null
-    return video('TikTok', `https://www.tiktok.com/player/v1/${id}?autoplay=1&rel=0&description=1&music_info=1`, 'tall')
+    return video('TikTok', `https://www.tiktok.com/player/v1/${id}?autoplay=0&rel=0&description=1&music_info=1`, 'tall')
   }
 
   // Bandcamp (artist.bandcamp.com/album/… or /track/…): the player needs the number read when the link was added
@@ -149,7 +150,7 @@ export function parseMedia(raw: string, player?: string): Media | null {
   if (host === 'mixcloud.com' && parts.length >= 2 && !['discover', 'upload', 'search', 'live', 'select'].includes(parts[0])) {
     const feed = `https://www.mixcloud.com/${parts.slice(0, 2).map(encodeURIComponent).join('/')}/`
     // Mixcloud's own player, as its oEmbed gives it: a slim strip
-    return audio('Mixcloud', `https://www.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(feed)}&hide_cover=1&autoplay=1`, [440, 120])
+    return audio('Mixcloud', `https://www.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(feed)}&hide_cover=1`, [440, 120])
   }
   return null
 }
@@ -188,6 +189,9 @@ export const PLAYER_HOSTS = [
 ]
 
 const cache = new Map<string, Media | null>()
+/** The card is the service's own player (videos and music; maps show a picture and open live when tapped). */
+export const isEmbed = (m: Media | null): m is Media => !!m && m.kind !== 'map'
+
 /** A card that plays: parseMedia, checked and remembered (it runs on every render of every link card). */
 export function mediaOf(url: string, player?: string) {
   const key = player ? `${url} ${player}` : url

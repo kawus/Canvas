@@ -46,18 +46,23 @@ Tap **+ → Link** and type or paste a web address — just `apple.com` is enoug
 
 ## Can I add videos and music?
 
-Yes. Add the link the same way, with **+ → Link** or by pasting it onto the board. You don't need to say what it is: Canvas recognises these and makes a card that plays right on the board:
+Yes. Add the link the same way, with **+ → Link** or by pasting it onto the board. You don't need to say what it is: Canvas recognises these, and the card becomes that service's own player, right on the board:
 
 - **Videos:** YouTube (including Shorts), Vimeo, Loom and TikTok.
 - **Music and podcasts:** Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer and Mixcloud.
 
-Videos get a wide card with the video's picture, TikToks and YouTube Shorts a tall one, and music a square card with the cover. Short links from the apps' Share buttons work too. **Tap the picture** to play. The card turns into the service's own full player, just as it looks on Spotify, YouTube or SoundCloud, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first. The **×** in the player's corner, or <kbd>Esc</kbd>, stops it and brings the card back. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
+Each card looks exactly like the player you know from Spotify, YouTube or SoundCloud, at its usual size. Short links from the apps' Share buttons work too. Nothing plays by itself.
+
+- **On your board:** tap the card once to select it, then use the player as normal (play, skip, scroll the track list). A press and drag on a card that isn't selected moves it.
+- **People with a View link** can press play straight away, and so can you while presenting.
+- The player grows and shrinks as you zoom. Players far off screen rest until you come back (one you've been using keeps playing).
+- In PDF and PNG exports, a player shows as its cover picture with the title.
 
 Spotify, Apple Music and Deezer play whole songs only for people who are signed in to them in that browser; everyone else hears a 30-second preview. Podcasts, YouTube, Vimeo, Loom, TikTok, SoundCloud, Bandcamp and Mixcloud play in full (on Bandcamp, as far as the artist allows).
 
 ## Can I add a place, like a venue or a shop?
 
-Yes. Copy the link from **Google Maps** or **Apple Maps** (their Share button works) and add it like any link: **+ → Link**, or paste it onto the board. Canvas makes a **place card** with a calm map, a pin, the place's name and address.
+Yes. Tap **+ → Place**, type its name (for example "Tate Modern London") and press **Search**, then **Add**. Or paste a link from **Google Maps** or **Apple Maps** (their Share button works) into **+ → Place**, **+ → Link**, or straight onto the board. Canvas makes a **place card** with a calm map, a pin, the place's name and address.
 
 - **Tap the map** to explore it: Google Maps links open Google's own map, right on the board. Apple Maps links open an OpenStreetMap map, because Apple doesn't offer a map for other websites. The **×** or <kbd>Esc</kbd> brings the card back.
 - **Double-click (or tap) the card's name** to open the place in your maps app, for directions.

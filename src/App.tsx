@@ -20,6 +20,7 @@ import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
 import { FontPicker } from './components/FontPicker'
 import { MediaLayer } from './components/MediaPlayer'
+import { PlacePicker } from './components/PlacePicker'
 import { VoiceRecorder } from './components/VoiceRecorder'
 import { Versions } from './components/Versions'
 import { Welcome } from './components/Welcome'
@@ -123,6 +124,7 @@ export default function App() {
       <UpgradeDialog />
       <InsertDialog />
       <FontPicker />
+      <PlacePicker />
       <VoiceRecorder />
       <CropOverlay />
       <LibraryDialogs />

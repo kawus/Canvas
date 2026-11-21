@@ -12,6 +12,7 @@ import {
   type Palette,
 } from './constants'
 import { fontById, fontFamily } from './fonts'
+import { isEmbed, mediaOf } from './media'
 import { boxTextLayout, CARD_INSET, linkLayout } from './layout'
 import { firstBaseline } from './textMetrics'
 import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint } from './types'
@@ -212,6 +213,20 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
     case 'slide':
       return []
     case 'link': {
+      // videos and music: the service's player covers the card on the board; this is what shows while it loads, and in exports
+      const media = mediaOf(el.url, el.player)
+      if (isEmbed(media)) {
+        const href = el.image ? assetUrl?.(el.image) : undefined
+        const band = Math.min(52, el.h * 0.3)
+        const out: Prim[] = [{ tag: 'rect', attrs: { x: el.x, y: el.y, width: el.w, height: el.h, rx: 12, ry: 12, fill: '#26262a' } }]
+        if (href) out.push({ tag: 'image', attrs: { href, x: el.x, y: el.y, width: el.w, height: el.h, preserveAspectRatio: 'xMidYMid slice' } })
+        out.push(
+          { tag: 'rect', attrs: { x: el.x, y: el.y + el.h - band, width: el.w, height: band, fill: '#000000', fillOpacity: 0.55 } },
+          { tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: 13, fill: '#ffffff' }, lines: [{ text: el.title.length > 44 ? `${el.title.slice(0, 43)}…` : el.title, x: el.x + 12, y: el.y + el.h - band + 20 }] },
+          { tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: 11, fill: '#ffffff', fillOpacity: 0.75 }, lines: [{ text: media.service, x: el.x + 12, y: el.y + el.h - band + 37 }] },
+        )
+        return out
+      }
       const l = linkLayout(el)
       const out: Prim[] = [cardPrim(el, dark)]
       if (l.image) {
