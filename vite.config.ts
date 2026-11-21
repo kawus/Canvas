@@ -23,7 +23,7 @@ export default defineConfig({
         const help = readdirSync(resolve(import.meta.dirname, 'help'))
           .filter((f) => f.endsWith('.md') && !f.startsWith('_'))
           .map((f) => `help/${f.replace(/\.md$/, '')}/`)
-        const pages = ['', 'intro/', 'templates/', 'templates/room-makeover-moodboard/', 'templates/client-moodboard/', 'help/', ...help]
+        const pages = ['', 'intro/', 'templates/', 'templates/room-makeover-moodboard/', 'templates/client-moodboard/', 'templates/brand-identity-moodboard/', 'help/', ...help]
         const day = new Date().toISOString().slice(0, 10)
         const urls = pages.map((p) => `  <url><loc>${SITE}/${p}</loc><lastmod>${day}</lastmod></url>`).join('\n')
         this.emitFile({ type: 'asset', fileName: 'sitemap.xml', source: `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n` })
@@ -41,6 +41,7 @@ export default defineConfig({
         templates: resolve(import.meta.dirname, 'templates/index.html'),
         'template-room': resolve(import.meta.dirname, 'templates/room-makeover-moodboard/index.html'),
         'template-client': resolve(import.meta.dirname, 'templates/client-moodboard/index.html'),
+        'template-brand': resolve(import.meta.dirname, 'templates/brand-identity-moodboard/index.html'),
       },
     },
   },
