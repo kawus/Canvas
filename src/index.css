@@ -3074,6 +3074,20 @@ button:focus:not(:focus-visible) {
   min-width: 230px;
   transform-origin: bottom right;
 }
+/* help now sits at the end of the bottom-left controls: its menu opens up and to the right */
+.bottom-left .popover-up {
+  left: 0;
+  right: auto;
+  transform-origin: bottom left;
+}
+@media (max-width: 760px) {
+  /* on phones those controls sit at the top, so the menu opens downwards */
+  .bottom-left .popover-up {
+    top: calc(100% + 8px);
+    bottom: auto;
+    transform-origin: top left;
+  }
+}
 .keys-dialog {
   display: flex;
   flex-direction: column;

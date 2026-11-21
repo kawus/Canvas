@@ -357,6 +357,9 @@
         {
           "text": "Ideas you suggest go straight into the Inbox on the Ideas board, so others can vote for them right away. The board reads Inbox, Planned, Working on, Delivered.",
           "feature": "ideas"
+        },
+        {
+          "text": "The ? help button now sits next to the zoom controls (on a phone, next to undo), so nothing covers it."
         }
       ]
     },

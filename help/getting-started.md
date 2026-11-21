@@ -62,7 +62,7 @@ Yes, if you'd like it to. Open the **board menu** and turn on **Sounds**. You'll
 
 ## Where do I find help inside Canvas?
 
-Tap the **?** button in the bottom-right corner. It has this help centre, the welcome tour, and a list of shortcuts that fits your device: keyboard shortcuts on a computer, touch and Apple Pencil gestures on an iPad (with a Keyboard tab for when one is attached), and touch gestures on an iPhone.
+Tap the **?** button next to the zoom controls in the bottom-left corner (on a phone, next to undo at the top). It has this help centre, the welcome tour, and a list of shortcuts that fits your device: keyboard shortcuts on a computer, touch and Apple Pencil gestures on an iPad (with a Keyboard tab for when one is attached), and touch gestures on an iPhone.
 
 ## Can I see the welcome tour again?
 

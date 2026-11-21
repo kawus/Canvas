@@ -63,4 +63,4 @@ order: 9
 
 On Windows and Linux, use <kbd>Ctrl</kbd> instead of <kbd>⌘</kbd> and <kbd>Alt</kbd> instead of <kbd>⌥</kbd>.
 
-> In Canvas, press <kbd>?</kbd> or tap the **?** button in the bottom-right corner to see these shortcuts any time — shown with the right keys for your computer.
+> In Canvas, press <kbd>?</kbd> or tap the **?** button next to the zoom controls to see these shortcuts any time — shown with the right keys for your computer.

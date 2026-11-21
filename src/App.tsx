@@ -131,9 +131,6 @@ export default function App() {
           }}
         />
       )}
-      <div className="bottom-right">
-        <HelpButton />
-      </div>
       <ShortcutsDialog />
       <FocusExit />
       <Versions />
@@ -142,6 +139,8 @@ export default function App() {
       <div className="bottom-left">
         <HistoryControls />
         <ZoomControls />
+        {/* help sits with the other corner controls; the bottom-right corner is left free (the live-editing badge appears there) */}
+        <HelpButton />
       </div>
     </div>
   )
