@@ -1,0 +1,197 @@
+{
+  "about": "The one source for /changelog/: 'features' is the overview of everything Canvas does (grouped), 'releases' is what changed and when (newest first). Every improvement adds a release entry here, and a feature when it's a new capability. See CLAUDE.md.",
+  "features": [
+    {
+      "group": "Draw & write",
+      "icon": "pencil",
+      "items": [
+        { "id": "pen", "name": "Pen and highlighter", "text": "Smooth ink with a mouse, finger or Apple Pencil, pressure-sensitive with Pencil.", "added": "2026-10-29" },
+        { "id": "shapes", "name": "Shapes, lines and arrows", "text": "Rectangles, ellipses, lines and arrows that attach to what they point at.", "added": "2026-10-29" },
+        { "id": "straighten", "name": "Hold to straighten", "text": "Draw a rough circle, rectangle or line, hold still, and it settles into a clean shape.", "added": "2026-11-21" },
+        { "id": "notes", "name": "Sticky notes and text", "text": "Sticky notes in soft paper colours, text, and labels inside shapes.", "added": "2026-10-29" },
+        { "id": "eraser", "name": "Eraser", "text": "Wipe away strokes by touching them.", "added": "2026-10-29" }
+      ]
+    },
+    {
+      "group": "Arrange",
+      "icon": "grid",
+      "items": [
+        { "id": "guides", "name": "Smart guides", "text": "Things snap to the edges, centres and even gaps of what's nearby.", "added": "2026-10-29" },
+        { "id": "grid", "name": "Snap to grid", "text": "An optional grid in steps of 8, shown by the background dots.", "added": "2026-10-31" },
+        { "id": "align", "name": "Align and distribute", "text": "Line things up or space them evenly in one tap.", "added": "2026-10-29" },
+        { "id": "tidy", "name": "Tidy up", "text": "Turn a pile of photos into neat columns with even gaps.", "added": "2026-10-31" },
+        { "id": "group", "name": "Groups", "text": "Group things so they move as one.", "added": "2026-10-31" },
+        { "id": "focus", "name": "Focus mode", "text": "Hide every bar and button and keep only your board.", "added": "2026-11-21" },
+        { "id": "zoom", "name": "Endless board", "text": "Zoom from 2% to 800% and pan anywhere.", "added": "2026-10-29" }
+      ]
+    },
+    {
+      "group": "Moodboards",
+      "icon": "image",
+      "items": [
+        { "id": "images", "name": "Photos", "text": "Paste, drag in or pick photos, several at once, on any device.", "added": "2026-10-29" },
+        { "id": "crop", "name": "Crop", "text": "Crop a photo, and widen the crop again any time.", "added": "2026-10-31" },
+        { "id": "links", "name": "Link cards", "text": "Paste a web address to get a card with its picture and title.", "added": "2026-10-30" },
+        { "id": "palette", "name": "Colours from a photo", "text": "Pull a photo's main colours out as swatches with hex codes.", "added": "2026-10-30" }
+      ]
+    },
+    {
+      "group": "Present",
+      "icon": "present",
+      "items": [
+        { "id": "slides", "name": "Your board is the deck", "text": "Mark parts of the board as slides and press Play: it glides from one to the next.", "added": "2026-11-02" },
+        { "id": "overview", "name": "Start anywhere", "text": "Play from any slide, and end on the whole board.", "added": "2026-11-02" }
+      ]
+    },
+    {
+      "group": "Share & feedback",
+      "icon": "message",
+      "items": [
+        { "id": "share", "name": "View links", "text": "Share a board with a link; people see it as it changes.", "added": "2026-10-29" },
+        { "id": "feedback", "name": "Likes and notes", "text": "Anyone with the link likes things and leaves notes, with just a name.", "added": "2026-11-20" },
+        { "id": "replies", "name": "Replies", "text": "Answer a note in one short line, right under it.", "added": "2026-11-20" },
+        { "id": "ownnotes", "name": "Your own notes", "text": "Leave notes on your own board for others, or for yourself.", "added": "2026-11-20" },
+        { "id": "live", "name": "Edit together, live", "text": "Draw on the same board at once, with everyone's cursor (Canvas Pro).", "added": "2026-10-29" },
+        { "id": "export", "name": "Export", "text": "A crisp PDF, PNG or SVG of the whole board or a selection.", "added": "2026-10-29" }
+      ]
+    },
+    {
+      "group": "Everywhere, privately",
+      "icon": "devices",
+      "items": [
+        { "id": "noaccount", "name": "No account", "text": "Open it and start. Nothing to sign up for, ever.", "added": "2026-10-29" },
+        { "id": "sync", "name": "Your boards on every device", "text": "Connect your phone, iPad and computers by scanning a code.", "added": "2026-10-30" },
+        { "id": "homescreen", "name": "Home Screen app", "text": "Add Canvas to your iPhone or iPad Home Screen; it connects by scanning.", "added": "2026-10-31" },
+        { "id": "backup", "name": "Back up by email", "text": "Email yourself your private link, so your boards are never lost.", "added": "2026-11-07" },
+        { "id": "private", "name": "Private by design", "text": "Your list of boards is encrypted on your device, and boards never show up in search.", "added": "2026-10-30" }
+      ]
+    },
+    {
+      "group": "iPad & Apple Pencil",
+      "icon": "pen",
+      "items": [
+        { "id": "pencil", "name": "Pencil always draws", "text": "Draw with the Pencil, move the board with your finger; your palm is ignored.", "added": "2026-10-31" },
+        { "id": "pencilmenu", "name": "Pencil menu", "text": "Hold the Pencil still for a ring of tools and colours at its tip.", "added": "2026-11-08" },
+        { "id": "crisp", "name": "Crisp when zoomed in", "text": "Pencil strokes stay smooth, never jagged, however close you zoom.", "added": "2026-11-09" }
+      ]
+    },
+    {
+      "group": "A calm feel",
+      "icon": "sparkles",
+      "items": [
+        { "id": "warm", "name": "Warm paper look", "text": "Soft paper tones in light and dark mode.", "added": "2026-11-14" },
+        { "id": "motion", "name": "Gentle motion", "text": "Things lift, land and glide like paper on a desk.", "added": "2026-11-14" },
+        { "id": "sounds", "name": "Soft sounds", "text": "Optional quiet taps and chimes, silent when your phone is.", "added": "2026-11-14" },
+        { "id": "help", "name": "Help that fits your device", "text": "A help centre, a welcome tour, and shortcuts for keyboard, touch or Pencil.", "added": "2026-10-31" }
+      ]
+    },
+    {
+      "group": "Templates",
+      "icon": "template",
+      "items": [
+        { "id": "tpl-room", "name": "Room makeover", "text": "Plan a room with photos, colours, materials and a plan, then present it.", "added": "2026-11-07" },
+        { "id": "tpl-client", "name": "Client moodboard", "text": "Brief, mood, palette and type, presented without building a deck.", "added": "2026-11-07" },
+        { "id": "tpl-brand", "name": "Brand identity", "text": "What the brand stands for, mood, logo directions, palette and type.", "added": "2026-11-21" }
+      ]
+    }
+  ],
+  "releases": [
+    {
+      "date": "2026-11-21",
+      "title": "Straighten shapes, focus mode and a brand identity template",
+      "items": [
+        { "text": "Hold to straighten: draw a rough circle, rectangle or line, keep still for a moment, and it becomes a clean shape.", "feature": "straighten" },
+        { "text": "Focus mode: press F, or pick it in the board menu, to hide everything but your board.", "feature": "focus" },
+        { "text": "A new Brand identity moodboard template, and all templates now share one calm layout.", "feature": "tpl-brand" },
+        { "text": "This page: everything Canvas does at a glance, and what's new." }
+      ]
+    },
+    {
+      "date": "2026-11-20",
+      "title": "Feedback, without accounts",
+      "items": [
+        { "text": "People with a view link can like things and leave notes, with just a name. You see it all in one list and resolve notes when they're done.", "feature": "feedback" },
+        { "text": "One-line replies under notes, and notes on your own board.", "feature": "replies" },
+        { "text": "Feedback appears without refreshing, and hearts and pins scale with the board." },
+        { "text": "The Home Screen app connects itself by scanning the code from your computer.", "feature": "homescreen" },
+        { "text": "A calmer Connect your devices, and you can zoom out to 2%." },
+        { "text": "Adding photos on a phone: you see them being added, and they land in view." },
+        { "text": "Shared boards never show up in search results." },
+        { "text": "Fixed: the same person showing up as several avatars while editing together." }
+      ]
+    },
+    {
+      "date": "2026-11-14",
+      "title": "A warmer, calmer Canvas",
+      "items": [
+        { "text": "Warm paper tones everywhere, in light and dark mode.", "feature": "warm" },
+        { "text": "Gentle motion: things lift when you drag them, land softly and glide when tidied.", "feature": "motion" },
+        { "text": "Optional soft sounds, quiet when your phone is on silent.", "feature": "sounds" }
+      ]
+    },
+    {
+      "date": "2026-11-09",
+      "title": "Apple Pencil, refined",
+      "items": [
+        { "text": "A calmer Pencil menu: a ring of six you flick through, with colours that fan out." },
+        { "text": "Pencil strokes stay smooth when you zoom in, with no jagged edges.", "feature": "crisp" }
+      ]
+    },
+    {
+      "date": "2026-11-08",
+      "title": "The Pencil menu",
+      "items": [{ "text": "Hold the Apple Pencil still for a moment to open tools and colours at its tip.", "feature": "pencilmenu" }]
+    },
+    {
+      "date": "2026-11-07",
+      "title": "Templates, backups and the Founder licence",
+      "items": [
+        { "text": "Free templates for a room makeover and a client moodboard, with their own pages.", "feature": "tpl-room" },
+        { "text": "Back up your boards by emailing yourself your private link.", "feature": "backup" },
+        { "text": "Canvas Pro as a one-time Founder licence: live editing, no Canvas mark, every future Pro feature." },
+        { "text": "Shared boards and exports carry a small \"Made with Canvas\" mark." }
+      ]
+    },
+    {
+      "date": "2026-11-02",
+      "title": "Your board is the deck",
+      "items": [
+        { "text": "Presentation mode: mark parts of the board as slides and press Play to glide between them.", "feature": "slides" },
+        { "text": "Slides show just their number, and Play starts from slide 1." }
+      ]
+    },
+    {
+      "date": "2026-10-31",
+      "title": "Help, Tidy up and Apple Pencil",
+      "items": [
+        { "text": "A help centre, a ? button with shortcuts for your device, and a short welcome tour.", "feature": "help" },
+        { "text": "Tidy up: arrange a moodboard in one tap.", "feature": "tidy" },
+        { "text": "Crop photos, group things, and snap to a grid in steps of 8.", "feature": "crop" },
+        { "text": "Apple Pencil always draws on iPad, and your finger moves the board.", "feature": "pencil" },
+        { "text": "Connect the Home Screen app by pasting your link." },
+        { "text": "Boards stay in step on all your open devices, and board links show the board's name and picture in messages." },
+        { "text": "A front page for new visitors, and Canvas starts on the Select tool so stray taps never leave a mark." }
+      ]
+    },
+    {
+      "date": "2026-10-30",
+      "title": "Moodboards and your boards everywhere",
+      "items": [
+        { "text": "Link cards, colour swatches and colours pulled from a photo.", "feature": "links" },
+        { "text": "A grouped toolbar that stays compact." },
+        { "text": "Your private My Canvas link brings all your boards to your other devices, and All boards lists them.", "feature": "sync" },
+        { "text": "View links for everyone; editing together live with Canvas Pro." }
+      ]
+    },
+    {
+      "date": "2026-10-29",
+      "title": "Canvas begins",
+      "items": [
+        { "text": "A calm, minimal whiteboard for computer and iPad: pen, shapes, text and an endless board.", "feature": "pen" },
+        { "text": "Sticky notes, labels in shapes, arrows that attach, and photos.", "feature": "notes" },
+        { "text": "Smart guides, align and distribute, and equal spacing.", "feature": "guides" },
+        { "text": "Share with a link, and edit together live.", "feature": "share" }
+      ]
+    }
+  ]
+}

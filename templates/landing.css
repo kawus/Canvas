@@ -447,3 +447,115 @@ p {
 .section-tight {
   padding-top: 24px;
 }
+
+/* ---------- the changelog: everything at a glance, then what's new ---------- */
+.cl-overview {
+  columns: 3 300px;
+  column-gap: 20px;
+}
+.cl-group {
+  break-inside: avoid;
+  margin: 0 0 20px;
+  padding: 22px 22px 18px;
+  border-radius: 20px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+.cl-group h3 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 12px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.cl-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-ink);
+  flex: none;
+}
+.cl-group ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.cl-group li {
+  font-size: 15px;
+  line-height: 1.4;
+  scroll-margin-top: 90px;
+}
+.cl-group li b {
+  font-weight: 600;
+}
+.cl-group li > span:last-child {
+  display: block;
+  color: var(--text-2);
+}
+.cl-group li:target {
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  border-radius: 10px;
+  margin: -6px -8px;
+  padding: 6px 8px;
+}
+.cl-new {
+  display: inline-block;
+  margin-left: 4px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  vertical-align: 2px;
+}
+.cl-timeline {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+}
+.cl-release {
+  display: grid;
+  grid-template-columns: 170px 1fr;
+  gap: 24px;
+  padding: 26px 0;
+  border-top: 1px solid var(--border);
+}
+.cl-release time {
+  padding-top: 3px;
+  color: var(--text-3);
+  font-size: 14px;
+  font-weight: 500;
+}
+.cl-release h3 {
+  margin: 0 0 10px;
+  font-size: 21px;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.cl-release ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--text-2);
+  font-size: 16px;
+  line-height: 1.5;
+}
+.cl-release li + li {
+  margin-top: 6px;
+}
+.cl-see {
+  color: var(--accent-ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+@media (max-width: 640px) {
+  .cl-release {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}

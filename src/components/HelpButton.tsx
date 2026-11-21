@@ -1,6 +1,6 @@
-import { Keyboard, LifeBuoy, Sparkles, X, Hand } from 'lucide-react'
+import { Keyboard, LifeBuoy, Sparkles, X, Hand, Gift } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
-import { helpUrl, openHelp } from '../help'
+import { changelogUrl, hasNewChanges, helpUrl, markChangesSeen, openHelp } from '../help'
 import { inSafariTab } from '../library'
 import { isIOS, isPhone, isTablet, keyLabels, touchFirst, type Key } from '../platform'
 import { useStore } from '../store'
@@ -11,6 +11,8 @@ export function HelpButton() {
   const { open, setOpen, ref } = usePopover()
   const setPanel = useStore((s) => s.setPanel)
   const setTour = useStore((s) => s.setTour)
+  // a quiet dot when there's something new since you last looked
+  const [fresh, setFresh] = useState(hasNewChanges)
   const run = (fn: () => void) => () => {
     setOpen(false)
     fn()
@@ -26,6 +28,7 @@ export function HelpButton() {
         data-testid="help-button"
       >
         ?
+        {fresh && <span className="help-dot" aria-label="Something new" />}
         {!open && <Tip label="Help" />}
       </button>
       {open && (
@@ -42,6 +45,18 @@ export function HelpButton() {
               Keyboard shortcuts
             </MenuItem>
           )}
+          <MenuItem
+            icon={<Gift />}
+            onClick={run(() => {
+              markChangesSeen()
+              setFresh(false)
+              window.open(changelogUrl(), '_blank', 'noopener')
+            })}
+            hint={fresh ? <span className="menu-new">New</span> : undefined}
+            testId="help-whatsnew"
+          >
+            What’s new
+          </MenuItem>
           <MenuItem icon={<Sparkles />} onClick={run(() => setTour(true))} testId="help-tour">
             Welcome tour
           </MenuItem>

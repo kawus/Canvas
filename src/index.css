@@ -4858,3 +4858,26 @@ button:focus:not(:focus-visible) {
     animation: none;
   }
 }
+
+/* the ? button's quiet "something new" dot, and the New label in its menu */
+.help-btn {
+  position: relative;
+}
+.help-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--panel-solid);
+}
+.menu-new {
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent-ink);
+  font-size: 11px;
+  font-weight: 650;
+}

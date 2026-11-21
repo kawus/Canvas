@@ -54,8 +54,9 @@ The plan is in [instagram-plan.md](instagram-plan.md). Its dates started on Wed 
 
 ## Ideas for what to build next
 
-1. **More templates** (each one is a new way in from Google): kitchen renovation moodboard, brand identity moodboard, wedding moodboard.
+1. **More templates** (each one is a new way in from Google): kitchen renovation moodboard, wedding moodboard. (Brand identity is done.) Follow `docs/templates.md`.
 2. **Board history**: "see this board as it was yesterday" and restore it, as a safety net now that people share edit links and leave feedback.
-3. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
+3. Works offline (the Home Screen app opens without internet).
+4. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
 
 Decided against for now: a "send photos from your phone" QR handoff (people rarely use two devices at once; adding photos on the phone directly was polished instead).
