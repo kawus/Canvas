@@ -20,12 +20,14 @@
     <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
     <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
     <script type="module" src="../templates/landing.ts"></script>
+    <script type="module" src="./ideas.ts"></script>
   </head>
   <body>
     <header class="nav">
       <div class="wrap">
         <a class="brand" href="../intro/" aria-label="Canvas"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="6.5" /><path d="M7 15.5c2.2-4.6 4.2-7 6-7 2.4 0-1.6 7 1.2 7 1.1 0 2-1 2.8-2.4" /></svg>Canvas</a>
         <nav class="nav-links">
+          <a class="optional" href="#ideas">Ideas</a>
           <a class="optional" href="#whats-new">What's new</a>
           <a class="optional" href="../templates/">Templates</a>
           <a class="btn btn-primary btn-small" href="../?from=intro" data-open>Open Canvas</a>
@@ -44,6 +46,23 @@
         <div class="cl-overview">
 <!--OVERVIEW-->
         </div>
+      </section>
+
+      <section class="section wrap" id="ideas">
+        <h2 data-reveal>Ideas &amp; requests</h2>
+        <p class="lead ideas-lead" data-reveal style="--i: 1">What would make Canvas better for you? Vote for the ideas you want most, or suggest your own.</p>
+        <div id="ideas-board" class="ideas-board" aria-live="polite"></div>
+        <form id="idea-form" class="idea-form" data-reveal>
+          <h3>Suggest an idea</h3>
+          <input class="idea-field" name="title" required maxlength="90" placeholder="Your idea, in a few words" aria-label="Your idea" />
+          <textarea class="idea-field" name="text" maxlength="500" rows="3" placeholder="What would it help you do? (optional)" aria-label="More about your idea"></textarea>
+          <input class="idea-field" name="email" type="email" maxlength="120" placeholder="Your email, if you’d like to hear when it’s ready (optional)" aria-label="Your email (optional)" autocomplete="email" />
+          <div class="idea-form-foot">
+            <button type="submit" class="btn btn-primary btn-small">Send idea</button>
+            <span class="idea-sent" role="status"></span>
+          </div>
+          <p class="idea-note">No account needed. Your email is only used to tell you about this idea, and is never shown.</p>
+        </form>
       </section>
 
       <section class="section wrap" id="whats-new">

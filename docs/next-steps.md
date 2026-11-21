@@ -30,6 +30,20 @@ Until this is done, the Founder licence is a "smoke test": people see the offer 
 
 Keys go only into Vercel, never into chat or the project.
 
+## 2b. Switch on your Ideas board (5 minutes)
+
+The What's new page has an **Ideas & requests** board: visitors vote and suggest ideas, and you decide what goes on the board.
+
+1. Vercel → **Settings → Environment Variables** → add **`IDEAS_ADMIN_KEY`**: a long random value from your password manager (at least 12 characters). Redeploy.
+2. Open **canvas.kawus.com/changelog/?admin**, paste the key once. It's remembered on that device (do it on your phone too).
+3. You'll see your **Inbox** above the board. For each suggestion: tidy the words and tap **Add to Planned**, or **Dismiss**. Each idea's menu moves it between **Planned**, **Working on** and **Delivered**.
+
+**A 10-minute weekly habit:**
+- Read the inbox and add the good ideas. Votes show what people want most: the top of **Planned** is your next build.
+- Move what you're building to **Working on**: it shows people the product is alive.
+- When something ships, mark it **Delivered** and ask Claude to add it to the changelog. People who left their email are listed in the inbox entry: a short personal "it's ready" email is the best way to turn them into fans (and a reason to post on Instagram).
+- Ideas that don't fit the calm Canvas: dismiss them without guilt.
+
 ## 3. Launch week
 
 - Posts are drafted in [launch-posts.md](launch-posts.md): Show HN, Product Hunt, Reddit, LinkedIn, X/Threads/Bluesky, plus the monthly kill-rule check.

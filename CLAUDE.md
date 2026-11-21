@@ -12,6 +12,10 @@ Every change people will notice (a feature, an improvement, a fix) adds an entry
 
 The changelog becomes the page at `/changelog/` ("What's new": everything Canvas does at a glance, then every release) and the quiet "what's new" dot on the app's **?** button. Both update by themselves from that file.
 
+## Ideas & requests
+
+The "Ideas & requests" board on `/changelog/` lives in the database (`api/ideas.js`), not in this repository. The owner manages it at `/changelog/?admin` with the key set as `IDEAS_ADMIN_KEY` in Vercel. When an idea from the board ships, add it to the changelog as usual and remind the owner to mark it Delivered there.
+
 ## Also keep in step
 
 - **Help centre** (`help/*.md`): add or update the answer for anything people will look for.

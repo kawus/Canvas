@@ -13,6 +13,7 @@ No. Canvas has no accounts, sign-ups or passwords, and never asks for your email
 
 - **On your device:** your boards, the list of your boards, and settings like your theme.
 - **In the cloud:** each board's content and images, so its link works on any device. The server stores a scrambled version (a hash) of each board's edit key, never the key itself.
+- **Ideas you suggest:** on the [What's new](app:changelog/) page, the idea and, only if you add it, your email address, so you can hear when it's ready. Your email is never shown to anyone else. Votes are counted once per device, without knowing who you are.
 - **Feedback:** likes and notes left on a shared board, with the name the person typed, kept next to that board and deleted with it.
 - **Your list of boards (My Canvas):** encrypted on your device with a secret that exists only in your My Canvas link, then backed up. Our server stores it but can't read it.
 
