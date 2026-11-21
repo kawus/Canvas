@@ -90,6 +90,8 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEle
 let ideas: Idea[] = []
 let inbox: Suggestion[] = []
 let adminKey = new URLSearchParams(location.search).has('admin') ? store.get('canvas-ideas-admin') : null
+/** why the last key was refused, to say so plainly */
+let refusal: string | null = null
 const wantsAdmin = new URLSearchParams(location.search).has('admin')
 
 async function api(method: string, body?: object, query = '') {
@@ -108,7 +110,8 @@ async function load() {
       inbox = r.data.inbox
       return render()
     }
-    // the key didn't work: forget it and show the public board
+    // the key didn't work: forget it, remember why, and show the public board
+    refusal = r.status === 403 ? ((await fetch(API + '?admin=1', { headers: { 'X-Admin-Key': adminKey } }).then((x) => x.json()).catch(() => null))?.reason ?? 'wrong-key') : 'offline'
     store.remove('canvas-ideas-admin')
     adminKey = null
   }
@@ -223,9 +226,17 @@ function askForKey() {
     adminKey = field.value.trim()
     store.set('canvas-ideas-admin', adminKey)
     await load()
-    // signed in: the box goes away; otherwise say so
+    // signed in: the box goes away; otherwise say why
     if (adminKey) box.remove()
-    else note.textContent = 'That key didn’t work. Check IDEAS_ADMIN_KEY in Vercel.'
+    else
+      note.textContent =
+        refusal === 'missing'
+          ? 'The admin key isn’t set up yet. Add IDEAS_ADMIN_KEY in Vercel (at least 12 characters), then redeploy.'
+          : refusal === 'too-short'
+            ? 'The key saved in Vercel is shorter than 12 characters. Make it longer, save, redeploy, then paste it here.'
+            : refusal === 'offline'
+              ? 'Couldn’t reach Canvas. Check your connection and try again.'
+              : 'That key doesn’t match the one in Vercel. If you changed it just now, redeploy first.'
   })
   root.before(box)
 }

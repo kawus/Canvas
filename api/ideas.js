@@ -41,12 +41,22 @@ const clean = (v, max) =>
 
 const newId = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(36).padStart(2, '0')).join('').slice(0, 12)
 
+/** The owner's key from Vercel (spaces around it, from pasting, don't count). */
+const adminKey = () => (process.env.IDEAS_ADMIN_KEY || '').trim()
+/** At least 12 characters, so the owner's page can't be guessed. */
+const adminReady = () => adminKey().length >= 12
+
 /** @param {Request} request */
 function isOwner(request) {
-  const want = process.env.IDEAS_ADMIN_KEY || ''
-  const got = request.headers.get('x-admin-key') || ''
-  return want.length >= 12 && got === want
+  const got = (request.headers.get('x-admin-key') || '').trim()
+  return adminReady() && got === adminKey()
 }
+
+/** Why the owner's key was refused: not set up in Vercel yet, or a different key. */
+const refused = () =>
+  adminReady()
+    ? json({ error: 'wrong key', reason: 'wrong-key' }, 403)
+    : json({ error: 'not set up', reason: adminKey() ? 'too-short' : 'missing' }, 403)
 
 /** @param {string} key */
 async function all(key) {
@@ -80,7 +90,7 @@ export async function handle(request) {
   try {
     if (request.method === 'GET') {
       if (url.searchParams.get('admin')) {
-        if (!isOwner(request)) return json({ error: 'not allowed' }, 403)
+        if (!isOwner(request)) return refused()
         const inbox = (await all(INBOX)).sort((a, b) => b.created - a.created)
         return json({ ideas: await listed(), inbox })
       }
@@ -125,7 +135,7 @@ export async function handle(request) {
     }
 
     // everything below is for the owner
-    if (!isOwner(request)) return json({ error: 'not allowed' }, 403)
+    if (!isOwner(request)) return refused()
 
     if (request.method === 'POST' && body?.kind === 'add') {
       const title = clean(body.title, 90).replace(/\s+/g, ' ')
