@@ -282,7 +282,8 @@ async function place(params) {
   return {
     lat: has ? lat : Number(d.lat),
     lng: has ? lng : Number(d.lon),
-    name: (q || d.name || '').slice(0, 200),
+    // searching by name: the place's own name ("Tate Modern"), not what was typed ("tate modern london")
+    name: ((has ? q : d.name || q) || '').slice(0, 200),
     address: shortAddress(d.address).slice(0, 200),
   }
 }
