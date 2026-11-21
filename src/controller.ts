@@ -304,8 +304,8 @@ export class CanvasController {
     const p = this.world(sx, sy)
     const fingerInPenMode = e.pointerType === 'touch' && s.penMode
 
-    // view-only boards can only be looked around
-    const readOnly = !s.doc.key
+    // view-only boards (and earlier versions) can only be looked around
+    const readOnly = !s.doc.key || s.versionsOpen
     // Apple Pencil draws even with Select or Hand picked (fingers select and move);
     // a tap still selects, and what's already selected can still be moved or resized
     if (!readOnly && e.pointerType === 'pen' && (tool === 'select' || tool === 'hand') && !this.space && !isDouble && !this.onSelection(sx, sy, p)) {
@@ -800,7 +800,7 @@ export class CanvasController {
   private hover(e: PointerEvent, sx: number, sy: number) {
     if (e.pointerType === 'touch') return
     const s = S()
-    if (s.tool !== 'select' || this.space || !s.doc.key) {
+    if (s.tool !== 'select' || this.space || !s.doc.key || s.versionsOpen) {
       s.setHovered(null)
       return
     }

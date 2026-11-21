@@ -214,6 +214,12 @@
           "name": "Private by design",
           "text": "Your list of boards is encrypted on your device, and boards never show up in search.",
           "added": "2026-10-30"
+        },
+        {
+          "id": "versions",
+          "name": "Earlier versions",
+          "text": "Go back to how a board looked an hour, a day or weeks ago, and restore it in one tap. Kept for 30 days.",
+          "added": "2026-11-21"
         }
       ]
     },
@@ -299,8 +305,12 @@
   "releases": [
     {
       "date": "2026-11-21",
-      "title": "Straighten shapes, focus mode and a brand identity template",
+      "title": "Earlier versions, straighten shapes, focus mode and a brand template",
       "items": [
+        {
+          "text": "Earlier versions: see a board as it was at any hour in the last 30 days and restore it in one tap. If someone else changed it, their name is next to the time.",
+          "feature": "versions"
+        },
         {
           "text": "Hold to straighten: draw a rough circle, rectangle or line, keep still for a moment, and it becomes a clean shape.",
           "feature": "straighten"

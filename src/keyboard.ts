@@ -56,8 +56,8 @@ export function startKeyboard() {
       s.setPanel(s.panel === 'keys' ? null : 'keys')
       return
     }
-    // view-only: just zooming around
-    if (!s.doc.key) {
+    // view-only (or looking at earlier versions): just zooming around
+    if (!s.doc.key || s.versionsOpen) {
       if (mod && (key === '=' || key === '+' || key === '-' || key === '0')) {
         e.preventDefault()
         s.zoomTo(key === '-' ? s.viewport.zoom / 1.25 : key === '0' ? 1 : s.viewport.zoom * 1.25)
@@ -189,7 +189,7 @@ export function startKeyboard() {
       void connectMyCanvas(pasted)
       return
     }
-    if (!useStore.getState().doc.key) return
+    if (!useStore.getState().doc.key || useStore.getState().versionsOpen) return
     const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length) {
       e.preventDefault()

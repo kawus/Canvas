@@ -981,6 +981,30 @@ svg.lucide {
   opacity: 1;
   transform: translateY(0);
 }
+.toast.has-action {
+  display: flex;
+  width: max-content;
+  align-items: center;
+  gap: 12px;
+  max-width: min(640px, calc(100vw - 24px));
+  padding: 6px 6px 6px 16px;
+  white-space: normal;
+  line-height: 1.35;
+}
+.toast.has-action.is-visible {
+  pointer-events: auto;
+}
+.toast-action {
+  flex: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  color: inherit;
+  font-weight: 600;
+}
+:root[data-theme='dark'] .toast-action {
+  background: rgba(0, 0, 0, 0.08);
+}
 
 button:focus-visible,
 .title-input:focus-visible {
@@ -4894,5 +4918,194 @@ button:focus:not(:focus-visible) {
   .presenter-grid {
     animation: none;
     opacity: 0;
+  }
+}
+
+/* ---------- Earlier versions ---------- */
+
+/* the board can't be edited meanwhile: the tools step aside */
+.app.is-versions :is(.top-left, .top-right, .bottom, .connect-card, .empty-hint, .fb-layer, .peer-layer),
+.app.is-versions .bottom-left > :first-child {
+  opacity: 0;
+  pointer-events: none !important;
+}
+.app.is-versions :is(.top-left, .top-right, .bottom) * {
+  pointer-events: none !important;
+}
+.app.is-earlier .canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.versions-panel {
+  position: absolute;
+  z-index: 14;
+  top: 14px;
+  right: 14px;
+  bottom: 14px;
+  width: 290px;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 10px 12px;
+  border-radius: 18px;
+  background: var(--panel-solid);
+  animation: pop 0.16s ease-out;
+}
+.versions-grab {
+  display: none;
+}
+.versions-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 0 10px;
+}
+.versions-head h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.versions-sub {
+  margin: 6px 10px 6px;
+  color: var(--text-2);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.versions-list {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 0 2px 4px;
+}
+.versions-day {
+  padding: 14px 10px 4px;
+  color: var(--text-3);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.versions-row {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  min-height: 38px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--text);
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.15s;
+}
+.versions-row:hover {
+  background: var(--hover);
+}
+.versions-row b {
+  min-width: 48px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.versions-row span {
+  overflow: hidden;
+  color: var(--text-2);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.versions-row.is-on {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  box-shadow: inset 0 0 0 1.5px var(--accent);
+}
+.versions-row.is-on b {
+  color: var(--accent);
+}
+.versions-row.is-loading {
+  opacity: 0.55;
+}
+.versions-note,
+.versions-started {
+  margin: 10px 10px 0;
+  color: var(--text-2);
+  font-size: 13px;
+  line-height: 1.45;
+}
+.versions-started {
+  margin-top: 16px;
+  color: var(--text-3);
+}
+.versions-bar {
+  position: absolute;
+  z-index: 14;
+  top: 14px;
+  left: calc((100% - 304px) / 2);
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 6px 6px 16px;
+  border-radius: 999px;
+  background: var(--panel-solid);
+  font-size: 14px;
+  white-space: nowrap;
+  animation: pop 0.14s ease-out;
+}
+.versions-bar .primary-btn,
+.versions-bar .ghost-btn {
+  height: 34px;
+  border-radius: 999px;
+}
+.versions-when {
+  margin-right: 6px;
+}
+.versions-when em {
+  color: var(--text-2);
+  font-style: normal;
+}
+.versions-short {
+  display: none;
+}
+@media (max-width: 640px) {
+  .versions-panel {
+    top: auto;
+    left: 8px;
+    right: 8px;
+    bottom: max(8px, env(safe-area-inset-bottom));
+    width: auto;
+    max-height: 46%;
+    padding-top: 8px;
+    border-radius: 22px;
+  }
+  .versions-grab {
+    display: block;
+    width: 36px;
+    height: 5px;
+    margin: 0 auto 8px;
+    border-radius: 3px;
+    background: var(--text-3);
+    opacity: 0.5;
+  }
+  .versions-sub {
+    display: none;
+  }
+  .versions-bar {
+    top: max(8px, env(safe-area-inset-top));
+    left: 8px;
+    right: 8px;
+    transform: none;
+    justify-content: space-between;
+    border-radius: 18px;
+  }
+  .versions-long {
+    display: none;
+  }
+  .versions-short {
+    display: inline;
+  }
+  .versions-when {
+    flex: 1;
   }
 }

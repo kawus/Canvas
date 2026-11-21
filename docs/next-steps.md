@@ -44,6 +44,10 @@ The What's new page has an **Ideas & requests** board: visitors vote and suggest
 - When something ships, mark it **Delivered** and ask Claude to add it to the changelog. People who left their email are listed in the inbox entry: a short personal "it's ready" email is the best way to turn them into fans (and a reason to post on Instagram).
 - Ideas that don't fit the calm Canvas: dismiss them without guilt.
 
+## 2c. Mark "Board history" as Delivered (1 minute)
+
+Earlier versions (board history) is live. On **canvas.kawus.com/changelog/?admin**, move the **Board history** idea to **Delivered**.
+
 ## 3. Launch week
 
 - Posts are drafted in [launch-posts.md](launch-posts.md): Show HN, Product Hunt, Reddit, LinkedIn, X/Threads/Bluesky, plus the monthly kill-rule check.
@@ -69,8 +73,7 @@ The plan is in [instagram-plan.md](instagram-plan.md). Its dates started on Wed 
 ## Ideas for what to build next
 
 1. **More templates** (each one is a new way in from Google): kitchen renovation moodboard, wedding moodboard. (Brand identity is done.) Follow `docs/templates.md`.
-2. **Board history**: "see this board as it was yesterday" and restore it, as a safety net now that people share edit links and leave feedback.
-3. Works offline (the Home Screen app opens without internet).
-4. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
+2. Works offline (the Home Screen app opens without internet).
+3. Keyword pages, if search data later shows demand: moodboard maker, whiteboard for iPad with Apple Pencil, presenting from a whiteboard.
 
 Decided against for now: a "send photos from your phone" QR handoff (people rarely use two devices at once; adding photos on the phone directly was polished instead).

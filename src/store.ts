@@ -57,6 +57,14 @@ export function setHistoryDelegate(d: typeof historyDelegate) {
 interface Toast {
   id: number
   message: string
+  /** a button in the message, e.g. Undo */
+  action?: { label: string; run: () => void }
+}
+
+/** An earlier version of the open board, shown instead of it (read-only) */
+export interface PastView {
+  at: number
+  elements: El[]
 }
 
 interface State {
@@ -83,6 +91,10 @@ interface State {
   sounds: boolean
   /** focus mode: only the board, no bars or buttons */
   focus: boolean
+  /** the Earlier versions panel is open (the board can't be edited meanwhile) */
+  versionsOpen: boolean
+  /** the earlier version being looked at, or null for the board as it is now */
+  earlier: PastView | null
   /** set once an Apple Pencil / stylus is seen: fingers then pan instead of draw */
   penMode: boolean
   theme: ThemePref
@@ -158,12 +170,14 @@ interface State {
   setGridSnap: (on: boolean) => void
   setSounds: (on: boolean) => void
   setFocus: (on: boolean) => void
+  setVersionsOpen: (open: boolean) => void
+  setEarlier: (earlier: PastView | null) => void
   setViewport: (v: Viewport) => void
   zoomTo: (zoom: number, anchor?: [number, number]) => void
   zoomToFit: () => void
   setPenMode: (on: boolean) => void
   setTheme: (t: ThemePref) => void
-  showToast: (message: string) => void
+  showToast: (message: string, action?: Toast['action']) => void
   setCloud: (cloud: boolean) => void
   setSync: (sync: SyncStatus) => void
   deleteSelected: () => void
@@ -228,6 +242,8 @@ export const useStore = create<State>((set, get) => ({
   gridSnap: readFlag('canvas-grid', false),
   sounds: readFlag('canvas-sounds', false),
   focus: false,
+  versionsOpen: false,
+  earlier: null,
   penMode: false,
   theme: readTheme(),
   toast: null,
@@ -431,6 +447,9 @@ export const useStore = create<State>((set, get) => ({
     set({ gridSnap })
   },
   setFocus: (focus) => set({ focus }),
+  setVersionsOpen: (versionsOpen) =>
+    set(versionsOpen ? { versionsOpen, focus: false, selectedIds: [], editingId: null, draft: null, marquee: null, guides: [] } : { versionsOpen, earlier: null }),
+  setEarlier: (earlier) => set({ earlier }),
   setSounds: (sounds) => {
     try {
       localStorage.setItem('canvas-sounds', sounds ? '1' : '0')
@@ -486,7 +505,7 @@ export const useStore = create<State>((set, get) => ({
     set({ theme })
   },
 
-  showToast: (message) => set({ toast: { id: ++toastSeq, message } }),
+  showToast: (message, action) => set({ toast: { id: ++toastSeq, message, ...(action ? { action } : {}) } }),
   setCloud: (cloud) => {
     if (get().cloud !== cloud) set({ cloud })
   },

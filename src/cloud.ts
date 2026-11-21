@@ -1,3 +1,5 @@
+import { getMe } from './collab'
+import { editorId } from './library'
 import { proToken } from './pro'
 import type { BoardDoc } from './types'
 
@@ -77,6 +79,12 @@ export async function pushPreview(id: string, key: string, dataUrl: string) {
   }
 }
 
+/** Boards whose next save keeps the version before it (a restore never loses today's board). */
+const keepNext = new Set<string>()
+export function keepVersionOnNextSave(id: string) {
+  keepNext.add(id)
+}
+
 /** Saves the board; the value says whether live editing on it is paid for by a Pro owner. */
 export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<boolean>> {
   // the edit key travels in a header and is never stored with the board
@@ -85,6 +93,17 @@ export async function pushRemote(doc: BoardDoc): Promise<RemoteResult<boolean>> 
   const token = proToken()
   // a Pro owner's boards carry no "Made with Canvas" mark, and their shared boards are live
   if (token) headers['X-Pro-Token'] = token
+  // who saved, for Earlier versions (only editors ever see it)
+  try {
+    headers['X-Editor'] = await editorId()
+    headers['X-Editor-Name'] = encodeURIComponent(getMe().name)
+  } catch {
+    /* no identity: the version just won't say who */
+  }
+  if (keepNext.has(doc.id)) {
+    headers['X-Keep-Version'] = '1'
+    keepNext.delete(doc.id)
+  }
   const res = await request(doc.id, {
     method: 'PUT',
     headers,

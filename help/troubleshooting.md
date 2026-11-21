@@ -19,6 +19,7 @@ To get your own editable copy of any board, open the **board menu** next to its 
 - If it was made on another device, connect this device with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device).
 - On iPhone and iPad, Safari and the Home Screen app keep separate lists — check the other one, or [connect the Home Screen app](topic:devices#i-use-canvas-from-my-home-screen-how-do-i-connect-it).
 - If you still have the board's link, open it — the board comes back to your list.
+- If the board is there but things are missing, open **board menu → Earlier versions** to see and restore it as it was.
 
 ## My boards disappeared from Safari
 

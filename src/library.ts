@@ -174,6 +174,20 @@ async function ensureIdentity() {
   return identity
 }
 
+/**
+ * An anonymous id for "who saved this version" (api/board.js). It comes from
+ * your My Canvas identity, so it's the same on all your connected devices, and
+ * it's scrambled so it can't be used to open your boards.
+ */
+let editor: Promise<string> | null = null
+export function editorId() {
+  editor ??= ensureIdentity().then(async (me) => {
+    const hash = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`canvas-editor:${me.id}`))
+    return [...new Uint8Array(hash)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 24)
+  })
+  return editor
+}
+
 async function request(method: 'GET' | 'PUT', body?: string) {
   const me = await ensureIdentity()
   const res = await fetch(`api/library?id=${me.id}`, {

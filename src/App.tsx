@@ -18,6 +18,7 @@ import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
+import { Versions } from './components/Versions'
 import { Welcome } from './components/Welcome'
 import { Presenter } from './components/Presenter'
 import { PencilMenu } from './components/PencilMenu'
@@ -48,6 +49,8 @@ export default function App() {
   const cropping = useStore((s) => !!s.cropId)
   const presenting = useStore((s) => s.presenting !== null)
   const focus = useStore((s) => s.focus)
+  const versions = useStore((s) => s.versionsOpen)
+  const earlier = useStore((s) => !!s.earlier)
   const statsView = useSyncExternalStore(subscribeHash, () => location.hash === '#stats')
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
@@ -88,7 +91,7 @@ export default function App() {
     )
 
   return (
-    <div className={`app ${loaded ? 'is-loaded' : ''} ${focus ? 'is-focus' : ''}`}>
+    <div className={`app ${loaded ? 'is-loaded' : ''} ${focus ? 'is-focus' : ''} ${versions ? 'is-versions' : ''} ${earlier ? 'is-earlier' : ''}`}>
       <Canvas palette={palette} />
       <TextEditor palette={palette} />
       <PeerCursors />
@@ -131,6 +134,7 @@ export default function App() {
       </div>
       <ShortcutsDialog />
       <FocusExit />
+      <Versions />
       {presenting && <Presenter palette={palette} />}
       <PencilMenu palette={palette} />
       <div className="bottom-left">

@@ -115,7 +115,8 @@ const LANDS = new Set(['sticky', 'image', 'link', 'swatch', 'text'])
 
 export function Canvas({ palette }: { palette: Palette }) {
   const ref = useRef<HTMLDivElement>(null)
-  const elements = useStore((s) => s.doc.elements)
+  // an earlier version, while one is on show (Earlier versions)
+  const elements = useStore((s) => s.earlier?.elements ?? s.doc.elements)
   const draft = useStore((s) => s.draft)
   const viewport = useStore((s) => s.viewport)
   const erasing = useStore((s) => s.erasing)
@@ -182,7 +183,7 @@ export function Canvas({ palette }: { palette: Palette }) {
         if (t.includes('Files') || t.includes('text/uri-list') || t.includes('text/html')) e.preventDefault()
       }}
       onDrop={(e) => {
-        if (!useStore.getState().doc.key) return
+        if (!useStore.getState().doc.key || useStore.getState().versionsOpen) return
         const r = e.currentTarget.getBoundingClientRect()
         const at = toWorld(viewport, e.clientX - r.left, e.clientY - r.top)
         const files = [...e.dataTransfer.files]

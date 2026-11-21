@@ -5,6 +5,15 @@
  *   PUT    /api/board?id=<id>   → 200 { updatedAt }      (body: board JSON)
  *   DELETE /api/board?id=<id>   → 204
  *
+ * Earlier versions (editors only, X-Edit-Key):
+ *   GET    /api/board?id=<id>&history=1     → { now, versions: [{ at, by }] }
+ *   GET    /api/board?id=<id>&version=<at>  → { at, title, elements }
+ *
+ * While people work on a board, the version from before is kept at most once an
+ * hour (and always just before a restore, X-Keep-Version: 1), for 30 days.
+ * Each version notes who saved it (X-Editor, X-Editor-Name) so the app can say
+ * when someone else changed it; that never reaches viewers.
+ *
  * There are no accounts. Anyone with a board's id can view it; changing or
  * deleting it needs its edit key (X-Edit-Key), which only the owner / edit
  * link carries. If no database is connected the function answers 503 and the
@@ -20,7 +29,61 @@ import { json, redis, redisConfig, sha256 } from './_redis.js'
 const MAX_BYTES = 4_000_000 // Vercel's request body limit is 4.5 MB
 const TTL_SECONDS = 60 * 60 * 24 * 365 // boards expire after a year without edits
 const ID_RE = /^[a-z0-9]{6,32}$/
+const HISTORY_EVERY = Number(process.env.HISTORY_EVERY_MS) || 60 * 60 * 1000 // at most one version an hour
+const HISTORY_DAYS = 30
+const HISTORY_MAX = 60 // versions per board
+const HISTORY_BYTES = 12_000_000 // and no more than this, together
+const histKey = (/** @type {string} */ id) => `hist:${id}`
 
+/**
+ * Who saved: an anonymous id from the app and the name they go by.
+ * @param {Request} request
+ */
+function editor(request) {
+  const u = request.headers.get('x-editor') ?? ''
+  if (!/^[a-z0-9]{8,64}$/.test(u)) return undefined
+  let n = ''
+  try {
+    n = decodeURIComponent(request.headers.get('x-editor-name') ?? '')
+  } catch {
+    /* ignore */
+  }
+  n = n.replace(/\p{Cc}/gu, '').trim().slice(0, 40)
+  return n ? { u, n } : { u }
+}
+
+/**
+ * Keep the board as it was before this save, when the last kept version is an
+ * hour old (or a restore asks for it). Returns the new list of versions.
+ * @param {string} id
+ * @param {any} record the board before this save
+ * @param {string} nextElements the elements about to be saved, as JSON
+ * @param {boolean} force
+ */
+async function keepVersion(id, record, nextElements, force) {
+  const cutoff = Date.now() - HISTORY_DAYS * 864e5
+  /** @type {{ at: number, size: number, by?: { u: string, n?: string } }[]} */
+  let list = Array.isArray(record.hist) ? record.hist.filter((/** @type {any} */ v) => v.at > cutoff) : []
+  const last = list.length ? list[list.length - 1].at : record.createdAt || 0
+  const due = force || Date.now() - Math.max(last, record.histAt || 0) >= HISTORY_EVERY
+  const before = JSON.stringify(record.elements ?? [])
+  if (!due || before === nextElements || !record.elements?.length || list.some((v) => v.at === record.updatedAt)) return { list, kept: false }
+  const snapshot = JSON.stringify({ at: record.updatedAt, title: record.title, elements: record.elements })
+  await redis(['HSET', histKey(id), String(record.updatedAt), snapshot])
+  list.push({ at: record.updatedAt, size: snapshot.length, ...(record.by ? { by: record.by } : {}) })
+  // the oldest go first: past 30 days, beyond the count, or beyond the size budget
+  const drop = []
+  let total = list.reduce((n, v) => n + v.size, 0)
+  while (list.length > 1 && (list.length > HISTORY_MAX || total > HISTORY_BYTES)) {
+    const old = /** @type {{ at: number, size: number }} */ (list.shift())
+    total -= old.size
+    drop.push(String(old.at))
+  }
+  for (const at of Array.isArray(record.hist) ? record.hist : []) if (at.at <= cutoff) drop.push(String(at.at))
+  if (drop.length) await redis(['HDEL', histKey(id), ...drop])
+  await redis(['EXPIRE', histKey(id), HISTORY_DAYS * 86400])
+  return { list, kept: true }
+}
 /** @param {Request} request */
 function boardId(request) {
   const id = new URL(request.url).searchParams.get('id') ?? ''
@@ -60,11 +123,27 @@ export async function handle(request) {
     switch (request.method) {
       case 'GET': {
         if (!record) return json({ error: 'not found' }, 404)
+        const params = new URL(request.url).searchParams
+        if (params.get('history') || params.get('version')) {
+          if (!record.keyHash || !(await canEdit(record, editKey))) return json({ error: 'view only' }, 403)
+          const cutoff = Date.now() - HISTORY_DAYS * 864e5
+          if (params.get('history')) {
+            const versions = (Array.isArray(record.hist) ? record.hist : [])
+              .filter((/** @type {any} */ v) => v.at > cutoff)
+              .map((/** @type {any} */ v) => ({ at: v.at, ...(v.by ? { by: v.by } : {}) }))
+              .reverse()
+            return json({ now: { at: record.updatedAt, ...(record.by ? { by: record.by } : {}) }, created: record.createdAt, versions })
+          }
+          const at = Number(params.get('version'))
+          const raw = at > cutoff ? /** @type {string | null} */ (await redis(['HGET', histKey(id), String(at)])) : null
+          if (!raw) return json({ error: 'not found' }, 404)
+          return json(JSON.parse(raw))
+        }
         // a device checking for changes made elsewhere: answer briefly when there are none
         const since = Number(new URL(request.url).searchParams.get('since'))
         if (since && typeof record.updatedAt === 'number' && record.updatedAt <= since) return json({ unchanged: true })
         // never reveal the key hash or who pays; just whether live editing is paid for right now
-        const { keyHash: _k, proCustomer, ...pub } = record
+        const { keyHash: _k, proCustomer, hist: _h, histAt: _a, by: _b, ...pub } = record
         const pro = !!proCustomer && (!paywallEnabled() || (await isActive(proCustomer).catch(() => true)))
         return json({ ...pub, pro })
       }
@@ -89,6 +168,10 @@ export async function handle(request) {
           const customer = await verifyToken(request.headers.get('x-pro-token'))
           if (customer && (await isActive(customer))) proCustomer = customer
         }
+        // the board as it was, kept as an earlier version now and then
+        const nextElements = JSON.stringify(doc.elements)
+        const history = record ? await keepVersion(id, record, nextElements, request.headers.get('x-keep-version') === '1') : { list: [], kept: false }
+        const by = editor(request)
         const clean = {
           id,
           title: String(doc.title ?? 'Untitled').slice(0, 200),
@@ -100,6 +183,9 @@ export async function handle(request) {
           // version of the link-preview picture (api/preview.js); other devices' saves keep it
           ...(typeof doc.preview === 'number' ? { preview: doc.preview } : typeof record?.preview === 'number' ? { preview: record.preview } : {}),
           keyHash: record?.keyHash || (await sha256(/** @type {string} */ (editKey))),
+          ...(history.list.length ? { hist: history.list } : {}),
+          ...(history.kept ? { histAt: Date.now() } : typeof record?.histAt === 'number' ? { histAt: record.histAt } : {}),
+          ...(by ? { by } : {}),
           ...(proCustomer ? { proCustomer } : {}),
         }
         const stored = JSON.stringify(clean)
@@ -116,6 +202,7 @@ export async function handle(request) {
         await redis(['DEL', `fb:${id}`])
         await redis(['DEL', `fboff:${id}`])
         await redis(['DEL', `fbv:${id}`])
+        await redis(['DEL', histKey(id)])
         return new Response(null, { status: 204 })
       default:
         return json({ error: 'method not allowed' }, 405)

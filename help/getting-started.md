@@ -42,6 +42,16 @@ Yes: **focus mode**. Press **F**, or open the **board menu** and choose **Focus 
 
 Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <kbd>⇧⌘Z</kbd> (<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> on Windows). When you're editing together with someone, undo only undoes your own changes.
 
+## Can I go back to an earlier version of a board?
+
+Yes. Open the **board menu** and choose **Earlier versions**. Canvas keeps a version for every hour someone works on the board, for 30 days.
+
+- Tap a time to see the board as it was then. Looking doesn't change anything, and you can't edit while you look.
+- **Restore this version** makes it the board again. The board as it was just before is kept as a version too, and **Undo** brings it straight back.
+- **Back to now** (or <kbd>Esc</kbd>) returns to the board as it is.
+
+When someone else changed the board, their name is next to the time. Your own changes just show the time. Earlier versions are there for boards you can edit; people with a View link never see them.
+
 ## Can I use dark mode?
 
 Yes. Canvas follows your device's light or dark setting. To choose one yourself, open the **board menu** and pick **Auto**, **Light** or **Dark** at the bottom.

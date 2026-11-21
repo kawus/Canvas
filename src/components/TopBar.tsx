@@ -28,6 +28,7 @@ import {
   Trash2,
   Volume2,
   Focus,
+  History,
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
@@ -227,6 +228,18 @@ export function BoardMenu() {
           >
             {editKey ? 'Duplicate board' : 'Make a copy'}
           </MenuItem>
+          {editKey && cloud && (
+            <MenuItem
+              icon={<History />}
+              onClick={() => {
+                setOpen(false)
+                useStore.getState().setVersionsOpen(true)
+              }}
+              testId="versions-menu"
+            >
+              Earlier versions
+            </MenuItem>
+          )}
           <MenuItem
             icon={<Trash2 />}
             danger

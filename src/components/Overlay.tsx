@@ -29,6 +29,7 @@ export function Overlay() {
   const guides = useStore((s) => s.guides)
   const peers = useStore((s) => s.collab.peers)
   const cropping = useStore((s) => !!s.cropId)
+  const earlier = useStore((s) => s.earlier)
 
   const sel = selectedElements({ doc, selectedIds })
   const hovered = hoveredId ? doc.elements.find((e) => e.id === hoveredId) : null
@@ -38,7 +39,7 @@ export function Overlay() {
   // the crop brackets take over while cropping
   if (cropping) return null
 
-  const tags = slideTags(doc.elements, v)
+  const tags = slideTags(earlier?.elements ?? doc.elements, v)
 
   return (
     <svg className="overlay" width="100%" height="100%">

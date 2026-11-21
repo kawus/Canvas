@@ -49,6 +49,10 @@ When editing together, open **Share**. Under the link it says **You appear as** 
 
 When you edit together live, changes are merged item by item, so two people can work on different parts of the board at once. Undo only undoes your own changes.
 
+## Someone moved or deleted something by mistake. Can I get it back?
+
+Yes. Open the **board menu → Earlier versions**, find a time from before the change (the name of whoever changed it is next to the time) and tap **Restore this version**. [More about earlier versions](topic:getting-started#can-i-go-back-to-an-earlier-version-of-a-board).
+
 ## How do I edit my own board on another device?
 
 Connect your devices with your [My Canvas link](topic:devices#how-do-i-get-my-boards-on-another-device) (**board menu → Connect your devices**): all your boards come along, with editing rights, and stay in sync.
