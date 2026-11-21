@@ -326,6 +326,9 @@
         },
         {
           "text": "The welcome page shows the latest Canvas: likes, notes and replies, the templates, hold to straighten, focus mode and more."
+        },
+        {
+          "text": "Each template page now shows its own board, exactly as it opens, in light and dark."
         }
       ]
     },

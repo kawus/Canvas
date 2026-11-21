@@ -22,7 +22,7 @@ Slides are 1280 × 720, in two columns (x 0 and 1480), rows 900 apart. Section t
 
 - Title: "<Name> template (free, no sign-up) · Canvas"; description about 150 characters, saying what's on the board and "Free, no account."
 - Hero: eyebrow "Free template · <Name>", a heading as a verb phrase with a grey second half ("Shape a brand identity <span>on one calm board.</span>"), one lead sentence, "Use the free template" and "Start with a blank board".
-- The presenting film, then **Collect → Arrange → Present**, the same three verbs on every page.
+- A picture of the board exactly as it opens (light and dark, `public/media/templates/<name>-light.jpg` and `-dark.jpg`), then **Collect → Arrange → Present**, the same three verbs on every page. The pictures come from `node scripts/template-previews.cjs` with the built site running (`npx vite preview --port 4174`); run it again whenever a board changes. The same picture is the page's link preview and its card on the templates hub and the intro.
 - "Calm by design": No account, Private by design, On every screen, and one point for this audience.
 - Five questions: always "Is it free?" and "Can I export it?", plus three for the audience; the same questions go in the page's FAQ structured data.
 - Final call: "Your next <thing>, on one board."
