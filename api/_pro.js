@@ -16,6 +16,7 @@
  * unlocks free early access (a "beta_" token). Set PRO_MODE=off for no paywall.
  */
 
+import { timingSafeEqual } from 'node:crypto'
 import { redis, redisConfig, sha256 } from './_redis.js'
 
 const STRIPE = () => process.env.STRIPE_API_BASE || 'https://api.stripe.com'
@@ -119,7 +120,8 @@ export async function markFounder(customer) {
 const b64url = (/** @type {string} */ s) => Buffer.from(s).toString('base64url')
 
 async function signature(/** @type {string} */ payload) {
-  // PRO_TOKEN_SECRET signs the tokens; without it (smoke test) a key derived from other secrets is used
+  // PRO_TOKEN_SECRET signs the tokens (real payments refuse to start without it, see pro.js);
+  // during the smoke test, without it, a key derived from other secrets is used
   const base = process.env.PRO_TOKEN_SECRET || secret() || process.env.LIVEBLOCKS_SECRET_KEY || 'canvas-early-access'
   const keyData = new TextEncoder().encode(await sha256(`canvas-pro:${base}`))
   const key = await crypto.subtle.importKey('raw', keyData, { name: 'HMAC', hash: 'SHA-256' }, false, ['sign'])
@@ -137,7 +139,10 @@ export async function makeToken(customer) {
 export async function verifyToken(token) {
   if (!token) return null
   const [payload, sig] = token.split('.')
-  if (!payload || !sig || (await signature(payload)) !== sig) return null
+  if (!payload || !sig) return null
+  const want = Buffer.from(await signature(payload))
+  const got = Buffer.from(sig)
+  if (want.length !== got.length || !timingSafeEqual(want, got)) return null
   try {
     const { c } = JSON.parse(Buffer.from(payload, 'base64url').toString())
     return typeof c === 'string' && (c.startsWith('cus_') || c.startsWith('beta_')) ? c : null

@@ -47,14 +47,16 @@ Compare the two pages in **Vercel → Analytics → Pages** to see which kind of
 
 ## Security notes
 
-**In place:** edit keys (only their hash is stored) guard every change and deletion; boards saved before edit keys existed can no longer be claimed by anyone (owners can *Make a copy*); My Canvas lists are encrypted in the browser; exports escape everything; link previews only ever reach public addresses (every redirect is checked); security headers stop other sites from framing Canvas; analytics never sees what's after `?` or `#`.
+**In place:** edit keys (only their hash is stored) guard every change and deletion; boards saved before edit keys existed can no longer be claimed by anyone (owners can *Make a copy*); My Canvas lists are encrypted in the browser; exports escape everything; link previews only ever reach public addresses (checked as each connection is made, and on every redirect) and only answer Canvas itself; the owner pages (`/#stats`, `/changelog/?admin`) need the owner key (`IDEAS_ADMIN_KEY`), with at most 10 wrong tries per visitor an hour; real payments refuse to start without `PRO_TOKEN_SECRET`; Stripe only ever gets the home page's address, never a board's; exported SVGs only embed Canvas's own fonts; security headers stop other sites from framing Canvas; analytics never sees what's after `?` or `#`.
 
-**Fair-use limits** (`api/_limits.js`), so nobody can fill the database or run up costs: each visitor may add about **100 MB of new data a day** (boards, images, My Canvas; re-saving costs nothing) and fetch **200 link previews an hour**. Over the limit, saving pauses ("Couldn't sync — saved on this device, will retry") and resumes the next day; small saves that still fit keep going through. Change them with `LIMIT_STORAGE_MB` and `LIMIT_PREVIEWS_PER_HOUR`. Visitors are told apart by a hashed internet address; nothing identifying is stored and the counters expire within a day.
+**Fair-use limits** (`api/_limits.js`), so nobody can fill the database or run up costs: each visitor may add about **100 MB of new data a day** (boards, images, My Canvas; re-saving costs nothing) and fetch **200 link previews an hour** (a map picture counts as up to four), with **20,000 a day** for everyone together. Over the limit, saving pauses ("Couldn't sync — saved on this device, will retry") and resumes the next day; small saves that still fit keep going through. Change them with `LIMIT_STORAGE_MB`, `LIMIT_PREVIEWS_PER_HOUR` and `LIMIT_PREVIEWS_PER_DAY`. The smoke-test counters take at most 200 counts per visitor an hour. Visitors are told apart by a hashed internet address; nothing identifying is stored and the counters expire within a day.
 
-**For later (from the October 2026 review):**
+**For later (from the November 2026 review):**
 
-1. *Done (November 2026), before real payments:* checkout return links can only be claimed for an hour after their first claim, and Pro passes are signed with their own `PRO_TOKEN_SECRET`.
-2. **The stats page is public.** Anyone who finds `/#stats` can read the smoke-test and board-sync numbers, and anyone can inflate those counters (`track`, `usage`). Fix if it matters: require a private key in the address (`/#stats=<key>`, checked against a `STATS_KEY` environment variable), and count interest per device only once.
+1. **A content security policy.** The site only sets `frame-ancestors`. A full policy (which scripts, frames and images may load) would be a safety net if an injection hole ever appeared; edit keys, the Pro pass and the My Canvas key all live in the browser. It needs the player services' frame addresses listed.
+2. **Commenter ids are public.** Feedback items carry each person's device id (`by.id`), so anyone reading a board's notes could remove that person's likes or Ideas votes, and recognise them across boards. Fix: keep a server-side scrambled id per board.
+3. **Boards aren't checked when they load.** Every field is used safely today (links open only http(s), players and maps come from the approved services, images only from Canvas's own storage), but a check on load would keep it that way.
+4. **Removal requests.** The updates list and Ideas emails need a way to unsubscribe or ask for removal.
 
 ## Visitor analytics
 

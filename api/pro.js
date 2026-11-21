@@ -12,10 +12,12 @@
  * Smoke test (no Stripe key yet):
  *   POST /api/pro?action=track     { event, device }              count interest
  *   POST /api/pro?action=beta      { plan, device }               → { token } free early access
- *   GET  /api/pro?action=stats                                    → interest so far
+ *   GET  /api/pro?action=stats     (X-Admin-Key)                  → interest so far (owner only)
  */
 
 import { founderPrice, isActive, makeToken, markFounder, paywallEnabled, priceFor, pricing, proMode, stripe, verifyToken } from './_pro.js'
+import { allowTally, tooMuch } from './_limits.js'
+import { ownerOnly } from './_owner.js'
 import { json, redis, redisConfig } from './_redis.js'
 
 /* ---------- Smoke-test analytics (counts only; devices are anonymous ids) ---------- */
@@ -92,17 +94,24 @@ async function usage() {
   }))
 }
 
-/** Only send people back to this app. @param {Request} request @param {unknown} url */
+/**
+ * Only send people back to this app, and only to a page, never a board: Stripe
+ * keeps the return address, and a board's address is enough to open it.
+ * @param {Request} request @param {unknown} url
+ */
 function safeReturn(request, url) {
   const origin = new URL(request.url).origin
   try {
     const u = new URL(String(url))
-    if (u.origin === origin) return u
+    if (u.origin === origin) return new URL(`${origin}${u.pathname}`)
   } catch {
     /* fall through */
   }
   return new URL(`${origin}/`)
 }
+
+/** Real payments need their own signing secret, so Pro tokens can never be made by anyone else. */
+const signingReady = () => (process.env.PRO_TOKEN_SECRET || '').trim().length >= 32
 
 /**
  * @param {Request} request
@@ -116,6 +125,8 @@ export async function handle(request) {
   try {
     if (action === 'stats') {
       if (!redisConfig()) return json({ error: 'cloud storage not configured' }, 503)
+      const no = await ownerOnly(request)
+      if (no) return no
       return json({ mode: proMode(), events: await stats(), usage: await usage() })
     }
     const token = request.headers.get('x-pro-token')
@@ -125,6 +136,8 @@ export async function handle(request) {
     }
     if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405)
     const body = /** @type {Record<string, unknown>} */ (await request.json().catch(() => ({})))
+
+    if ((action === 'track' || action === 'usage') && !(await allowTally(request))) return tooMuch()
 
     if (action === 'track') {
       await track(String(body.event), body.device)
@@ -146,6 +159,10 @@ export async function handle(request) {
     }
 
     if (proMode() !== 'live') return json({ error: 'payments not set up yet' }, 400)
+    if (!signingReady()) {
+      console.error('Real payments need PRO_TOKEN_SECRET (a long random value, at least 32 characters) in Vercel')
+      return json({ error: 'payments not set up yet' }, 503)
+    }
 
     if (action === 'checkout') {
       const back = safeReturn(request, body.returnUrl)

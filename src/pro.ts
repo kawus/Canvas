@@ -105,12 +105,12 @@ export async function joinEarlyAccess(plan: Plan) {
 
 /** Off to Stripe Checkout; it comes back with ?pro_session=… (see claimFromUrl). */
 export async function startCheckout(plan: Plan) {
-  const { url } = await post<{ url: string }>('checkout', { plan, returnUrl: location.href })
+  const { url } = await post<{ url: string }>('checkout', { plan, returnUrl: location.origin + location.pathname })
   location.href = url
 }
 
 export async function openPortal() {
-  const { url } = await post<{ url: string }>('portal', { returnUrl: location.href })
+  const { url } = await post<{ url: string }>('portal', { returnUrl: location.origin + location.pathname })
   location.href = url
 }
 

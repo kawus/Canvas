@@ -1,4 +1,4 @@
-# Canvas: where we left off (20 Nov 2026)
+# Canvas: where we left off (21 Nov 2026)
 
 Your to-do list, in order. Everything here is for you to do; nothing in this folder is shown on the site.
 
@@ -23,7 +23,7 @@ What to expect: impressions show up in Search Console within one or two weeks; r
 
 Until this is done, the Founder licence is a "smoke test": people see the offer but nobody can pay. Full steps are in the README (section on Canvas Pro); in short:
 
-1. Vercel → **Settings → Environment Variables** → add **`PRO_TOKEN_SECRET`**: a long random value from your password manager's generator. Never change it later.
+1. Vercel → **Settings → Environment Variables** → add **`PRO_TOKEN_SECRET`**: a long random value from your password manager's generator (at least 32 characters; payments won't start without it). Never change it later.
 2. Add **`STRIPE_SECRET_KEY`** with your Stripe **test** key (`sk_test_…`), redeploy, and buy the licence with the test card `4242 4242 4242 4242`.
 3. In Stripe: **Settings → Customer emails → Successful payments** on, so buyers get a receipt.
 4. Go live: activate your Stripe account, replace the key with the live one (`sk_live_…`), redeploy.
@@ -35,13 +35,20 @@ Keys go only into Vercel, never into chat or the project.
 The What's new page has an **Ideas & requests** board: visitors suggest ideas and vote, and you move the ideas along.
 
 1. Vercel → **Settings → Environment Variables** → add **`IDEAS_ADMIN_KEY`**: a long random value from your password manager (at least 12 characters). Redeploy.
-2. Open **canvas.kawus.com/changelog/?admin**, paste the key once. It's remembered on that device (do it on your phone too).
+2. Open **canvas.kawus.com/changelog/?admin**, paste the key once. It's remembered on that device (do it on your phone too). The same key opens your Pro numbers at **canvas.kawus.com/#stats**. After 10 wrong tries from one place, the key is refused there for an hour, so it can't be guessed.
 3. The board has four columns, always in this order: **Inbox**, **Planned**, **Working on**, **Delivered**. Every suggestion goes straight into **Inbox**, where everyone can see it and vote. In your view, each idea has a menu to move it to another column, and **Remove** for anything that doesn't belong (spam, or ideas that don't fit). Inbox ideas also show the date and, if they left one, the person's email; only you see that.
 
 **A 10-minute weekly habit:**
 - Look through the **Inbox**: move the good ideas to **Planned**, remove what doesn't fit (without guilt). Votes show what people want most: the top of **Planned** is your next build.
 - Move what you're building to **Working on**: it shows people the product is alive.
 - When something ships, mark it **Delivered** and ask Claude to add it to the changelog. A short personal "it's ready" email to whoever suggested it (their email shows on the idea in your view) is the best way to turn them into fans, and a reason to post on Instagram.
+
+## 2b+. Check your owner key and set a spending limit (5 minutes)
+
+From the November security review:
+
+- **Owner key:** make sure `IDEAS_ADMIN_KEY` in Vercel is a long random value from your password manager, not a word or phrase. It now also guards your Pro numbers.
+- **Spending limit:** Vercel → **Settings → Billing → Spend Management**: set a monthly limit and an alert, so a flood of traffic can never run up a surprise bill.
 
 ## 2c. Mark "Board history" as Delivered (1 minute)
 

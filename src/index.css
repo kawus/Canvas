@@ -1520,6 +1520,15 @@ button:focus:not(:focus-visible) {
   color: var(--text-3);
   font-size: 12px;
 }
+.stats-key {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 4px;
+}
+.stats-key .field {
+  flex: 1;
+  min-width: 0;
+}
 .stats-foot {
   margin: 16px 0 0;
   color: var(--text-3);

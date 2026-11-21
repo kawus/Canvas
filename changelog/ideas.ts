@@ -93,8 +93,8 @@ async function api(method: string, body?: object, query = '') {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (adminKey) headers['X-Admin-Key'] = adminKey
   const r = await fetch(API + query, { method, headers, body: body ? JSON.stringify(body) : undefined, cache: 'no-store' })
-  const ok = r.ok && (r.headers.get('content-type') || '').includes('json')
-  return { ok, status: r.status, data: ok ? await r.json() : null }
+  const isJson = (r.headers.get('content-type') || '').includes('json')
+  return { ok: r.ok && isJson, status: r.status, data: isJson ? await r.json().catch(() => null) : null }
 }
 
 async function load() {
@@ -105,7 +105,7 @@ async function load() {
       return render()
     }
     // the key didn't work: forget it, remember why, and show the public board
-    refusal = r.status === 403 ? ((await fetch(API + '?admin=1', { headers: { 'X-Admin-Key': adminKey } }).then((x) => x.json()).catch(() => null))?.reason ?? 'wrong-key') : 'offline'
+    refusal = r.status === 403 ? (r.data?.reason ?? 'wrong-key') : r.status === 429 ? 'locked' : 'offline'
     store.remove('canvas-ideas-admin')
     adminKey = null
   }
@@ -208,7 +208,9 @@ function askForKey() {
           ? 'The admin key isn’t set up yet. Add IDEAS_ADMIN_KEY in Vercel (at least 12 characters), then redeploy.'
           : refusal === 'too-short'
             ? 'The key saved in Vercel is shorter than 12 characters. Make it longer, save, redeploy, then paste it here.'
-            : refusal === 'offline'
+            : refusal === 'locked'
+              ? 'Too many wrong keys from here. Wait an hour, then try again.'
+              : refusal === 'offline'
               ? 'Couldn’t reach Canvas. Check your connection and try again.'
               : 'That key doesn’t match the one in Vercel. If you changed it just now, redeploy first.'
   })

@@ -2,7 +2,7 @@ import { loadAsset } from './assets'
 import fontWoff2Url from './assets/fonts/Geist-Variable.woff2?url'
 import fontTtfUrl from './assets/fonts/Geist-Regular.ttf?url'
 import { FONT_FAMILY, PALETTE_LIGHT } from './constants'
-import { fontFamily, fontFile } from './fonts'
+import { fontById, fontFamily, fontFile } from './fonts'
 import { contentOf, unionBounds } from './geometry'
 import { elementPrims, primToMarkup } from './render'
 import { textWidth } from './textMetrics'
@@ -68,7 +68,8 @@ export async function buildSvg(all: El[], opts: { embedFont: boolean; background
     const data = await fetchBase64(fontWoff2Url)
     // font cards carry their own typeface too
     let faces = ''
-    for (const id of new Set(elements.flatMap((e) => (e.type === 'font' ? [e.font] : [])))) {
+    // only Canvas's own fonts (a board from someone else could name anything here)
+    for (const id of new Set(elements.flatMap((e) => (e.type === 'font' && fontById(e.font) ? [e.font] : [])))) {
       try {
         faces += `@font-face{font-family:'${fontFamily(id)}';src:url(data:font/woff2;base64,${await fetchBase64(fontFile(id))}) format('woff2');}`
       } catch {

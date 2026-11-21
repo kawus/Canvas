@@ -7,16 +7,20 @@
  *   GET /api/unfurl?tiles=16/1/2,16/1/3…  → { tiles: [data URL | null] }  (OpenStreetMap map tiles, at most 16)
  *
  * Browsers can't read other sites directly, so the app asks this function.
- * Only public http(s) addresses are fetched, with a size and time limit.
+ * Only public http(s) addresses are fetched (checked as each connection is made),
+ * with a size and time limit, and only for Canvas itself.
  */
 
-import { lookup } from 'node:dns/promises'
+import { lookup as dnsLookup } from 'node:dns'
+import http from 'node:http'
+import https from 'node:https'
 import { isIP } from 'node:net'
+import { Readable } from 'node:stream'
 import { allowPreview, tooMuch } from './_limits.js'
 import { json } from './_redis.js'
 
 const PAGE_LIMIT = 600_000
-const IMAGE_LIMIT = 6_000_000
+const IMAGE_LIMIT = 4_000_000
 const TIMEOUT = 7000
 // identify honestly; sites that don't want automated visits just get a plain card
 const UA = 'CanvasLinkPreview/1.0 (+https://github.com/kawus/Canvas)'
@@ -59,28 +63,59 @@ function publicUrl(raw) {
   return u
 }
 
-/** Also check what the name points to, so a public-looking name can't lead inside. @param {URL} u */
-async function resolvesPublic(u) {
-  const host = u.hostname.replace(/^\[|\]$/g, '')
-  if (isIP(host)) return !privateIp(host)
-  try {
-    const addrs = await lookup(host, { all: true })
-    return addrs.length > 0 && addrs.every((a) => !privateIp(a.address))
-  } catch {
-    return false
-  }
+/**
+ * Look a name up for the connection itself, refusing private addresses. The
+ * check and the connection use the same answer, so a name can't point somewhere
+ * public for the check and somewhere private a moment later.
+ * @param {string} hostname @param {any} options @param {any} callback
+ */
+function publicLookup(hostname, options, callback) {
+  dnsLookup(hostname, { ...options, all: true }, (err, found) => {
+    if (err) return callback(err)
+    const addrs = /** @type {import('node:dns').LookupAddress[]} */ (/** @type {unknown} */ (found))
+    if (!addrs.length || addrs.some((a) => privateIp(a.address))) return callback(Object.assign(new Error('not a public address'), { code: 'ENOTPUBLIC' }))
+    if (options?.all) callback(null, addrs)
+    else callback(null, addrs[0].address, addrs[0].family)
+  })
+}
+
+/**
+ * One request (no redirects followed), connecting only to public addresses.
+ * @param {URL} url @param {{ method?: string, headers?: Record<string, string>, signal?: AbortSignal }} init
+ * @returns {Promise<Response>}
+ */
+function request(url, init) {
+  const method = init.method || 'GET'
+  return new Promise((resolve, reject) => {
+    const mod = url.protocol === 'https:' ? https : http
+    const req = mod.request(url, { method, headers: init.headers, signal: init.signal, lookup: publicLookup }, (res) => {
+      try {
+        const headers = new Headers()
+        for (const [k, v] of Object.entries(res.headers)) for (const x of [v ?? []].flat()) headers.append(k, x)
+        const status = res.statusCode ?? 502
+        const empty = method === 'HEAD' || status < 200 || [204, 205, 304].includes(status)
+        if (empty) res.resume()
+        const body = empty ? null : /** @type {any} */ (Readable.toWeb(res))
+        resolve(new Response(body, { status: status > 599 || status < 200 ? 502 : status, headers }))
+      } catch (err) {
+        res.destroy()
+        reject(err)
+      }
+    })
+    req.on('error', reject)
+    req.end()
+  })
 }
 
 /**
  * fetch() that only ever talks to public addresses: every redirect is followed
  * by hand and checked again (a public page can't bounce us into a private network).
- * @param {URL} start @param {RequestInit} init
+ * @param {URL} start @param {{ method?: string, headers?: Record<string, string>, signal?: AbortSignal }} init
  */
 async function publicFetch(start, init) {
   let url = start
   for (let hop = 0; hop < 5; hop++) {
-    if (!(await resolvesPublic(url))) throw new Error('not a public address')
-    const res = await fetch(url, { ...init, redirect: 'manual' })
+    const res = await request(url, init)
     const next = res.status >= 300 && res.status < 400 ? res.headers.get('location') : null
     if (!next) return { res, url }
     const target = publicUrl(new URL(next, url).href)
@@ -373,10 +408,14 @@ async function imageData(url) {
  */
 export async function handle(request) {
   const params = new URL(request.url).searchParams
+  // only for Canvas itself: other websites can't use it through their visitors' browsers
+  if (request.headers.get('sec-fetch-site') === 'cross-site') return json({ error: 'not available' }, 403)
   try {
-    if (!(await allowPreview(request))) return tooMuch()
-    if (params.get('place')) return json((await place(params)) ?? { error: 'not found' }, 200)
     const list = params.get('tiles')
+    // a map picture is up to 16 tiles: every 4 count as one preview
+    const cost = list ? Math.ceil(Math.min(16, list.split(',').length) / 4) : 1
+    if (!(await allowPreview(request, cost))) return tooMuch()
+    if (params.get('place')) return json((await place(params)) ?? { error: 'not found' }, 200)
     if (list) return json({ tiles: await tiles(list) })
     const page = params.get('url')
     if (page) {

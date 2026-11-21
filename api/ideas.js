@@ -17,6 +17,7 @@
  */
 
 import { allowFeedback, tooMuch } from './_limits.js'
+import { ownerOnly } from './_owner.js'
 import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 const STATUSES = ['inbox', 'planned', 'working', 'delivered']
@@ -41,23 +42,6 @@ const clean = (v, max) =>
     .slice(0, max)
 
 const newId = () => [...crypto.getRandomValues(new Uint8Array(8))].map((b) => b.toString(36).padStart(2, '0')).join('').slice(0, 12)
-
-/** The owner's key from Vercel (spaces around it, from pasting, don't count). */
-const adminKey = () => (process.env.IDEAS_ADMIN_KEY || '').trim()
-/** At least 12 characters, so the owner's page can't be guessed. */
-const adminReady = () => adminKey().length >= 12
-
-/** @param {Request} request */
-function isOwner(request) {
-  const got = (request.headers.get('x-admin-key') || '').trim()
-  return adminReady() && got === adminKey()
-}
-
-/** Why the owner's key was refused: not set up in Vercel yet, or a different key. */
-const refused = () =>
-  adminReady()
-    ? json({ error: 'wrong key', reason: 'wrong-key' }, 403)
-    : json({ error: 'not set up', reason: adminKey() ? 'too-short' : 'missing' }, 403)
 
 /** @param {string} key */
 async function all(key) {
@@ -98,7 +82,8 @@ export async function handle(request) {
   try {
     if (request.method === 'GET') {
       if (url.searchParams.get('admin')) {
-        if (!isOwner(request)) return refused()
+        const no = await ownerOnly(request)
+        if (no) return no
         return json({ ideas: await listed() })
       }
       // only what the public needs (never an email address)
@@ -146,7 +131,8 @@ export async function handle(request) {
     }
 
     // everything below is for the owner
-    if (!isOwner(request)) return refused()
+    const no = await ownerOnly(request)
+    if (no) return no
 
     if (request.method === 'POST' && body?.kind === 'add') {
       const title = clean(body.title, 90).replace(/\s+/g, ' ')

@@ -20,19 +20,57 @@ const ROWS: { key: 'locked' | 'view' | 'intent_founder' | 'intent_month' | 'inte
 
 const pct = (a: number, b: number) => (b ? `${Math.round((a / b) * 100)}%` : '—')
 
-/** Results of the Pro smoke test, at /#stats */
+/** The owner's key (IDEAS_ADMIN_KEY in Vercel), shared with the Ideas board on /changelog/?admin. */
+const KEY = 'canvas-ideas-admin'
+const savedKey = () => {
+  try {
+    return localStorage.getItem(KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+const saveKey = (k: string) => {
+  try {
+    if (k) localStorage.setItem(KEY, k)
+    else localStorage.removeItem(KEY)
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Results of the Pro smoke test, at /#stats (owner only) */
 export function StatsPage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [error, setError] = useState('')
+  const [key, setKey] = useState(savedKey)
+  const [asking, setAsking] = useState(!savedKey())
+  const [draft, setDraft] = useState('')
 
   useEffect(() => {
-    fetch('api/pro?action=stats', { cache: 'no-store' })
+    if (!key) return
+    fetch('api/pro?action=stats', { cache: 'no-store', headers: { 'X-Admin-Key': key } })
       .then(async (r) => {
+        if (r.status === 403 || r.status === 429) {
+          const reason = ((await r.json().catch(() => null)) as { reason?: string } | null)?.reason
+          saveKey('')
+          setKey('')
+          setAsking(true)
+          setError(
+            reason === 'locked'
+              ? 'Too many wrong keys from here. Wait an hour, then try again.'
+              : reason === 'missing' || reason === 'too-short'
+                ? 'The owner key isn’t set up yet. Add IDEAS_ADMIN_KEY in Vercel (at least 12 characters), then redeploy.'
+                : 'That key doesn’t match the one in Vercel.',
+          )
+          return
+        }
         if (!r.ok) throw new Error()
+        saveKey(key)
+        setError('')
         setStats((await r.json()) as Stats)
       })
       .catch(() => setError('No numbers yet — the paywall or cloud saving isn’t set up.'))
-  }, [])
+  }, [key])
 
   const e = stats?.events
   const none = { total: 0, people: 0, last7: 0 }
@@ -52,6 +90,32 @@ export function StatsPage() {
             : 'The offer is shown, nobody is charged. Choosing a plan unlocks free early access.'}
         </p>
         {error && <p className="stats-sub">{error}</p>}
+        {asking && !stats && (
+          <form
+            className="stats-key"
+            onSubmit={(ev) => {
+              ev.preventDefault()
+              if (!draft.trim()) return
+              setAsking(false)
+              setKey(draft.trim())
+            }}
+          >
+            <input
+              className="field"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Owner key"
+              aria-label="Owner key"
+              value={draft}
+              onChange={(ev) => setDraft(ev.target.value)}
+              data-testid="stats-key"
+            />
+            <button type="submit" className="primary-btn">
+              <span>Open</span>
+            </button>
+          </form>
+        )}
+        {asking && !stats && <p className="stats-foot">The key you set as IDEAS_ADMIN_KEY in Vercel. It’s remembered on this device.</p>}
         {e && (
           <>
             <div className="stats-highlight">

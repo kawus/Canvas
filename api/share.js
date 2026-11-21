@@ -37,7 +37,10 @@ function describe(elements) {
 export async function handle(request) {
   const url = new URL(request.url)
   const id = url.searchParams.get('id') ?? ''
-  const site = escape(`${url.protocol}//${request.headers.get('x-forwarded-host') ?? url.host}`)
+  // the site's own address (a forwarded name only when it's one of Canvas's own: this page is cached)
+  const forwarded = (request.headers.get('x-forwarded-host') ?? '').toLowerCase()
+  const own = forwarded === url.host || forwarded === 'canvas.kawus.com' || /^[a-z0-9-]+\.vercel\.app$/.test(forwarded)
+  const site = escape(`${url.protocol}//${own ? forwarded : url.host}`)
   const valid = ID_RE.test(id)
 
   // unknown boards get the general card, so a made-up link reveals nothing

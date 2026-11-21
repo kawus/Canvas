@@ -50,7 +50,7 @@ Backing up your link by email doesn't share your address with Canvas: it opens y
 - **Vercel** hosts the app.
 - **Upstash** stores boards, images and your encrypted list of boards.
 - **Liveblocks** keeps boards in sync when you edit together live.
-- **Stripe** handles payments for Canvas Pro. Canvas never sees your card details.
+- **Stripe** handles payments for Canvas Pro. Canvas never sees your card details, and Stripe never learns which boards you have.
 - **Vercel Web Analytics** counts page visits, anonymously and without cookies.
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
