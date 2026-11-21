@@ -44,10 +44,10 @@ export function recognize(points: StrokePoint[], zoom: number): Shape | null {
   const b = pts[pts.length - 1]
   const ends = dist(a, b)
 
-  // a line: the stroke never strays far from the straight path between its ends
-  if (ends > 0.8 * diag && length < 1.3 * ends) {
+  // a line: the stroke never strays far from the straight path between its ends (a slight bow is fine)
+  if (ends > 0.8 * diag && length < 1.35 * ends) {
     const dev = Math.max(...pts.map((p) => offLine(p, a, b)))
-    if (dev < Math.max(4 / zoom, 0.07 * ends)) {
+    if (dev < Math.max(5 / zoom, 0.1 * ends)) {
       // nearly level or upright: make it exactly so
       const angle = (Math.atan2(b[1] - a[1], b[0] - a[0]) * 180) / Math.PI
       const near = (t: number) => Math.abs(((angle - t + 540) % 360) - 180) > 180 - 5
@@ -59,28 +59,46 @@ export function recognize(points: StrokePoint[], zoom: number): Shape | null {
     return null
   }
 
-  // a closed shape: it comes back to where it started, and goes all the way round
-  if (ends < 0.3 * diag && length > 2.2 * Math.max(w, h) && Math.min(w, h) > 0.12 * Math.max(w, h)) {
-    // rectangles reach their corners; ellipses stay well away from them
-    const corners: Pt[] = [[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]]
-    const reached = corners.filter((c) => pts.some((p) => dist(p, c) < 0.1 * diag)).length
-    const nearEdge = pts.filter((p) => Math.min(Math.abs(p[0] - minX), Math.abs(p[0] - maxX)) / w < 0.1 || Math.min(Math.abs(p[1] - minY), Math.abs(p[1] - maxY)) / h < 0.1).length / pts.length
-    const cx = (minX + maxX) / 2
-    const cy = (minY + maxY) / 2
-    const roundness = pts.reduce((sum, p) => sum + Math.abs(Math.hypot((p[0] - cx) / (w / 2), (p[1] - cy) / (h / 2)) - 1), 0) / pts.length
-    let kind: 'rect' | 'ellipse' | null = null
-    if (reached >= 3 && nearEdge > 0.7) kind = 'rect'
-    else if (roundness < 0.16 && reached <= 1) kind = 'ellipse'
-    if (!kind) return null
-    // nearly square or round: make it exactly so
-    let box = { x: minX, y: minY, w, h }
-    if (Math.abs(w - h) / Math.max(w, h) < 0.12) {
-      const s = (w + h) / 2
-      box = { x: cx - s / 2, y: cy - s / 2, w: s, h: s }
+  // a closed shape: in its last stretch it comes back close to where it started. A quick circle
+  // often overshoots its start, so the shape ends where it came closest, and the rest is ignored.
+  if (length < 2 * Math.max(w, h)) return null
+  let closeAt = -1
+  let closest = Infinity
+  for (let i = Math.floor(pts.length * 0.6); i < pts.length; i++) {
+    const d = dist(pts[i], a)
+    if (d < closest) {
+      closest = d
+      closeAt = i
     }
-    return { kind, ...box }
   }
-  return null
+  if (closest > 0.3 * diag) return null
+  const ring = pts.slice(0, closeAt + 1)
+  let rx0 = Infinity, ry0 = Infinity, rx1 = -Infinity, ry1 = -Infinity
+  for (const p of ring) {
+    rx0 = Math.min(rx0, p[0]); ry0 = Math.min(ry0, p[1]); rx1 = Math.max(rx1, p[0]); ry1 = Math.max(ry1, p[1])
+  }
+  const rw = rx1 - rx0
+  const rh = ry1 - ry0
+  const rd = Math.hypot(rw, rh)
+  if (Math.min(rw, rh) < 0.12 * Math.max(rw, rh)) return null
+  // rectangles reach their corners; ellipses stay well away from them
+  const corners: Pt[] = [[rx0, ry0], [rx1, ry0], [rx1, ry1], [rx0, ry1]]
+  const reached = corners.filter((c) => ring.some((p) => dist(p, c) < 0.1 * rd)).length
+  const nearEdge = ring.filter((p) => Math.min(Math.abs(p[0] - rx0), Math.abs(p[0] - rx1)) / rw < 0.1 || Math.min(Math.abs(p[1] - ry0), Math.abs(p[1] - ry1)) / rh < 0.1).length / ring.length
+  const cx = (rx0 + rx1) / 2
+  const cy = (ry0 + ry1) / 2
+  const roundness = ring.reduce((sum, p) => sum + Math.abs(Math.hypot((p[0] - cx) / (rw / 2), (p[1] - cy) / (rh / 2)) - 1), 0) / ring.length
+  let kind: 'rect' | 'ellipse' | null = null
+  if (reached >= 3 && nearEdge > 0.7) kind = 'rect'
+  else if (roundness < 0.2 && reached <= 1) kind = 'ellipse'
+  if (!kind) return null
+  // nearly square or round: make it exactly so
+  let box = { x: rx0, y: ry0, w: rw, h: rh }
+  if (Math.abs(rw - rh) / Math.max(rw, rh) < 0.12) {
+    const side = (rw + rh) / 2
+    box = { x: cx - side / 2, y: cy - side / 2, w: side, h: side }
+  }
+  return { kind, ...box }
 }
 
 /** The clean element for a recognised stroke, in the stroke's own colour and weight. */

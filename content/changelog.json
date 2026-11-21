@@ -306,6 +306,10 @@
           "feature": "straighten"
         },
         {
+          "text": "Straightening is more forgiving: quick circles that overshoot their start, wobbly circles and slightly bowed lines all settle into clean shapes.",
+          "feature": "straighten"
+        },
+        {
           "text": "Focus mode: press F, or pick it in the board menu, to hide everything but your board.",
           "feature": "focus"
         },
