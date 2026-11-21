@@ -21,6 +21,10 @@ A group shows the tool you used last. Tap it again, or press and hold it, to pic
 
 Pick the **Pen** and draw. Lines are smoothed, even when you draw fast, and react to pressure with Apple Pencil. The **Highlighter** draws wide, see-through strokes. The **Eraser** removes whatever you drag it across.
 
+## Can Canvas straighten my shapes?
+
+Yes. Draw a rough line, circle or rectangle with the pen (mouse, finger or Apple Pencil), then keep still for a moment at the end before you lift. It settles into a clean shape in the same colour and weight. Nearly level lines become level, and nearly square or round shapes become perfect squares and circles. Anything that doesn't clearly look like one of those stays exactly as you drew it. With the highlighter, it straightens lines.
+
 ## How do I add shapes, sticky notes and text?
 
 - **Shapes:** pick Rectangle or Ellipse and drag on the board. Hold <kbd>Shift</kbd> for a perfect square or circle.

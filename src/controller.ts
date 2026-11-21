@@ -1,4 +1,5 @@
 import { play } from './sound'
+import { recognize, STILL_PX, STRAIGHTEN_MS, straightened } from './straighten'
 import { useFeedback } from './feedback'
 import { startCrop } from './crop'
 import { groupOf, withGroups } from './groups'
@@ -17,7 +18,7 @@ import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } 
 type Action =
   | { kind: 'pan'; pointerId: number; sx: number; sy: number; vp: Viewport; touch: boolean; moved: boolean }
   /** `tap`: a Pencil stroke started with Select picked; a tap (no real movement) selects instead */
-  | { kind: 'draw'; pointerId: number; el: FreedrawEl; tap?: { sx: number; sy: number; far: boolean } }
+  | { kind: 'draw'; pointerId: number; el: FreedrawEl; tap?: { sx: number; sy: number; far: boolean }; still?: { sx: number; sy: number }; straight?: El }
   | {
       kind: 'shape'
       pointerId: number
@@ -203,6 +204,7 @@ export class CanvasController {
   /** Abort the current gesture and restore the board to how it was before it began. */
   cancel() {
     this.stopHold()
+    clearTimeout(this.straightTimer)
     S().setLifted([])
     const a = this.action
     if (!a) return
@@ -537,6 +539,21 @@ export class CanvasController {
     return sel.some((el) => hitTest(el, p, this.tolerance('pen')))
   }
 
+  private straightTimer = 0
+  /** After a moment of holding still, a stroke that looks like a line, circle or rectangle settles into a clean one. */
+  private armStraighten(a: Extract<Action, { kind: 'draw' }>) {
+    clearTimeout(this.straightTimer)
+    this.straightTimer = window.setTimeout(() => {
+      if (this.action !== a || a.straight || (a.tap && !a.tap.far)) return
+      const shape = recognize(a.el.points, S().viewport.zoom)
+      const el = shape && straightened(a.el, shape)
+      if (!el) return
+      a.straight = el
+      S().setDraft(el)
+      play('place')
+    }, STRAIGHTEN_MS)
+  }
+
   private startDraw(e: PointerEvent, p: Point, highlight = false, tap?: { sx: number; sy: number; far: boolean }) {
     const s = S()
     const real = e.pointerType === 'pen' && !highlight
@@ -598,6 +615,8 @@ export class CanvasController {
         break
       }
       case 'draw': {
+        // straightened: the clean shape stays until the stroke ends
+        if (a.straight) break
         if (a.tap && !a.tap.far && Math.hypot(sx - a.tap.sx, sy - a.tap.sy) > 6) a.tap.far = true
         const events = typeof e.getCoalescedEvents === 'function' ? e.getCoalescedEvents() : []
         const list = events.length ? events : [e]
@@ -611,6 +630,11 @@ export class CanvasController {
         }
         a.el = { ...a.el, points: pts }
         s.setDraft(a.el)
+        // hold still at the end of a stroke and it straightens (moving on starts the wait again)
+        if (!a.still || Math.hypot(sx - a.still.sx, sy - a.still.sy) > STILL_PX) {
+          a.still = { sx, sy }
+          this.armStraighten(a)
+        }
         break
       }
       case 'shape': {
@@ -908,6 +932,12 @@ export class CanvasController {
         }
         break
       case 'draw': {
+        clearTimeout(this.straightTimer)
+        if (a.straight) {
+          s.setDraft(null)
+          s.commit([...s.doc.elements, a.straight])
+          break
+        }
         const el = { ...a.el }
         s.setDraft(null)
         if (a.tap && !a.tap.far) {
