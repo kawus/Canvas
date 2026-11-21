@@ -3,22 +3,23 @@
  *
  *   GET    /api/ideas                     → { ideas }  (listed ideas with their votes)
  *   POST   /api/ideas  { kind: 'vote', id, device, on }        → { votes }
- *   POST   /api/ideas  { kind: 'suggest', title, text, email } → { ok }   (goes to the private inbox)
+ *   POST   /api/ideas  { kind: 'suggest', title, text, email, device } → { ok, id }   (lands in the Inbox column)
  *
  * The owner (X-Admin-Key = IDEAS_ADMIN_KEY in Vercel) also gets:
- *   GET    /api/ideas?admin=1             → { ideas, inbox }
- *   POST   /api/ideas  { kind: 'add', title, text, status, from? }  → add an idea (from an inbox item, or new)
- *   PATCH  /api/ideas  { id, status?, title?, text? }               → change an idea
- *   DELETE /api/ideas?id=… | ?inbox=…                               → remove an idea / dismiss a suggestion
+ *   GET    /api/ideas?admin=1             → { ideas }  (with the email addresses people left)
+ *   POST   /api/ideas  { kind: 'add', title, text, status }  → add an idea
+ *   PATCH  /api/ideas  { id, status?, title?, text? }       → change an idea, or move it between columns
+ *   DELETE /api/ideas?id=…                                  → remove an idea
  *
- * No accounts: a vote is one per device (a random id the browser keeps), and
- * suggestions only appear publicly once the owner adds them.
+ * The board's columns, always in this order: Inbox (every new suggestion,
+ * straight away), Planned, Working on, Delivered. No accounts: a vote is one
+ * per device (a random id the browser keeps), and email addresses are never shown.
  */
 
 import { allowFeedback, tooMuch } from './_limits.js'
 import { json, redis, redisConfig, sha256 } from './_redis.js'
 
-const STATUSES = ['planned', 'working', 'delivered']
+const STATUSES = ['inbox', 'planned', 'working', 'delivered']
 const IDEAS = 'ideas'
 const INBOX = 'ideas:inbox'
 const votesKey = (/** @type {string} */ id) => `ideas:v:${id}`
@@ -78,6 +79,13 @@ async function listed() {
     for (const [i, s] of SEEDS.entries()) await redis(['HSET', IDEAS, s.id, JSON.stringify({ ...s, created: now - i })])
     await redis(['SET', 'ideas:seeded', '1'])
   }
+  // suggestions from before the Inbox column join the board, in the Inbox
+  if (Number(await redis(['HLEN', INBOX])) > 0) {
+    for (const old of await all(INBOX)) {
+      await redis(['HSET', IDEAS, old.id, JSON.stringify({ id: old.id, title: old.title, text: old.text ?? '', status: 'inbox', created: old.created, ...(old.email ? { email: old.email } : {}) })])
+      await redis(['HDEL', INBOX, old.id])
+    }
+  }
   const ideas = await all(IDEAS)
   const counts = await Promise.all(ideas.map((x) => redis(['SCARD', votesKey(x.id)])))
   return ideas.map((x, i) => ({ ...x, votes: Number(counts[i]) || 0 })).sort((a, b) => b.votes - a.votes || b.created - a.created)
@@ -91,8 +99,7 @@ export async function handle(request) {
     if (request.method === 'GET') {
       if (url.searchParams.get('admin')) {
         if (!isOwner(request)) return refused()
-        const inbox = (await all(INBOX)).sort((a, b) => b.created - a.created)
-        return json({ ideas: await listed(), inbox })
+        return json({ ideas: await listed() })
       }
       // only what the public needs (never an email address)
       const ideas = (await listed()).map(({ id, title, text, status, votes, created }) => ({ id, title, text, status, votes, created }))
@@ -128,10 +135,14 @@ export async function handle(request) {
       if (!title) return json({ error: 'empty idea' }, 400)
       if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: 'that email address doesn’t look right' }, 400)
       if (!(await allowFeedback(request))) return tooMuch()
-      if (Number(await redis(['HLEN', INBOX])) >= 500) return json({ error: 'the inbox is full for now' }, 409)
+      const waiting = (await all(IDEAS)).filter((x) => x.status === 'inbox').length
+      if (waiting >= 300) return json({ error: 'the inbox is full for now' }, 409)
       const id = newId()
-      await redis(['HSET', INBOX, id, JSON.stringify({ id, title, text, ...(email ? { email } : {}), created: Date.now() })])
-      return json({ ok: true })
+      await redis(['HSET', IDEAS, id, JSON.stringify({ id, title, text, status: 'inbox', ...(email ? { email } : {}), created: Date.now() })])
+      // whoever suggested it counts as its first vote
+      const device = String(body.device ?? '')
+      if (/^[a-z0-9]{8,40}$/.test(device)) await redis(['SADD', votesKey(id), (await sha256(`canvas-idea:${device}`)).slice(0, 24)])
+      return json({ ok: true, id })
     }
 
     // everything below is for the owner
@@ -142,12 +153,7 @@ export async function handle(request) {
       if (!title) return json({ error: 'empty idea' }, 400)
       const status = STATUSES.includes(body.status) ? body.status : 'planned'
       const id = newId()
-      await redis(['HSET', IDEAS, id, JSON.stringify({ id, title, text: clean(body.text, 300), status, created: Date.now() })])
-      // added from a suggestion: it leaves the inbox (and whoever suggested it counts as its first vote)
-      if (typeof body.from === 'string' && body.from) {
-        await redis(['HDEL', INBOX, body.from])
-        await redis(['SADD', votesKey(id), `suggested:${body.from}`])
-      }
+      await redis(['HSET', IDEAS, id, JSON.stringify({ id, title, text: clean(body.text, 500), status, created: Date.now() })])
       return json({ ok: true, id })
     }
 
@@ -161,19 +167,16 @@ export async function handle(request) {
         if (body.status === 'delivered' && !idea.delivered) idea.delivered = Date.now()
       }
       if (typeof body.title === 'string' && clean(body.title, 90)) idea.title = clean(body.title, 90)
-      if (typeof body.text === 'string') idea.text = clean(body.text, 300)
+      if (typeof body.text === 'string') idea.text = clean(body.text, 500)
       await redis(['HSET', IDEAS, id, JSON.stringify(idea)])
       return json({ ok: true })
     }
 
     if (request.method === 'DELETE') {
       const id = url.searchParams.get('id')
-      const inbox = url.searchParams.get('inbox')
-      if (id) {
-        await redis(['HDEL', IDEAS, id])
-        await redis(['DEL', votesKey(id)])
-      } else if (inbox) await redis(['HDEL', INBOX, inbox])
-      else return json({ error: 'nothing to remove' }, 400)
+      if (!id) return json({ error: 'nothing to remove' }, 400)
+      await redis(['HDEL', IDEAS, id])
+      await redis(['DEL', votesKey(id)])
       return json({ ok: true })
     }
 

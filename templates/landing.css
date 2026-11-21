@@ -600,11 +600,16 @@ p {
 }
 .ideas-columns {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
   align-items: start;
 }
-@media (max-width: 860px) {
+@media (max-width: 1000px) {
+  .ideas-columns {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
   .ideas-columns {
     grid-template-columns: 1fr;
   }
@@ -763,36 +768,11 @@ p {
   display: flex;
   gap: 8px;
 }
-.ideas-inbox {
-  margin-bottom: 24px;
-  padding: 18px;
-  border-radius: 20px;
-  border: 1.5px dashed var(--border);
+.idea-meta {
+  overflow-wrap: anywhere;
+  font-size: 12.5px !important;
+  color: var(--text-3) !important;
 }
-.ideas-inbox h3 {
-  margin: 0 0 12px;
-  font-size: 17px;
-}
-.inbox-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
-}
-.inbox-item {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-}
-.inbox-meta {
-  margin: 0;
-  color: var(--text-3);
-  font-size: 13px;
-}
-.inbox-acts,
 .idea-admin {
   display: flex;
   gap: 8px;

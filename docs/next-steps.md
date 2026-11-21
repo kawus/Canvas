@@ -32,17 +32,16 @@ Keys go only into Vercel, never into chat or the project.
 
 ## 2b. Switch on your Ideas board (5 minutes)
 
-The What's new page has an **Ideas & requests** board: visitors vote and suggest ideas, and you decide what goes on the board.
+The What's new page has an **Ideas & requests** board: visitors suggest ideas and vote, and you move the ideas along.
 
 1. Vercel → **Settings → Environment Variables** → add **`IDEAS_ADMIN_KEY`**: a long random value from your password manager (at least 12 characters). Redeploy.
 2. Open **canvas.kawus.com/changelog/?admin**, paste the key once. It's remembered on that device (do it on your phone too).
-3. You'll see your **Inbox** above the board. For each suggestion: tidy the words and tap **Add to Planned**, or **Dismiss**. Each idea's menu moves it between **Planned**, **Working on** and **Delivered**.
+3. The board has four columns, always in this order: **Inbox**, **Planned**, **Working on**, **Delivered**. Every suggestion goes straight into **Inbox**, where everyone can see it and vote. In your view, each idea has a menu to move it to another column, and **Remove** for anything that doesn't belong (spam, or ideas that don't fit). Inbox ideas also show the date and, if they left one, the person's email; only you see that.
 
 **A 10-minute weekly habit:**
-- Read the inbox and add the good ideas. Votes show what people want most: the top of **Planned** is your next build.
+- Look through the **Inbox**: move the good ideas to **Planned**, remove what doesn't fit (without guilt). Votes show what people want most: the top of **Planned** is your next build.
 - Move what you're building to **Working on**: it shows people the product is alive.
-- When something ships, mark it **Delivered** and ask Claude to add it to the changelog. People who left their email are listed in the inbox entry: a short personal "it's ready" email is the best way to turn them into fans (and a reason to post on Instagram).
-- Ideas that don't fit the calm Canvas: dismiss them without guilt.
+- When something ships, mark it **Delivered** and ask Claude to add it to the changelog. A short personal "it's ready" email to whoever suggested it (their email shows on the idea in your view) is the best way to turn them into fans, and a reason to post on Instagram.
 
 ## 2c. Mark "Board history" as Delivered (1 minute)
 

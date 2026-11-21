@@ -1,12 +1,12 @@
 /**
  * Ideas & requests on /changelog/: a small public roadmap. Everyone can vote
- * (one vote per device) and suggest ideas; suggestions reach a private inbox.
- * The owner opens the page with ?admin, enters the key once, and then adds
- * suggestions to the board and moves ideas between Planned, Working on and
- * Delivered (see api/ideas.js).
+ * (one vote per device) and suggest ideas, which land in the Inbox column
+ * straight away. The columns always read Inbox, Planned, Working on,
+ * Delivered. The owner opens the page with ?admin, enters the key once, and
+ * then moves ideas between columns, edits or removes them (see api/ideas.js).
  */
 
-type Status = 'planned' | 'working' | 'delivered'
+type Status = 'inbox' | 'planned' | 'working' | 'delivered'
 interface Idea {
   id: string
   title: string
@@ -14,19 +14,15 @@ interface Idea {
   status: Status
   votes: number
   created: number
-}
-interface Suggestion {
-  id: string
-  title: string
-  text?: string
+  /** only in the owner's view, when the person left one */
   email?: string
-  created: number
 }
 
 const API = new URL('../api/ideas', location.href).href
 const COLUMNS: { status: Status; label: string; hint: string }[] = [
-  { status: 'working', label: 'Working on', hint: 'Being built now' },
+  { status: 'inbox', label: 'Inbox', hint: 'New ideas land here' },
   { status: 'planned', label: 'Planned', hint: 'Coming up' },
+  { status: 'working', label: 'Working on', hint: 'Being built now' },
   { status: 'delivered', label: 'Delivered', hint: 'Ready to use' },
 ]
 
@@ -88,7 +84,6 @@ function h<K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEle
 }
 
 let ideas: Idea[] = []
-let inbox: Suggestion[] = []
 let adminKey = new URLSearchParams(location.search).has('admin') ? store.get('canvas-ideas-admin') : null
 /** why the last key was refused, to say so plainly */
 let refusal: string | null = null
@@ -107,7 +102,6 @@ async function load() {
     const r = await api('GET', undefined, '?admin=1')
     if (r.ok) {
       ideas = r.data.ideas
-      inbox = r.data.inbox
       return render()
     }
     // the key didn't work: forget it, remember why, and show the public board
@@ -143,7 +137,18 @@ function card(idea: Idea) {
   const mine = voted.has(idea.id)
   const voteBtn = h('button', { type: 'button', class: `idea-vote ${mine ? 'is-on' : ''}`, title: mine ? 'Take back your vote' : 'I want this', ariaPressed: String(mine), ariaLabel: `${idea.votes} ${idea.votes === 1 ? 'vote' : 'votes'}. ${mine ? 'Take back your vote' : 'Vote for this'}` }, h('span', { class: 'idea-arrow', ariaHidden: 'true' }, '▲'), String(idea.votes))
   voteBtn.addEventListener('click', () => void vote(idea, voteBtn))
-  const el = h('article', { class: 'idea' }, voteBtn, h('div', { class: 'idea-body' }, h('h4', {}, idea.title), idea.text ? h('p', {}, idea.text) : null))
+  const el = h(
+    'article',
+    { class: 'idea' },
+    voteBtn,
+    h(
+      'div',
+      { class: 'idea-body' },
+      h('h4', {}, idea.title),
+      idea.text ? h('p', {}, idea.text) : null,
+      adminKey && idea.status === 'inbox' ? h('p', { class: 'idea-meta' }, new Date(idea.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), idea.email ? ` · ${idea.email}` : '') : null,
+    ),
+  )
   if (adminKey) el.append(adminControls(idea))
   return el
 }
@@ -163,37 +168,6 @@ function adminControls(idea: Idea) {
   return h('div', { class: 'idea-admin' }, select, remove)
 }
 
-function inboxPanel() {
-  const items = inbox.map((s) => {
-    const title = h('input', { class: 'idea-field', value: s.title, ariaLabel: 'Title' })
-    const text = h('textarea', { class: 'idea-field', value: s.text ?? '', rows: 2, ariaLabel: 'Description' })
-    const add = h('button', { type: 'button', class: 'btn btn-primary btn-small' }, 'Add to Planned')
-    const dismiss = h('button', { type: 'button', class: 'btn btn-quiet btn-small' }, 'Dismiss')
-    add.addEventListener('click', async () => {
-      await api('POST', { kind: 'add', title: title.value, text: text.value, status: 'planned', from: s.id })
-      void load()
-    })
-    dismiss.addEventListener('click', async () => {
-      await api('DELETE', undefined, `?inbox=${encodeURIComponent(s.id)}`)
-      void load()
-    })
-    return h(
-      'div',
-      { class: 'inbox-item' },
-      h('p', { class: 'inbox-meta' }, new Date(s.created).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }), s.email ? ` · ${s.email}` : ''),
-      title,
-      text,
-      h('div', { class: 'inbox-acts' }, add, dismiss),
-    )
-  })
-  return h(
-    'section',
-    { class: 'ideas-inbox' },
-    h('h3', {}, `Inbox (${inbox.length})`),
-    inbox.length ? h('div', { class: 'inbox-list' }, ...items) : h('p', { class: 'ideas-empty' }, 'No new suggestions. They show up here, and only you can see them.'),
-  )
-}
-
 function render() {
   if (!root) return
   const board = h(
@@ -209,7 +183,7 @@ function render() {
       )
     }),
   )
-  root.replaceChildren(...(adminKey ? [inboxPanel(), board] : [board]))
+  root.replaceChildren(board)
 }
 
 /* ---------- the owner signs in once on this device ---------- */
@@ -249,12 +223,17 @@ form?.addEventListener('submit', async (e) => {
   const button = form.querySelector('button[type=submit]') as HTMLButtonElement
   const status = form.querySelector('.idea-sent') as HTMLElement
   button.disabled = true
-  const r = await api('POST', { kind: 'suggest', title: data.get('title'), text: data.get('text'), email: data.get('email') })
+  const r = await api('POST', { kind: 'suggest', title: data.get('title'), text: data.get('text'), email: data.get('email'), device: device() })
   button.disabled = false
   if (r.ok) {
     form.reset()
-    status.textContent = 'Thank you. Your idea is in. Good ones join the board above.'
-    if (adminKey) void load()
+    // your own idea starts with your vote
+    if (r.data?.id) {
+      voted.add(r.data.id)
+      saveVotes()
+    }
+    status.textContent = 'Thank you. Your idea is in the Inbox above.'
+    void load()
   } else status.textContent = r.status === 429 ? 'That’s a lot of ideas for now. Try again later.' : (r.data?.error ?? 'Couldn’t send that. Please try again.')
 })
 

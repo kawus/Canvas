@@ -176,7 +176,7 @@
         {
           "id": "ideas",
           "name": "Ideas & requests",
-          "text": "Vote for what comes next, or suggest your own idea, on the What's new page.",
+          "text": "Suggest an idea on the What's new page and it goes straight into the Inbox, where everyone can vote for it.",
           "added": "2026-11-21"
         }
       ]
@@ -343,6 +343,10 @@
         {
           "text": "When you present, the dotted background fades away, so only your board is on show.",
           "feature": "slides"
+        },
+        {
+          "text": "Ideas you suggest go straight into the Inbox on the Ideas board, so others can vote for them right away. The board reads Inbox, Planned, Working on, Delivered.",
+          "feature": "ideas"
         }
       ]
     },
