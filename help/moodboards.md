@@ -48,12 +48,12 @@ Tap **+ → Link** and type or paste a web address — just `apple.com` is enoug
 
 Yes. Add the link the same way, with **+ → Link** or by pasting it onto the board. You don't need to say what it is: Canvas recognises these and makes a card that plays right on the board:
 
-- **Videos:** YouTube (including Shorts), Vimeo and Loom.
-- **Music and podcasts:** Spotify, Apple Music, Apple Podcasts, SoundCloud and YouTube Music.
+- **Videos:** YouTube (including Shorts), Vimeo, Loom and TikTok.
+- **Music and podcasts:** Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer and Mixcloud.
 
-Videos get a wide card with the video's picture; music gets a square card with the cover. **Tap the picture** to play. The service's own player opens inside the card, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first; the **×** on the card's corner stops it too. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
+Videos get a wide card with the video's picture, TikToks and YouTube Shorts a tall one, and music a square card with the cover. Short links from the apps' Share buttons work too. **Tap the picture** to play. The service's own player opens inside the card, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first; the **×** on the card's corner stops it too. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
 
-Spotify and Apple Music play whole songs only for people who are signed in to them in that browser; everyone else hears a 30-second preview. Podcasts, YouTube, Vimeo, Loom and SoundCloud play in full.
+Spotify, Apple Music and Deezer play whole songs only for people who are signed in to them in that browser; everyone else hears a 30-second preview. Podcasts, YouTube, Vimeo, Loom, TikTok, SoundCloud, Bandcamp and Mixcloud play in full (on Bandcamp, as far as the artist allows).
 
 ## Why does a link card have no picture?
 

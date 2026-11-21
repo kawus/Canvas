@@ -995,7 +995,7 @@ export class CanvasController {
     if (s.presenting) return false
     const elements = s.earlier?.elements ?? s.doc.elements
     const hit = hitTopmost(elements, this.world(sx, sy), this.tolerance(pointerType))
-    if (hit?.type !== 'link' || !mediaOf(hit.url)) return false
+    if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return false
     const art = linkLayout(hit).image
     const [x, y] = this.world(sx, sy)
     if (!art || x < art.x || x > art.x + art.w || y < art.y || y > art.y + art.h) return false

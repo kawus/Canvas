@@ -18,7 +18,7 @@ export function artBox(el: LinkEl, toScreen: (x: number, y: number) => [number, 
  * someone presses play, with the privacy-enhanced settings each service offers.
  */
 export function Player({ el, box, onStop }: { el: LinkEl; box: { left: number; top: number; width: number; height: number }; onStop: () => void }) {
-  const media = mediaOf(el.url)
+  const media = mediaOf(el.url, el.player)
   if (!media) return null
   return (
     <div className={`media-player is-${media.kind}`} style={box} data-testid="media-player" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>

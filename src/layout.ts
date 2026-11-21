@@ -131,10 +131,16 @@ export function linkLayout(el: LinkEl): LinkLayout {
   const h = Math.abs(el.h)
   const textW = Math.max(w - CARD_PAD * 2, 10)
   // videos and music always have a picture area (it's where they play); music covers are square
-  const media = mediaOf(el.url)
+  const media = mediaOf(el.url, el.player)
   const hasArt = !!el.image || !!media
   const artW = w - CARD_INSET * 2
-  const imgH = hasArt ? (media?.kind === 'audio' ? Math.min(artW, h * 0.72) : Math.min(artW * 0.56, h * 0.62)) : 0
+  const imgH = !hasArt
+    ? 0
+    : media?.shape === 'square'
+      ? Math.min(artW, h * 0.72)
+      : media?.shape === 'tall'
+        ? Math.min((artW * 16) / 9, h * 0.8)
+        : Math.min(artW * 0.56, h * 0.62)
   const image = hasArt ? { x: el.x + CARD_INSET, y: el.y + CARD_INSET, w: artW, h: imgH } : null
   let play: LinkLayout['play'] = null
   if (media && image) {

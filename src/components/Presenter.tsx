@@ -341,7 +341,7 @@ export function Presenter({ palette }: { palette: Palette }) {
     const z = vw() / c[2]
     const p: [number, number] = [(sx - (vw() / 2 - c[0] * z)) / z, (sy - (vh() / 2 - c[1] * z)) / z]
     const hit = hitTopmost(content, p, 6 / z)
-    if (hit?.type !== 'link' || !mediaOf(hit.url)) return null
+    if (hit?.type !== 'link' || !mediaOf(hit.url, hit.player)) return null
     const art = linkLayout(hit).image
     return art && p[0] >= art.x && p[0] <= art.x + art.w && p[1] >= art.y && p[1] <= art.y + art.h ? hit.id : null
   }

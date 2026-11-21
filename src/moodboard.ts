@@ -87,18 +87,22 @@ interface Preview {
   site: string
   image: string
   isImage?: boolean
+  /** Bandcamp: the number its player needs */
+  player?: string
 }
 
 const CARD_W = 280
 /** music cards: a square cover, a little narrower */
 const AUDIO_W = 224
+/** TikTok and YouTube Shorts: a tall card */
+const TALL_W = 200
 
 /** Card height that fits its content (mirrors linkLayout). */
-function cardHeight(title: string, description: string, hasImage: boolean, w = CARD_W, square = false) {
+function cardHeight(title: string, description: string, hasImage: boolean, w = CARD_W, shape: 'wide' | 'square' | 'tall' = 'wide') {
   const textW = w - 24
   const titleLines = Math.min(2, wrapText(title, 15, textW).length)
-  const descLines = description ? Math.min(square ? 1 : 3, wrapText(description.replace(/\s+/g, ' '), 12.5, textW).length) : 0
-  const header = hasImage ? 6 + (w - 12) * (square ? 1 : 0.56) + 10 : 12
+  const descLines = description ? Math.min(shape === 'square' ? 1 : 3, wrapText(description.replace(/\s+/g, ' '), 12.5, textW).length) : 0
+  const header = hasImage ? 6 + (w - 12) * (shape === 'square' ? 1 : shape === 'tall' ? 16 / 9 : 0.56) + 10 : 12
   return Math.round(header + titleLines * 18.75 + 4 + (descLines ? descLines * 15.625 + 4 : 0) + 14.375 + 12 + 6)
 }
 
@@ -116,9 +120,11 @@ export async function addLink(raw: string, at?: Point) {
   }
   if (p.isImage && p.image) return importImageUrl(p.image, at)
   // a video or a song: it plays on the board (music gets a square cover)
-  const media = mediaOf(p.url || url) ?? mediaOf(url)
-  const square = media?.kind === 'audio'
-  const w = square ? AUDIO_W : CARD_W
+  // Bandcamp: the number its player needs, read from the page by the server
+  const player = p.player && /^(album|track)=\d{1,15}$/.test(p.player) ? p.player : undefined
+  const media = mediaOf(p.url || url, player) ?? mediaOf(url, player)
+  const shape = media?.shape ?? 'wide'
+  const w = shape === 'square' ? AUDIO_W : shape === 'tall' ? TALL_W : CARD_W
 
   let image: string | undefined
   if (p.image) {
@@ -126,7 +132,7 @@ export async function addLink(raw: string, at?: Point) {
     if (blob) {
       try {
         // cropped to the card's preview shape, so exports (which can't crop) look the same
-        const { url: data } = await prepareImage(blob, { aspect: square ? 1 : 1 / 0.56, maxSide: 900 })
+        const { url: data } = await prepareImage(blob, { aspect: shape === 'square' ? 1 : shape === 'tall' ? 9 / 16 : 1 / 0.56, maxSide: 900 })
         image = await hashData(data)
         await saveAsset(image, data)
       } catch {
@@ -136,7 +142,7 @@ export async function addLink(raw: string, at?: Point) {
   }
   const title = p.title || hostOf(p.url)
   const desc = p.description && p.description !== media?.service && p.description !== p.site ? p.description : ''
-  const h = cardHeight(title, desc, !!image || !!media, w, square)
+  const h = cardHeight(title, desc, !!image || !!media, w, shape)
   const [cx, cy] = at ?? freeSpot(w, h)
   const el: LinkEl = {
     id: newElementId(),
@@ -147,7 +153,8 @@ export async function addLink(raw: string, at?: Point) {
     w,
     h,
     // keep the address that plays (a short link may have led somewhere else)
-    url: media && !mediaOf(p.url || '') ? url : p.url || url,
+    url: media && !mediaOf(p.url || '', player) ? url : p.url || url,
+    ...(media && player ? { player } : {}),
     title,
     // (a description that just repeats the service's name adds nothing)
     ...(p.description && p.description !== media?.service && p.description !== p.site ? { description: p.description } : {}),

@@ -95,6 +95,8 @@ export interface LinkEl extends Base {
   site?: string
   /** preview image, stored like other images (content hash) */
   image?: string
+  /** Bandcamp only: the number its player needs, e.g. "album=123" (see media.ts) */
+  player?: string
 }
 
 /** A colour chip with its hex code, for moodboards. */

@@ -160,17 +160,25 @@ async function oembed(url) {
   else if (host === 'loom.com') found = [`https://www.loom.com/v1/oembed?url=${q}`, 'Loom']
   else if (host === 'open.spotify.com') found = [`https://open.spotify.com/oembed?url=${q}`, 'Spotify']
   else if (host === 'soundcloud.com') found = [`https://soundcloud.com/oembed?format=json&url=${q}`, 'SoundCloud']
+  else if (host === 'tiktok.com') found = [`https://www.tiktok.com/oembed?url=${q}`, 'TikTok']
+  else if (host === 'mixcloud.com') found = [`https://www.mixcloud.com/oembed/?format=json&url=${q}`, 'Mixcloud']
+  else if (host === 'deezer.com') return deezer(url)
   else if (host === 'music.apple.com' || host === 'podcasts.apple.com') return apple(url, host === 'music.apple.com' ? 'Apple Music' : 'Apple Podcasts')
   if (!found) return null
   const [api, site] = found
   const res = await fetch(api, { signal: AbortSignal.timeout(TIMEOUT) })
   if (!res.ok) return null
-  const d = /** @type {{ title?: string, author_name?: string, thumbnail_url?: string, html?: string }} */ (await res.json())
+  const d = /** @type {{ title?: string, author_name?: string, thumbnail_url?: string, image?: string, html?: string }} */ (await res.json())
   // SoundCloud's title reads "Track by Artist"; keep just the track
   let title = d.title || ''
   if (site === 'SoundCloud' && d.author_name && title.endsWith(` by ${d.author_name}`)) title = title.slice(0, -` by ${d.author_name}`.length)
   const href = url.href
-  return { url: href, title: title.slice(0, 300), description: (d.author_name || '').slice(0, 200), site, image: d.thumbnail_url || '' }
+  // TikTok's oEmbed often has no title or picture: say what it is and whose it is
+  if (site === 'TikTok' && !title) {
+    title = 'TikTok video'
+    if (!d.author_name) d.author_name = /\/(@[\w.]{1,40})\//.exec(url.pathname)?.[1] ?? ''
+  }
+  return { url: href, title: title.slice(0, 300), description: (d.author_name || '').slice(0, 200), site, image: d.thumbnail_url || d.image || '' }
 }
 
 /**
@@ -192,13 +200,34 @@ async function apple(url, site) {
 }
 
 /**
+ * Deezer: its public API gives the title, who made it and the cover.
+ * @param {URL} url
+ */
+async function deezer(url) {
+  const parts = url.pathname.split('/').filter(Boolean)
+  const p = /^[a-z]{2}$/.test(parts[0] ?? '') ? parts.slice(1) : parts
+  const type = { track: 'track', album: 'album', playlist: 'playlist', episode: 'episode', show: 'podcast', artist: 'artist' }[p[0] ?? '']
+  if (!type || !/^\d{1,15}$/.test(p[1] ?? '')) return null
+  const res = await fetch(`https://api.deezer.com/${type}/${p[1]}`, { signal: AbortSignal.timeout(TIMEOUT) })
+  if (!res.ok) return null
+  /** @type {any} */
+  const d = await res.json()
+  if (!d || d.error) return null
+  const title = d.title || d.name || ''
+  const by = d.artist?.name || d.creator?.name || d.podcast?.title || ''
+  const image = d.cover_xl || d.album?.cover_xl || d.picture_xl || d.podcast?.picture_xl || ''
+  return { url: url.href, title: String(title).slice(0, 300), description: String(by).slice(0, 200), site: 'Deezer', image }
+}
+
+/**
  * Share buttons often give short links (on.soundcloud.com, spotify.link):
  * follow them to the real address so the card can play.
  * @param {URL} url
  */
 async function expand(url) {
-  const short = { 'on.soundcloud.com': 'soundcloud.com', 'spotify.link': 'open.spotify.com' }
-  const want = /** @type {Record<string, string>} */ (short)[url.hostname]
+  const short = { 'on.soundcloud.com': 'soundcloud.com', 'spotify.link': 'open.spotify.com', 'vm.tiktok.com': 'tiktok.com', 'vt.tiktok.com': 'tiktok.com', 'link.deezer.com': 'deezer.com' }
+  const host = url.hostname.replace(/^www\./, '')
+  const want = /** @type {Record<string, string>} */ (short)[host] ?? (host === 'tiktok.com' && url.pathname.startsWith('/t/') ? 'tiktok.com' : '')
   if (!want) return url
   try {
     const { res, url: landed } = await publicFetch(url, { method: 'HEAD', headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT) })
@@ -234,6 +263,12 @@ async function preview(start) {
   const description = meta(html, ['og:description', 'twitter:description', 'description'])
   const site = meta(html, ['og:site_name', 'application-name']) || finalUrl.hostname.replace(/^www\./, '')
   let image = meta(html, ['og:image:secure_url', 'og:image', 'twitter:image', 'twitter:image:src'])
+  // Bandcamp: the number its player needs (album=… or track=…)
+  let player = ''
+  if (finalUrl.hostname.endsWith('.bandcamp.com')) {
+    const m = /bandcamp\.com\/EmbeddedPlayer\/(?:v=2\/)?(album|track)=(\d{1,15})/.exec(meta(html, ['og:video', 'og:video:secure_url', 'twitter:player']) || html)
+    if (m) player = `${m[1]}=${m[2]}`
+  }
   if (image) {
     try {
       image = new URL(image, finalUrl).href
@@ -247,6 +282,7 @@ async function preview(start) {
     description: description.slice(0, 500),
     site: site.slice(0, 100),
     image,
+    ...(player ? { player } : {}),
   }
 }
 

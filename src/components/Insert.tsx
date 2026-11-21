@@ -1,6 +1,6 @@
 import { Link, Palette } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { mediaOf, SERVICES } from '../media'
+import { parseMedia, SERVICES } from '../media'
 import { addLink, addSwatch, normalizeUrl } from '../moodboard'
 import { useStore } from '../store'
 
@@ -35,7 +35,7 @@ export function InsertDialog() {
   const normalizedHex = hex.startsWith('#') ? hex : `#${hex}`
   // no need to say which service: it's recognised from the link
   const typed = insert === 'link' ? normalizeUrl(url) : null
-  const media = typed ? mediaOf(typed) : null
+  const media = typed ? parseMedia(typed) : null
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()

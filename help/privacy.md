@@ -54,7 +54,7 @@ Backing up your link by email doesn't share your address with Canvas: it opens y
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
 
-Videos and music on a board (YouTube, Vimeo, Loom, Spotify, Apple Music, Apple Podcasts, SoundCloud) load nothing from those services until someone presses play. Only then does that service's own player open in the card, under its own privacy policy. YouTube plays in its privacy-enhanced mode and Vimeo is asked not to track.
+Videos and music on a board (YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, Bandcamp, Deezer, Mixcloud) load nothing from those services until someone presses play. Only then does that service's own player open in the card, under its own privacy policy. YouTube plays in its privacy-enhanced mode and Vimeo is asked not to track.
 
 ## Does Canvas track me?
 
