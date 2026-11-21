@@ -18,6 +18,7 @@ import { InsertDialog } from './components/Insert'
 import { LibraryDialogs } from './components/Library'
 import { StatsPage } from './components/Stats'
 import { UpgradeDialog, ViewBar } from './components/Upgrade'
+import { MediaLayer } from './components/MediaPlayer'
 import { Versions } from './components/Versions'
 import { Welcome } from './components/Welcome'
 import { Presenter } from './components/Presenter'
@@ -93,6 +94,7 @@ export default function App() {
   return (
     <div className={`app ${loaded ? 'is-loaded' : ''} ${focus ? 'is-focus' : ''} ${versions ? 'is-versions' : ''} ${earlier ? 'is-earlier' : ''}`}>
       <Canvas palette={palette} />
+      <MediaLayer />
       <TextEditor palette={palette} />
       <PeerCursors />
       <FeedbackLayer palette={palette} />

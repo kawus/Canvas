@@ -91,6 +91,8 @@ interface State {
   sounds: boolean
   /** focus mode: only the board, no bars or buttons */
   focus: boolean
+  /** the video or song card playing on the board (only one at a time) */
+  playing: string | null
   /** the Earlier versions panel is open (the board can't be edited meanwhile) */
   versionsOpen: boolean
   /** the earlier version being looked at, or null for the board as it is now */
@@ -170,6 +172,7 @@ interface State {
   setGridSnap: (on: boolean) => void
   setSounds: (on: boolean) => void
   setFocus: (on: boolean) => void
+  setPlaying: (id: string | null) => void
   setVersionsOpen: (open: boolean) => void
   setEarlier: (earlier: PastView | null) => void
   setViewport: (v: Viewport) => void
@@ -242,6 +245,7 @@ export const useStore = create<State>((set, get) => ({
   gridSnap: readFlag('canvas-grid', false),
   sounds: readFlag('canvas-sounds', false),
   focus: false,
+  playing: null,
   versionsOpen: false,
   earlier: null,
   penMode: false,
@@ -272,6 +276,7 @@ export const useStore = create<State>((set, get) => ({
       tool: doc.key ? 'select' : 'hand',
       change: 'load',
       loaded: true,
+      playing: null,
       past: [],
       future: [],
       selectedIds: [],
@@ -333,7 +338,7 @@ export const useStore = create<State>((set, get) => ({
   setPanel: (panel) => set({ panel }),
   setTour: (tour) => set({ tour }),
   setCropId: (cropId) => set({ cropId, editingId: null }),
-  setPresenting: (presenting) => set({ presenting, editingId: null, draft: null, marquee: null, guides: [] }),
+  setPresenting: (presenting) => set({ presenting, playing: null, editingId: null, draft: null, marquee: null, guides: [] }),
   setPencilHold: (pencilHold) => set({ pencilHold }),
   setLifted: (lifted) => {
     if (lifted.length || get().lifted.length) set({ lifted })
@@ -450,6 +455,7 @@ export const useStore = create<State>((set, get) => ({
   setVersionsOpen: (versionsOpen) =>
     set(versionsOpen ? { versionsOpen, focus: false, selectedIds: [], editingId: null, draft: null, marquee: null, guides: [] } : { versionsOpen, earlier: null }),
   setEarlier: (earlier) => set({ earlier }),
+  setPlaying: (playing) => set({ playing }),
   setSounds: (sounds) => {
     try {
       localStorage.setItem('canvas-sounds', sounds ? '1' : '0')

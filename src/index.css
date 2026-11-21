@@ -1699,6 +1699,46 @@ button:focus:not(:focus-visible) {
 .insert-hint.is-error {
   color: var(--danger);
 }
+.insert-hint.is-media {
+  color: var(--accent);
+  font-weight: 550;
+}
+/* the services that play on the board */
+.service-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.service-chips li {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px 3px 7px;
+  border-radius: 999px;
+  background: var(--hover);
+  color: var(--text-2);
+  font-size: 11.5px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: opacity 0.15s, background-color 0.15s, color 0.15s;
+}
+.service-chips i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--c);
+}
+.service-chips.has-match li {
+  opacity: 0.4;
+}
+.service-chips li.is-on {
+  opacity: 1;
+  background: color-mix(in srgb, var(--c) 14%, transparent);
+  color: var(--text);
+}
 .field[aria-invalid='true'] {
   box-shadow: inset 0 0 0 1.5px var(--danger);
 }
@@ -5108,4 +5148,52 @@ button:focus:not(:focus-visible) {
   .versions-when {
     flex: 1;
   }
+}
+
+/* ---------- Videos and music playing on the board ---------- */
+
+.media-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.media-player {
+  position: absolute;
+  pointer-events: auto;
+  border-radius: 6px;
+  box-shadow: 0 0 0 2px var(--accent);
+  animation: pop 0.16s ease-out;
+}
+.media-player iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  border-radius: 6px;
+  background: #111;
+}
+.media-player.is-audio iframe {
+  background: var(--panel-solid);
+}
+.media-stop {
+  position: absolute;
+  top: -11px;
+  right: -11px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--panel-solid);
+  color: var(--text);
+  box-shadow: 0 0 0 0.5px var(--border), var(--shadow);
+}
+.media-stop svg.lucide {
+  width: 14px;
+  height: 14px;
+}
+.presenter .media-layer {
+  z-index: 2;
 }

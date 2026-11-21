@@ -54,6 +54,8 @@ Backing up your link by email doesn't share your address with Canvas: it opens y
 
 When you add a link card, Canvas's server visits that web page to fetch its title and preview image.
 
+Videos and music on a board (YouTube, Vimeo, Loom, Spotify, Apple Music, Apple Podcasts, SoundCloud) load nothing from those services until someone presses play. Only then does that service's own player open in the card, under its own privacy policy. YouTube plays in its privacy-enhanced mode and Vimeo is asked not to track.
+
 ## Does Canvas track me?
 
 No ads and no tracking cookies. Canvas uses Vercel Web Analytics to count visits to its pages anonymously and without cookies. Only the page is counted (like the app, the front page or a help page) — never which board you opened, and never the private part of a link. To learn whether people want Canvas Pro, Canvas also counts anonymously how often its offer is seen and chosen, using a random ID for each browser.

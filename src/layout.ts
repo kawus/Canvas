@@ -1,4 +1,5 @@
 import { LABEL_FONT, LINE_HEIGHT, STICKY_FONT } from './constants'
+import { mediaOf } from './media'
 import { firstBaseline, textWidth } from './textMetrics'
 import type { BoxEl, LinkEl, StickyEl } from './types'
 
@@ -106,6 +107,8 @@ export interface CardText {
 export interface LinkLayout {
   image: { x: number; y: number; w: number; h: number } | null
   lines: CardText[]
+  /** videos and music: the play button (centre and radius) */
+  play: { x: number; y: number; r: number } | null
 }
 
 const linkCache = new WeakMap<object, LinkLayout>()
@@ -127,8 +130,22 @@ export function linkLayout(el: LinkEl): LinkLayout {
   const w = Math.abs(el.w)
   const h = Math.abs(el.h)
   const textW = Math.max(w - CARD_PAD * 2, 10)
-  const imgH = el.image ? Math.min((w - CARD_INSET * 2) * 0.56, h * 0.62) : 0
-  const image = el.image ? { x: el.x + CARD_INSET, y: el.y + CARD_INSET, w: w - CARD_INSET * 2, h: imgH } : null
+  // videos and music always have a picture area (it's where they play); music covers are square
+  const media = mediaOf(el.url)
+  const hasArt = !!el.image || !!media
+  const artW = w - CARD_INSET * 2
+  const imgH = hasArt ? (media?.kind === 'audio' ? Math.min(artW, h * 0.72) : Math.min(artW * 0.56, h * 0.62)) : 0
+  const image = hasArt ? { x: el.x + CARD_INSET, y: el.y + CARD_INSET, w: artW, h: imgH } : null
+  let play: LinkLayout['play'] = null
+  if (media && image) {
+    if (media.kind === 'video') {
+      const r = Math.max(12, Math.min(30, Math.min(image.w, image.h) * 0.13))
+      play = { x: image.x + image.w / 2, y: image.y + image.h / 2, r }
+    } else {
+      const r = Math.max(11, Math.min(22, image.w * 0.085))
+      play = { x: image.x + image.w - r - 8, y: image.y + image.h - r - 8, r }
+    }
+  }
   const lines: CardText[] = []
   const bottom = el.y + h - CARD_PAD
   const siteSize = 11.5
@@ -149,7 +166,7 @@ export function linkLayout(el: LinkEl): LinkLayout {
     top += shown.length * lh + 4
   }
   block(el.title || el.url, 15, false, 2)
-  block(el.description ?? '', 12.5, true, 3)
+  block(el.description ?? '', 12.5, true, media?.kind === 'audio' ? 1 : 3)
   lines.push({
     text: ellipsize(el.site || hostOf(el.url), siteSize, textW),
     x: el.x + CARD_PAD,
@@ -157,7 +174,7 @@ export function linkLayout(el: LinkEl): LinkLayout {
     size: siteSize,
     muted: true,
   })
-  const layout = { image, lines }
+  const layout = { image, lines, play }
   linkCache.set(el, layout)
   return layout
 }

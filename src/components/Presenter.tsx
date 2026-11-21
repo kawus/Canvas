@@ -1,13 +1,16 @@
 import { ChevronLeft, ChevronRight, LayoutGrid, X } from 'lucide-react'
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { Palette } from '../constants'
-import { contentOf, unionBounds } from '../geometry'
+import { contentOf, hitTopmost, unionBounds } from '../geometry'
+import { linkLayout } from '../layout'
+import { mediaOf } from '../media'
 import { touchFirst } from '../platform'
 import { slideBox, slidesOf, stopPresenting } from '../slides'
 import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { Box } from '../types'
 import { ElementView } from './Canvas'
+import { artBox, Player } from './MediaPlayer'
 
 /**
  * Presentation mode. Each slide fills the screen; moving to the next one flies
@@ -90,6 +93,8 @@ export function Presenter({ palette }: { palette: Palette }) {
   const [moving, setMoving] = useState(true)
   const [chrome, setChrome] = useState(true)
   const [, setSize] = useState(0)
+  /** a video or song playing on the slide on show */
+  const [playing, setPlaying] = useState<string | null>(null)
 
   const world = useRef<SVGGElement>(null)
   const dots = useRef<SVGPatternElement>(null)
@@ -202,6 +207,7 @@ export function Presenter({ palette }: { palette: Palette }) {
 
   const go = useCallback(
     (to: Spot) => {
+      setPlaying(null)
       setSpot(to)
       travel(to)
     },
@@ -310,6 +316,9 @@ export function Presenter({ palette }: { palette: Palette }) {
     const dy = e.clientY - p.y
     if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) return dx < 0 ? next() : prev()
     if (Math.hypot(dx, dy) > 12 || e.button > 0) return
+    // a tap on a video or song's picture plays it instead of moving on
+    const media = mediaAt(e.clientX, e.clientY)
+    if (media) return setPlaying(media)
     if (e.clientX < vw() * 0.28) prev()
     else next()
   }
@@ -325,6 +334,22 @@ export function Presenter({ palette }: { palette: Palette }) {
     return { left: b.minX * zoom + x, top: b.minY * zoom + y, width: (b.maxX - b.minX) * zoom, height: (b.maxY - b.minY) * zoom }
   }
   const showChrome = chrome || overview
+  /** the video or song whose picture is at this screen point */
+  function mediaAt(sx: number, sy: number) {
+    const c = look.current?.cam
+    if (!c || moving) return null
+    const z = vw() / c[2]
+    const p: [number, number] = [(sx - (vw() / 2 - c[0] * z)) / z, (sy - (vh() / 2 - c[1] * z)) / z]
+    const hit = hitTopmost(content, p, 6 / z)
+    if (hit?.type !== 'link' || !mediaOf(hit.url)) return null
+    const art = linkLayout(hit).image
+    return art && p[0] >= art.x && p[0] <= art.x + art.w && p[1] >= art.y && p[1] <= art.y + art.h ? hit.id : null
+  }
+  const playingEl = playing && !moving && cam ? content.find((e) => e.id === playing) : undefined
+  const playBox =
+    playingEl?.type === 'link'
+      ? artBox(playingEl, (x, y) => [x * zoom + (vw() / 2 - cam![0] * zoom), y * zoom + (vh() / 2 - cam![1] * zoom)], zoom)
+      : null
 
   return (
     <div
@@ -358,6 +383,11 @@ export function Presenter({ palette }: { palette: Palette }) {
         <rect ref={ring} className="presenter-ring" rx={4} strokeOpacity={0} />
       </svg>
 
+      {playingEl?.type === 'link' && playBox && (
+        <div className="media-layer">
+          <Player el={playingEl} box={playBox} onStop={() => setPlaying(null)} />
+        </div>
+      )}
       {settled && (
         <>
           <div className="presenter-hint">Overview — {touchFirst ? 'tap' : 'click'} a slide to jump there</div>

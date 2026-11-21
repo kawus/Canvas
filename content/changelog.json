@@ -112,6 +112,12 @@
           "name": "Colours from a photo",
           "text": "Pull a photo's main colours out as swatches with hex codes.",
           "added": "2026-10-30"
+        },
+        {
+          "id": "media",
+          "name": "Videos & music",
+          "text": "Paste a YouTube, Vimeo or Loom video, or a Spotify, Apple Music, Apple Podcasts or SoundCloud link, and it plays right on the board.",
+          "added": "2026-11-21"
         }
       ]
     },
@@ -305,8 +311,12 @@
   "releases": [
     {
       "date": "2026-11-21",
-      "title": "Earlier versions, straighten shapes, focus mode and a brand template",
+      "title": "Videos and music, earlier versions, straighten shapes and more",
       "items": [
+        {
+          "text": "Videos and music play on the board: paste a link from YouTube, Vimeo, Loom, Spotify, Apple Music, Apple Podcasts, SoundCloud or YouTube Music and tap the picture to play.",
+          "feature": "media"
+        },
         {
           "text": "Earlier versions: see a board as it was at any hour in the last 30 days and restore it in one tap. If someone else changed it, their name is next to the time.",
           "feature": "versions"

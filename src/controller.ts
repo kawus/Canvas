@@ -10,6 +10,8 @@ import { geometricBounds, hitTest, hitTopmost, normalizeBox, pointInBox, scaleEl
 import { HANDLE_DIR, getHandles, hitHandle, selectionFrame, toWorld, type HandleId } from './handles'
 import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOptions } from './snap'
 import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter, pickAt } from './pencilMenu'
+import { linkLayout } from './layout'
+import { mediaOf } from './media'
 import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
@@ -921,6 +923,8 @@ export class CanvasController {
     switch (a.kind) {
       case 'pan':
         if (!a.moved && a.touch && s.tool === 'select') s.select([])
+        // a tap on a video or song's picture plays it (also on view-only boards and in earlier versions)
+        if (!a.moved && this.playAt(a.sx, a.sy, e.pointerType)) break
         // on a view-only board, tapping something offers Like / Note (or, without feedback, opens a link card)
         if (!a.moved && !s.doc.key) {
           const hit = hitTopmost(s.doc.elements, this.world(a.sx, a.sy), this.tolerance(e.pointerType))
@@ -965,6 +969,8 @@ export class CanvasController {
       case 'move':
         if (a.moved) {
           s.commit(s.doc.elements, a.before)
+        } else if (!e.shiftKey && this.playAt(a.sx, a.sy, e.pointerType)) {
+          // a click on a video or song's picture plays it
         } else if (a.clickedId && a.wasSelected && !e.shiftKey && s.selectedIds.length > 1) {
           // a click (no drag) inside a selection narrows it to what was clicked (or its group)
           const unit = groupOf(s.doc.elements, a.clickedId)
@@ -981,6 +987,20 @@ export class CanvasController {
         break
     }
     this.updateCursor()
+  }
+
+  /** Play the video or song whose picture is at this screen point. */
+  private playAt(sx: number, sy: number, pointerType: string) {
+    const s = S()
+    if (s.presenting) return false
+    const elements = s.earlier?.elements ?? s.doc.elements
+    const hit = hitTopmost(elements, this.world(sx, sy), this.tolerance(pointerType))
+    if (hit?.type !== 'link' || !mediaOf(hit.url)) return false
+    const art = linkLayout(hit).image
+    const [x, y] = this.world(sx, sy)
+    if (!art || x < art.x || x > art.x + art.w || y < art.y || y > art.y + art.h) return false
+    s.setPlaying(hit.id)
+    return true
   }
 
   private defaultShape(type: 'rect' | 'ellipse' | 'line' | 'arrow', p: Point): El {

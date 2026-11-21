@@ -140,26 +140,78 @@ function meta(html, names) {
   return ''
 }
 
-/** Video sites block server visits but offer oEmbed for previews. @param {URL} url */
+/**
+ * Video and music services block server visits but offer oEmbed for previews
+ * (title, who made it, a picture). Apple Music and Apple Podcasts don't; their
+ * pages have the usual tags instead.
+ * @param {URL} url
+ */
 async function oembed(url) {
-  const host = url.hostname.replace(/^www\./, '')
-  let api = ''
-  let site = ''
-  if (/(^|\.)youtube\.com$|^youtu\.be$/.test(host)) {
-    api = `https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(url.href)}`
-    site = 'YouTube'
-  } else if (/(^|\.)vimeo\.com$/.test(host)) {
-    api = `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(url.href)}`
-    site = 'Vimeo'
-  } else return null
+  const host = url.hostname.replace(/^(www|m)\./, '')
+  const q = encodeURIComponent(url.href)
+  /** @type {[string, string] | null} */
+  let found = null
+  if (host === 'music.youtube.com') {
+    // YouTube Music songs are YouTube videos
+    const v = url.searchParams.get('v')
+    if (v) found = [`https://www.youtube.com/oembed?format=json&url=${encodeURIComponent(`https://www.youtube.com/watch?v=${v}`)}`, 'YouTube Music']
+  } else if (/(^|\.)youtube\.com$|^youtu\.be$/.test(host)) found = [`https://www.youtube.com/oembed?format=json&url=${q}`, 'YouTube']
+  else if (/(^|\.)vimeo\.com$/.test(host)) found = [`https://vimeo.com/api/oembed.json?url=${q}`, 'Vimeo']
+  else if (host === 'loom.com') found = [`https://www.loom.com/v1/oembed?url=${q}`, 'Loom']
+  else if (host === 'open.spotify.com') found = [`https://open.spotify.com/oembed?url=${q}`, 'Spotify']
+  else if (host === 'soundcloud.com') found = [`https://soundcloud.com/oembed?format=json&url=${q}`, 'SoundCloud']
+  else if (host === 'music.apple.com' || host === 'podcasts.apple.com') return apple(url, host === 'music.apple.com' ? 'Apple Music' : 'Apple Podcasts')
+  if (!found) return null
+  const [api, site] = found
   const res = await fetch(api, { signal: AbortSignal.timeout(TIMEOUT) })
   if (!res.ok) return null
-  const d = /** @type {{ title?: string, author_name?: string, thumbnail_url?: string }} */ (await res.json())
-  return { url: url.href, title: d.title || '', description: d.author_name || '', site, image: d.thumbnail_url || '' }
+  const d = /** @type {{ title?: string, author_name?: string, thumbnail_url?: string, html?: string }} */ (await res.json())
+  // SoundCloud's title reads "Track by Artist"; keep just the track
+  let title = d.title || ''
+  if (site === 'SoundCloud' && d.author_name && title.endsWith(` by ${d.author_name}`)) title = title.slice(0, -` by ${d.author_name}`.length)
+  const href = url.href
+  return { url: href, title: title.slice(0, 300), description: (d.author_name || '').slice(0, 200), site, image: d.thumbnail_url || '' }
 }
 
-/** @param {URL} url */
-async function preview(url) {
+/**
+ * Apple Music and Apple Podcasts: Apple's public lookup gives the title, who
+ * made it and the cover (the last number in the link, or ?i= for a song).
+ * @param {URL} url @param {string} site
+ */
+async function apple(url, site) {
+  const nums = url.pathname.match(/\d{5,}/g)
+  const id = url.searchParams.get('i') || (nums ? nums[nums.length - 1] : '')
+  if (!/^\d{5,15}$/.test(id)) return null
+  const res = await fetch(`https://itunes.apple.com/lookup?id=${id}`, { signal: AbortSignal.timeout(TIMEOUT) })
+  if (!res.ok) return null
+  const d = /** @type {{ results?: { trackName?: string, collectionName?: string, artistName?: string, artworkUrl100?: string, artworkUrl600?: string }[] }} */ (await res.json())
+  const r = d.results?.[0]
+  if (!r) return null
+  const image = (r.artworkUrl600 || r.artworkUrl100 || '').replace(/\/\d+x\d+(bb)?\.(jpg|png)$/, '/600x600bb.$2')
+  return { url: url.href, title: (r.trackName || r.collectionName || '').slice(0, 300), description: (r.artistName || '').slice(0, 200), site, image }
+}
+
+/**
+ * Share buttons often give short links (on.soundcloud.com, spotify.link):
+ * follow them to the real address so the card can play.
+ * @param {URL} url
+ */
+async function expand(url) {
+  const short = { 'on.soundcloud.com': 'soundcloud.com', 'spotify.link': 'open.spotify.com' }
+  const want = /** @type {Record<string, string>} */ (short)[url.hostname]
+  if (!want) return url
+  try {
+    const { res, url: landed } = await publicFetch(url, { method: 'HEAD', headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(TIMEOUT) })
+    void res
+    return landed.hostname.replace(/^(www|m)\./, '') === want ? new URL(landed.origin + landed.pathname) : url
+  } catch {
+    return url
+  }
+}
+
+/** @param {URL} start */
+async function preview(start) {
+  const url = await expand(start)
   const embedded = await oembed(url).catch(() => null)
   if (embedded) return embedded
   const empty = { url: url.href, title: '', description: '', site: url.hostname.replace(/^www\./, ''), image: '' }

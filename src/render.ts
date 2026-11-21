@@ -221,6 +221,15 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
             : { tag: 'rect', attrs: { x: l.image.x, y: l.image.y, width: l.image.w, height: l.image.h, rx: 6, ry: 6, fill: '#8e8e93', fillOpacity: 0.14 } },
         )
       }
+      // videos and music: a play button on the picture (it plays right there)
+      if (l.play) {
+        const { x, y, r } = l.play
+        const t = r * 0.42
+        out.push(
+          { tag: 'circle', attrs: { cx: x, cy: y, r, fill: '#ffffff', fillOpacity: 0.94 } },
+          { tag: 'path', attrs: { d: `M${x - t * 0.62},${y - t} L${x + t},${y} L${x - t * 0.62},${y + t} Z`, fill: '#1d1d1f', strokeLinejoin: 'round', stroke: '#1d1d1f', strokeWidth: r * 0.08 } },
+        )
+      }
       for (const line of l.lines) {
         out.push({
           tag: 'text',

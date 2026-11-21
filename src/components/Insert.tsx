@@ -1,5 +1,6 @@
 import { Link, Palette } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
+import { mediaOf, SERVICES } from '../media'
 import { addLink, addSwatch, normalizeUrl } from '../moodboard'
 import { useStore } from '../store'
 
@@ -32,6 +33,9 @@ export function InsertDialog() {
   if (!insert) return null
   const close = () => setInsert(null)
   const normalizedHex = hex.startsWith('#') ? hex : `#${hex}`
+  // no need to say which service: it's recognised from the link
+  const typed = insert === 'link' ? normalizeUrl(url) : null
+  const media = typed ? mediaOf(typed) : null
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,7 +73,7 @@ export function InsertDialog() {
               autoCorrect="off"
               spellCheck={false}
               enterKeyHint="go"
-              placeholder="apple.com, a Pinterest pin, a YouTube video…"
+              placeholder="A website, a YouTube video, a Spotify song…"
               value={url}
               onChange={(e) => {
                 setUrl(e.target.value)
@@ -82,8 +86,22 @@ export function InsertDialog() {
               <p className="insert-hint is-error" data-testid="link-error">
                 That doesn’t look like a web address — try something like apple.com
               </p>
+            ) : media ? (
+              <p className="insert-hint is-media" data-testid="link-media">
+                {media.service} {media.kind === 'video' ? 'video' : media.service.includes('Podcasts') ? 'episode' : 'music'} · plays right on the board
+              </p>
             ) : (
-              <p className="insert-hint">Type or paste a web address. You can also paste or drop links and images straight onto the board.</p>
+              <p className="insert-hint">Videos and music from these play on the board:</p>
+            )}
+            {!urlError && (
+              <ul className={`service-chips ${media ? 'has-match' : ''}`} aria-label="Videos and music that play on the board" data-testid="service-chips">
+                {SERVICES.map((sv) => (
+                  <li key={sv.name} className={media && (media.service === sv.name || (sv.name === 'YouTube' && media.service === 'YouTube Music')) ? 'is-on' : ''} style={{ '--c': sv.color } as React.CSSProperties}>
+                    <i aria-hidden />
+                    {sv.name}
+                  </li>
+                ))}
+              </ul>
             )}
           </>
         ) : (

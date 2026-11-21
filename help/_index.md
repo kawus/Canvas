@@ -14,5 +14,6 @@ description: Answers about drawing, sharing, and keeping your boards on all your
 - [Does it work with Apple Pencil?](topic:ipad-iphone#does-canvas-work-with-apple-pencil)
 - [How do I make a presentation from my board?](topic:presenting#how-do-i-make-a-presentation)
 - [How do I export a PDF?](topic:export#how-do-i-export-a-board)
+- [Can I add videos and music?](topic:moodboards#can-i-add-videos-and-music)
 - [I lost a board — can I get it back?](topic:troubleshooting#i-cant-find-a-board)
 - [Can I go back to an earlier version of a board?](topic:getting-started#can-i-go-back-to-an-earlier-version-of-a-board)
