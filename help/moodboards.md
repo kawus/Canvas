@@ -72,7 +72,7 @@ The fonts are stored on Canvas itself, so nothing is fetched from Google or othe
 
 ## Can I leave a voice note?
 
-Yes. Tap **+ → Voice note**, then the microphone, and talk for up to a minute. Tap the square to stop: the note lands on the board as a small card with its length. Tap it to play, tap again (or <kbd>Esc</kbd>) to stop. People with a View link can play it too, so it's a quick way to walk a client through a board.
+Yes. Tap **+ → Voice**, then the microphone, and talk for up to a minute. Tap the square to stop: the note lands on the board as a small card with its length. Tap it to play, tap again (or <kbd>Esc</kbd>) to stop. People with a View link can play it too, so it's a quick way to walk a client through a board.
 
 Your browser asks once whether Canvas may use the microphone. It's only used while you record.
 

@@ -152,7 +152,7 @@ export function Toolbar() {
     { id: 'link', label: 'Link', icon: <Link />, run: () => setInsert('link') },
     { id: 'color', label: 'Colour', icon: <Palette />, run: () => setInsert('color') },
     { id: 'font', label: 'Font', icon: <Type />, run: () => setInsert('font') },
-    { id: 'voice', label: 'Voice note', icon: <Mic />, run: () => setInsert('voice') },
+    { id: 'voice', label: 'Voice', icon: <Mic />, run: () => setInsert('voice') },
   ]
 
   return (
