@@ -4799,3 +4799,62 @@ button:focus:not(:focus-visible) {
     font-size: 16px; /* no zoom-in on iPhone when typing */
   }
 }
+
+/* ---------- focus mode: only the board ---------- */
+.top-left,
+.top-right,
+.bottom,
+.bottom-left,
+.bottom-right {
+  transition: opacity 0.25s ease;
+}
+.app.is-focus :is(.top-left, .top-right, .bottom, .bottom-left, .bottom-right, .connect-card, .empty-hint) {
+  opacity: 0;
+}
+.app.is-focus :is(.top-left, .top-right, .bottom, .bottom-left, .bottom-right, .connect-card),
+.app.is-focus :is(.top-left, .top-right, .bottom, .bottom-left, .bottom-right, .connect-card) * {
+  pointer-events: none !important;
+}
+.focus-exit {
+  position: absolute;
+  right: var(--gutter);
+  bottom: max(14px, env(safe-area-inset-bottom));
+  z-index: 12;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 12px 0 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-2);
+  opacity: 0.55;
+  transition: opacity 0.2s ease;
+  animation: focus-exit-in 0.4s 0.3s ease both;
+}
+.focus-exit:hover,
+.focus-exit:focus-visible {
+  opacity: 1;
+}
+.focus-exit svg.lucide {
+  width: 15px;
+  height: 15px;
+}
+@keyframes focus-exit-in {
+  from {
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .top-left,
+  .top-right,
+  .bottom,
+  .bottom-left,
+  .bottom-right {
+    transition: none;
+  }
+  .focus-exit {
+    animation: none;
+  }
+}

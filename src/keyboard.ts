@@ -115,7 +115,8 @@ export function startKeyboard() {
         s.deleteSelected()
         return
       case 'Escape':
-        if (s.selectedIds.length) s.select([])
+        if (s.focus) s.setFocus(false)
+        else if (s.selectedIds.length) s.select([])
         else if (s.tool !== 'select') s.setTool('select')
         return
       case 'ArrowLeft':
@@ -147,6 +148,11 @@ export function startKeyboard() {
     if (e.shiftKey) return
     if (key === 'i') {
       openImagePicker()
+      return
+    }
+    // focus mode: only the board
+    if (key === 'f') {
+      s.setFocus(!s.focus)
       return
     }
     if (e.key === 'Enter' && s.selectedIds.length === 1) {

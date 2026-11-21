@@ -81,6 +81,8 @@ interface State {
   gridSnap: boolean
   /** soft sounds when things land, drop, go and tidy (off unless chosen) */
   sounds: boolean
+  /** focus mode: only the board, no bars or buttons */
+  focus: boolean
   /** set once an Apple Pencil / stylus is seen: fingers then pan instead of draw */
   penMode: boolean
   theme: ThemePref
@@ -155,6 +157,7 @@ interface State {
   setSnap: (on: boolean) => void
   setGridSnap: (on: boolean) => void
   setSounds: (on: boolean) => void
+  setFocus: (on: boolean) => void
   setViewport: (v: Viewport) => void
   zoomTo: (zoom: number, anchor?: [number, number]) => void
   zoomToFit: () => void
@@ -224,6 +227,7 @@ export const useStore = create<State>((set, get) => ({
   snap: readFlag('canvas-snap', true),
   gridSnap: readFlag('canvas-grid', false),
   sounds: readFlag('canvas-sounds', false),
+  focus: false,
   penMode: false,
   theme: readTheme(),
   toast: null,
@@ -426,6 +430,7 @@ export const useStore = create<State>((set, get) => ({
     }
     set({ gridSnap })
   },
+  setFocus: (focus) => set({ focus }),
   setSounds: (sounds) => {
     try {
       localStorage.setItem('canvas-sounds', sounds ? '1' : '0')

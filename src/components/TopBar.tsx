@@ -27,12 +27,14 @@ import {
   Users,
   Trash2,
   Volume2,
+  Focus,
 } from 'lucide-react'
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
 import { exportPdf, exportPng, exportSvg } from '../export'
 import { previewSound } from '../sound'
+import { touchFirst } from '../platform'
 import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
 import { contentOf } from '../geometry'
 import { refreshPreview } from '../preview'
@@ -276,6 +278,17 @@ export function BoardMenu() {
             </>
           )}
           <div className="menu-sep" />
+          <MenuItem
+            icon={<Focus />}
+            onClick={() => {
+              setOpen(false)
+              useStore.getState().setFocus(true)
+            }}
+            hint={touchFirst ? undefined : 'F'}
+            testId="focus-menu"
+          >
+            Focus mode
+          </MenuItem>
           <MenuItem
             icon={<Magnet />}
             onClick={() => setSnap(!snap)}

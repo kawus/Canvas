@@ -110,6 +110,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['mod', '−'], 'Zoom out'],
       [['shift', '1'], 'Zoom to fit'],
       [['shift', '0'], 'Zoom to 100%'],
+      [['F'], 'Focus mode: only the board'],
       ['mod-scroll', 'Zoom with the scroll wheel'],
       [['?'], 'Show this list'],
     ],

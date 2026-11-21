@@ -3,7 +3,7 @@ import { useEffect, useState, useSyncExternalStore } from 'react'
 import { pageOnly } from './analytics'
 import { routeFromHash, startPersistence } from './boards'
 import { Canvas } from './components/Canvas'
-import { EmptyHint, HistoryControls, Toast, ZoomControls } from './components/Corners'
+import { EmptyHint, FocusExit, HistoryControls, Toast, ZoomControls } from './components/Corners'
 import { PeerAvatars, PeerCursors } from './components/Presence'
 import { FeedbackButton, FeedbackLayer, NoteComposer } from './components/Feedback'
 import { ConnectAppCard } from './components/ConnectApp'
@@ -47,6 +47,7 @@ export default function App() {
   const viewOnly = useStore((s) => s.loaded && !s.doc.key)
   const cropping = useStore((s) => !!s.cropId)
   const presenting = useStore((s) => s.presenting !== null)
+  const focus = useStore((s) => s.focus)
   const statsView = useSyncExternalStore(subscribeHash, () => location.hash === '#stats')
   const systemDark = useSyncExternalStore(subscribeDark, () => darkQuery.matches)
   const dark = theme === 'dark' || (theme === 'system' && systemDark)
@@ -87,7 +88,7 @@ export default function App() {
     )
 
   return (
-    <div className={`app ${loaded ? 'is-loaded' : ''}`}>
+    <div className={`app ${loaded ? 'is-loaded' : ''} ${focus ? 'is-focus' : ''}`}>
       <Canvas palette={palette} />
       <TextEditor palette={palette} />
       <PeerCursors />
@@ -129,6 +130,7 @@ export default function App() {
         <HelpButton />
       </div>
       <ShortcutsDialog />
+      <FocusExit />
       {presenting && <Presenter palette={palette} />}
       <PencilMenu palette={palette} />
       <div className="bottom-left">

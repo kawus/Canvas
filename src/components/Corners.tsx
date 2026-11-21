@@ -1,4 +1,4 @@
-import { Maximize, Minus, Plus, Redo2, Undo2 } from 'lucide-react'
+import { Focus, Maximize, Minus, PanelsTopLeft, Plus, Redo2, Undo2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 import { IconButton } from './ui'
@@ -44,6 +44,9 @@ export function ZoomControls() {
       <IconButton label="Zoom to fit" kbd="⇧1" onClick={zoomToFit}>
         <Maximize />
       </IconButton>
+      <IconButton label="Focus mode" kbd="F" onClick={() => useStore.getState().setFocus(true)} testId="focus-on">
+        <Focus />
+      </IconButton>
     </div>
   )
 }
@@ -80,5 +83,17 @@ export function Toast() {
     <div className={`toast ${visible ? 'is-visible' : ''}`} role="status" aria-live="polite" data-testid="toast">
       {toast.message}
     </div>
+  )
+}
+
+/** In focus mode, the one quiet way back to the tools. */
+export function FocusExit() {
+  const focus = useStore((s) => s.focus)
+  if (!focus) return null
+  return (
+    <button type="button" className="focus-exit panel" onClick={() => useStore.getState().setFocus(false)} aria-label="Show tools" data-testid="focus-off">
+      <PanelsTopLeft />
+      <span>Show tools</span>
+    </button>
   )
 }

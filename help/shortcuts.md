@@ -49,6 +49,7 @@ order: 9
 | <kbd>⌘</kbd> + scroll, or pinch | Zoom |
 | <kbd>⇧1</kbd> | Zoom to fit everything |
 | <kbd>⇧0</kbd> | Zoom to 100% |
+| <kbd>F</kbd> | Focus mode: hide everything but the board (<kbd>F</kbd> or <kbd>Esc</kbd> to bring the tools back) |
 | <kbd>?</kbd> | Show the shortcuts in Canvas |
 
 ## Presenting
