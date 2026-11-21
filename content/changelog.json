@@ -390,6 +390,10 @@
         },
         {
           "text": "The ? help button now sits next to the zoom controls (on a phone, next to undo), so nothing covers it."
+        },
+        {
+          "text": "A tidier corner: focus mode now lives in the board menu (or press F) instead of a button next to the zoom controls.",
+          "feature": "focus"
         }
       ]
     },

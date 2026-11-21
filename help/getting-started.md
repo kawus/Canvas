@@ -36,7 +36,7 @@ Open the **board menu**. Your most recent boards are listed at the top. **All bo
 
 ## Is there a way to hide all the buttons?
 
-Yes: **focus mode**. Press **F**, or open the **board menu** and choose **Focus mode** (on a computer there's also a button next to the zoom controls). Every bar and button fades away and only your board is left. You can still draw, pan and zoom. To bring the tools back, tap **Show tools** in the corner, or press **F** or **Esc**.
+Yes: **focus mode**. Press **F**, or open the **board menu** and choose **Focus mode**. Every bar and button fades away and only your board is left. You can still draw, pan and zoom. To bring the tools back, tap **Show tools** in the corner, or press **F** or **Esc**.
 
 ## How do I undo something?
 

@@ -1,4 +1,4 @@
-import { Focus, Maximize, Minus, PanelsTopLeft, Plus, Redo2, Undo2 } from 'lucide-react'
+import { Maximize, Minus, PanelsTopLeft, Plus, Redo2, Undo2 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useStore } from '../store'
 import { IconButton } from './ui'
@@ -43,9 +43,6 @@ export function ZoomControls() {
       </IconButton>
       <IconButton label="Zoom to fit" kbd="⇧1" onClick={zoomToFit}>
         <Maximize />
-      </IconButton>
-      <IconButton label="Focus mode" kbd="F" onClick={() => useStore.getState().setFocus(true)} testId="focus-on">
-        <Focus />
       </IconButton>
     </div>
   )
