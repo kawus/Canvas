@@ -276,6 +276,12 @@
       "icon": "sparkles",
       "items": [
         {
+          "id": "launcher",
+          "name": "Launcher",
+          "text": "Press ⌘K or / and type: add anything, present, export, jump to a board. Paste a link or type a note and press Enter.",
+          "added": "2026-11-21"
+        },
+        {
           "id": "warm",
           "name": "Warm paper look",
           "text": "Soft paper tones in light and dark mode.",
@@ -329,8 +335,12 @@
   "releases": [
     {
       "date": "2026-11-21",
-      "title": "Videos, music, places, fonts and voice notes",
+      "title": "The launcher, videos, music, places, fonts and voice notes",
       "items": [
+        {
+          "text": "The launcher: press ⌘K (Ctrl+K) or / on a computer and type to add anything, present, export or jump to another board. Paste a link, a colour code or a note and press Enter.",
+          "feature": "launcher"
+        },
         {
           "text": "Videos and music on the board: paste a link from YouTube, Vimeo, Loom, TikTok, Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer or Mixcloud and the card is that service's own player, exactly as you know it.",
           "feature": "media"
@@ -394,6 +404,12 @@
         {
           "text": "A tidier corner: focus mode now lives in the board menu (or press F) instead of a button next to the zoom controls.",
           "feature": "focus"
+        },
+        {
+          "text": "Video and music players have the same rounded corners and soft shadow as the other cards."
+        },
+        {
+          "text": "Voice notes start playing the moment you tap them, in every browser and while presenting, and the time left counts down properly."
         }
       ]
     },

@@ -16,5 +16,6 @@ description: Answers about drawing, sharing, and keeping your boards on all your
 - [How do I export a PDF?](topic:export#how-do-i-export-a-board)
 - [Can I add videos and music?](topic:moodboards#can-i-add-videos-and-music)
 - [Can I leave a voice note?](topic:moodboards#can-i-leave-a-voice-note)
+- [Can I use Canvas without the mouse?](topic:getting-started#can-i-use-canvas-without-the-mouse)
 - [I lost a board — can I get it back?](topic:troubleshooting#i-cant-find-a-board)
 - [Can I go back to an earlier version of a board?](topic:getting-started#can-i-go-back-to-an-earlier-version-of-a-board)

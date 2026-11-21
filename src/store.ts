@@ -91,6 +91,8 @@ interface State {
   sounds: boolean
   /** focus mode: only the board, no bars or buttons */
   focus: boolean
+  /** the ⌘K launcher is open */
+  launcher: boolean
   /** the video or song card playing on the board (only one at a time) */
   playing: string | null
   /** the Earlier versions panel is open (the board can't be edited meanwhile) */
@@ -173,6 +175,7 @@ interface State {
   setSounds: (on: boolean) => void
   setFocus: (on: boolean) => void
   setPlaying: (id: string | null) => void
+  setLauncher: (open: boolean) => void
   setVersionsOpen: (open: boolean) => void
   setEarlier: (earlier: PastView | null) => void
   setViewport: (v: Viewport) => void
@@ -246,6 +249,7 @@ export const useStore = create<State>((set, get) => ({
   sounds: readFlag('canvas-sounds', false),
   focus: false,
   playing: null,
+  launcher: false,
   versionsOpen: false,
   earlier: null,
   penMode: false,
@@ -456,6 +460,7 @@ export const useStore = create<State>((set, get) => ({
     set(versionsOpen ? { versionsOpen, focus: false, selectedIds: [], editingId: null, draft: null, marquee: null, guides: [] } : { versionsOpen, earlier: null }),
   setEarlier: (earlier) => set({ earlier }),
   setPlaying: (playing) => set({ playing }),
+  setLauncher: (launcher) => set({ launcher }),
   setSounds: (sounds) => {
     try {
       localStorage.setItem('canvas-sounds', sounds ? '1' : '0')

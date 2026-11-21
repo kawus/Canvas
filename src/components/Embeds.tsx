@@ -35,6 +35,10 @@ export function EmbedFrame({ el, left, top, scale, live }: { el: LinkEl; left: n
         allowFullScreen
         referrerPolicy="strict-origin-when-cross-origin"
       />
+      {/* rounded corners, whatever the player draws (browsers don't reliably clip other sites' players) */}
+      <span className="embed-corners" aria-hidden>
+        <i />
+      </span>
     </div>
   )
 }

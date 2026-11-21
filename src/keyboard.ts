@@ -47,11 +47,22 @@ const TOOL_KEYS: Record<string, Tool> = {
 
 export function startKeyboard() {
   const onKey = (e: KeyboardEvent) => {
+    // ⌘K (Ctrl+K) opens the launcher from anywhere on the board, even while typing; / too when not typing
+    if ((e.metaKey || e.ctrlKey) && !e.altKey && !e.shiftKey && e.key.toLowerCase() === 'k' && !useStore.getState().presenting) {
+      e.preventDefault()
+      useStore.getState().setLauncher(!useStore.getState().launcher)
+      return
+    }
     if (isTyping(e)) return
     const s = useStore.getState()
     if (s.editingId) return
     const mod = e.metaKey || e.ctrlKey
     const key = e.key.toLowerCase()
+    if (e.key === '/' && !mod && !s.presenting && !s.insert) {
+      e.preventDefault()
+      s.setLauncher(true)
+      return
+    }
     if (e.key === '?' && !mod) {
       s.setPanel(s.panel === 'keys' ? null : 'keys')
       return

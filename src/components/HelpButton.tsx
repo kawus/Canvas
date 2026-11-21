@@ -1,4 +1,4 @@
-import { Keyboard, LifeBuoy, Sparkles, X, Hand, Gift } from 'lucide-react'
+import { Command, Keyboard, LifeBuoy, Sparkles, X, Hand, Gift } from 'lucide-react'
 import { useEffect, useState, type ReactNode } from 'react'
 import { changelogUrl, hasNewChanges, helpUrl, markChangesSeen, openHelp } from '../help'
 import { inSafariTab } from '../library'
@@ -41,9 +41,14 @@ export function HelpButton() {
               {isTablet ? 'Touch & Pencil gestures' : 'Touch gestures'}
             </MenuItem>
           ) : (
-            <MenuItem icon={<Keyboard />} onClick={run(() => setPanel('keys'))} hint={<kbd className="menu-kbd">?</kbd>} testId="help-keys">
-              Keyboard shortcuts
-            </MenuItem>
+            <>
+              <MenuItem icon={<Command />} onClick={run(() => useStore.getState().setLauncher(true))} hint={<kbd className="menu-kbd">{keyLabels(['mod', 'K']).join('')}</kbd>} testId="help-launcher">
+                Launcher
+              </MenuItem>
+              <MenuItem icon={<Keyboard />} onClick={run(() => setPanel('keys'))} hint={<kbd className="menu-kbd">?</kbd>} testId="help-keys">
+                Keyboard shortcuts
+              </MenuItem>
+            </>
           )}
           <MenuItem
             icon={<Gift />}
@@ -74,6 +79,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
   {
     title: 'Tools',
     rows: [
+      [['mod', 'K'], 'Launcher: add, do or find anything (or press /)'],
       [['V'], 'Select'],
       [['H'], 'Hand — or hold Space'],
       [['P'], 'Pen'],

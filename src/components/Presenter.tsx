@@ -4,14 +4,15 @@ import type { Palette } from '../constants'
 import { contentOf, hitTopmost, unionBounds } from '../geometry'
 import { linkLayout } from '../layout'
 import { mediaOf } from '../media'
+import { startVoice } from '../voice'
 import { touchFirst } from '../platform'
 import { slideBox, slidesOf, stopPresenting } from '../slides'
 import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { Box } from '../types'
-import { ElementView } from './Canvas'
+import { ElementView, VoiceOverlay } from './Canvas'
 import { EmbedFrame, embedsOf } from './Embeds'
-import { Player, playerBox, VoicePlayer } from './MediaPlayer'
+import { Player, playerBox } from './MediaPlayer'
 
 /**
  * Presentation mode. Each slide fills the screen; moving to the next one flies
@@ -319,7 +320,15 @@ export function Presenter({ palette }: { palette: Palette }) {
     if (Math.hypot(dx, dy) > 12 || e.button > 0) return
     // a tap on a video or song's picture plays it instead of moving on
     const media = mediaAt(e.clientX, e.clientY)
-    if (media) return setPlaying(media)
+    if (media) {
+      // a voice note starts right here, in the tap (Safari needs that)
+      const voice = content.find((x) => x.id === media)
+      if (voice?.type === 'voice') {
+        if (playing === media) return setPlaying(null)
+        startVoice(voice.asset)
+      }
+      return setPlaying(media)
+    }
     if (e.clientX < vw() * 0.28) prev()
     else next()
   }
@@ -378,8 +387,12 @@ export function Presenter({ palette }: { palette: Palette }) {
         <rect className="presenter-grid" width="100%" height="100%" fill="url(#present-dots)" />
         <g ref={world}>
           {content.map((el) => (
-            <ElementView key={el.id} el={el} palette={palette} faded={false} editing={false} hide={el.id === playing && !moving} />
+            <ElementView key={el.id} el={el} palette={palette} faded={false} editing={false} hide={el.id === playing && (el.type === 'voice' || !moving)} />
           ))}
+          {(() => {
+            const v = playing ? content.find((e) => e.id === playing && e.type === 'voice') : undefined
+            return v?.type === 'voice' ? <VoiceOverlay key={v.id} el={v} palette={palette} onEnd={() => setPlaying(null)} /> : null
+          })()}
         </g>
         <rect ref={veil} className="presenter-veil" width="100%" height="100%" mask="url(#present-spot)" fillOpacity={0} />
         <rect ref={ring} className="presenter-ring" rx={4} strokeOpacity={0} />
@@ -397,11 +410,6 @@ export function Presenter({ palette }: { palette: Palette }) {
       {playingEl?.type === 'link' && playBox && (
         <div className="media-layer">
           <Player el={playingEl} box={playBox} onStop={() => setPlaying(null)} />
-        </div>
-      )}
-      {playingEl?.type === 'voice' && cam && (
-        <div className="media-layer">
-          <VoicePlayer el={playingEl} box={toScreen({ minX: playingEl.x, minY: playingEl.y, maxX: playingEl.x + playingEl.w, maxY: playingEl.y + playingEl.h })} onStop={() => setPlaying(null)} />
         </div>
       )}
       {settled && (

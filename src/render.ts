@@ -15,7 +15,7 @@ import { fontById, fontFamily } from './fonts'
 import { isEmbed, mediaOf } from './media'
 import { boxTextLayout, CARD_INSET, linkLayout } from './layout'
 import { firstBaseline } from './textMetrics'
-import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint } from './types'
+import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint, VoiceEl } from './types'
 
 /**
  * A render primitive is a tiny, framework-free description of an SVG node.
@@ -301,34 +301,8 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
         },
       ]
     }
-    case 'voice': {
-      // a play button, the waveform and the length
-      const r = Math.min(el.h * 0.34, 22)
-      const cx = el.x + 12 + r
-      const cy = el.y + el.h / 2
-      const t = r * 0.42
-      const out: Prim[] = [
-        { ...cardPrim(el, dark), attrs: { ...cardPrim(el, dark).attrs, rx: el.h / 2, ry: el.h / 2 } },
-        { tag: 'circle', attrs: { cx, cy, r, fill: palette.ink } },
-        { tag: 'path', attrs: { d: `M${cx - t * 0.62},${cy - t} L${cx + t},${cy} L${cx - t * 0.62},${cy + t} Z`, fill: dark ? '#1d1d1f' : '#ffffff' } },
-      ]
-      const left = cx + r + 12
-      const right = el.x + el.w - 52
-      const peaks = el.peaks?.length ? el.peaks : [0.3]
-      const n = Math.max(4, Math.floor((right - left) / 5))
-      for (let i = 0; i < n; i++) {
-        const v = peaks[Math.floor((i / n) * peaks.length)] ?? 0.3
-        const bh = Math.max(3, Math.min(1, Math.max(0, v)) * el.h * 0.5)
-        out.push({ tag: 'rect', attrs: { x: left + i * 5, y: cy - bh / 2, width: 3, height: bh, rx: 1.5, ry: 1.5, fill: palette.gray, fillOpacity: 0.7 } })
-      }
-      const sec = Math.max(0, Math.round(el.duration))
-      out.push({
-        tag: 'text',
-        attrs: { fontFamily: FONT_STACK, fontSize: 13, fill: palette.gray },
-        lines: [{ text: `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`, x: el.x + el.w - 44, y: cy + 4.5 }],
-      })
-      return out
-    }
+    case 'voice':
+      return voicePrims(el, palette)
     case 'sticky':
       return [
         {
@@ -450,4 +424,49 @@ export function primToMarkup(p: Prim): string {
     return `<text ${attrs} xml:space="preserve">${spans}</text>`
   }
   return `<${p.tag} ${attrs}/>`
+}
+
+/**
+ * A voice note: a play button, its waveform and its length. While it plays
+ * (`playing`, 0–1 through), the button shows pause, the waveform fills in and
+ * the time counts down, in exactly the same shapes, so it zooms with the board.
+ */
+export function voicePrims(el: VoiceEl, palette: Palette, playing?: number): Prim[] {
+  const dark = palette.ink !== STICKY_INK
+  const r = Math.min(el.h * 0.34, 22)
+  const cx = el.x + 12 + r
+  const cy = el.y + el.h / 2
+  const t = r * 0.42
+  const card = cardPrim(el, dark)
+  const out: Prim[] = [
+    { ...card, attrs: { ...card.attrs, rx: el.h / 2, ry: el.h / 2 } },
+    { tag: 'circle', attrs: { cx, cy, r, fill: palette.ink } },
+  ]
+  const fg = dark ? '#1d1d1f' : '#ffffff'
+  if (playing === undefined) out.push({ tag: 'path', attrs: { d: `M${cx - t * 0.62},${cy - t} L${cx + t},${cy} L${cx - t * 0.62},${cy + t} Z`, fill: fg } })
+  else {
+    const bw = r * 0.2
+    out.push(
+      { tag: 'rect', attrs: { x: cx - bw * 1.6, y: cy - t, width: bw, height: t * 2, rx: bw / 3, ry: bw / 3, fill: fg } },
+      { tag: 'rect', attrs: { x: cx + bw * 0.6, y: cy - t, width: bw, height: t * 2, rx: bw / 3, ry: bw / 3, fill: fg } },
+    )
+  }
+  const left = cx + r + 12
+  const right = el.x + el.w - 52
+  const peaks = el.peaks?.length ? el.peaks : [0.3]
+  const n = Math.max(4, Math.floor((right - left) / 5))
+  const done = playing === undefined ? -1 : Math.round(playing * n)
+  for (let i = 0; i < n; i++) {
+    const v = peaks[Math.floor((i / n) * peaks.length)] ?? 0.3
+    const bh = Math.max(3, Math.min(1, Math.max(0, v)) * el.h * 0.5)
+    const played = i < done
+    out.push({ tag: 'rect', attrs: { x: left + i * 5, y: cy - bh / 2, width: 3, height: bh, rx: 1.5, ry: 1.5, fill: played ? palette.ink : palette.gray, fillOpacity: played ? 0.9 : 0.7 } })
+  }
+  const sec = playing === undefined ? Math.max(0, Math.round(el.duration)) : Math.ceil(Math.max(0, el.duration * (1 - playing)))
+  out.push({
+    tag: 'text',
+    attrs: { fontFamily: FONT_STACK, fontSize: 13, fill: playing === undefined ? palette.gray : palette.ink },
+    lines: [{ text: `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`, x: el.x + el.w - 44, y: cy + 4.5 }],
+  })
+  return out
 }

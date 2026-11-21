@@ -38,7 +38,8 @@ export function startEditing(id: string, before?: El[]) {
   }
 }
 
-export function createTextAt(x: number, y: number) {
+/** Add text where the cursor is and start typing in it (or, given the words, just put them there). */
+export function createTextAt(x: number, y: number, text = '') {
   const s = S()
   const fontSize = FONT_SIZE[s.style.fontSize]
   const el: TextEl = {
@@ -47,15 +48,21 @@ export function createTextAt(x: number, y: number) {
     color: s.style.color,
     x,
     y: y - (fontSize * LINE_HEIGHT) / 2,
-    text: '',
+    text,
     fontSize,
   }
   const before = s.doc.elements
+  if (text) {
+    s.commit([...before, el], before)
+    s.select([el.id])
+    return
+  }
   s.setElementsLive([...before, el])
   startEditing(el.id, before)
 }
 
-export function createStickyAt(x: number, y: number) {
+/** Add a sticky note and start typing in it (or, given the words, just put them on it). */
+export function createStickyAt(x: number, y: number, text = '') {
   const s = S()
   const el: StickyEl = {
     id: newElementId(),
@@ -65,10 +72,15 @@ export function createStickyAt(x: number, y: number) {
     y: y - STICKY_SIZE / 2,
     w: STICKY_SIZE,
     h: STICKY_SIZE,
-    text: '',
+    text,
     fontSize: FONT_SIZE[s.style.fontSize],
   }
   const before = s.doc.elements
+  if (text) {
+    s.commit([...before, el], before)
+    s.select([el.id])
+    return
+  }
   s.setElementsLive([...before, el])
   startEditing(el.id, before)
 }

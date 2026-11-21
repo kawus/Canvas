@@ -5,6 +5,12 @@ icon: Keyboard
 order: 9
 ---
 
+## The launcher
+
+Press <kbd>⌘K</kbd> (<kbd>Ctrl+K</kbd> on Windows), or <kbd>/</kbd>, to open the launcher: one quiet search field for everything Canvas does. Type a few letters (“sti” for a sticky note, “pre” to present, “font”, “place”, the name of another board) and press <kbd>Enter</kbd>. Use <kbd>↑</kbd> <kbd>↓</kbd> to choose and <kbd>Esc</kbd> to close.
+
+It also understands what you type: paste a link and <kbd>Enter</kbd> adds it (videos and music become players), type a colour code like `#c56b3e` for a swatch, and anything else becomes a sticky note.
+
 ## Tools
 
 | Key | Tool |

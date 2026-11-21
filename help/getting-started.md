@@ -38,6 +38,10 @@ Open the **board menu**. Your most recent boards are listed at the top. **All bo
 
 Yes: **focus mode**. Press **F**, or open the **board menu** and choose **Focus mode**. Every bar and button fades away and only your board is left. You can still draw, pan and zoom. To bring the tools back, tap **Show tools** in the corner, or press **F** or **Esc**.
 
+## Can I use Canvas without the mouse?
+
+Mostly, yes. On a computer, press <kbd>⌘K</kbd> (<kbd>Ctrl+K</kbd> on Windows) or <kbd>/</kbd> to open the **launcher**, type what you want ("sticky", "present", "font", a board's name, a link, or a note) and press <kbd>Enter</kbd>. It's also in the **?** menu. [All the shortcuts](topic:shortcuts).
+
 ## How do I undo something?
 
 Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <kbd>⇧⌘Z</kbd> (<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> on Windows). When you're editing together with someone, undo only undoes your own changes.

@@ -6,12 +6,13 @@ import { getBounds } from '../geometry'
 import { toWorld } from '../handles'
 import { importImages } from '../images'
 import { addLink, importImageUrl, isUrl } from '../moodboard'
-import { elementPrims, type Prim } from '../render'
+import { elementPrims, voicePrims, type Prim } from '../render'
 import { dotSpacing } from '../snap'
 import { loadFont } from '../fonts'
+import { preloadVoice, stopVoice, voiceAudio } from '../voice'
 import { Embeds } from './Embeds'
 import { useStore } from '../store'
-import type { El } from '../types'
+import type { El, VoiceEl } from '../types'
 import type { Palette } from '../constants'
 import { Overlay } from './Overlay'
 
@@ -115,6 +116,42 @@ export const ElementView = memo(function ElementView({
   )
 })
 
+/**
+ * A voice note while it plays: the same card, drawn in the board (so it zooms
+ * with it), with pause, the waveform filling in and the time counting down.
+ * The sound itself was started by the tap (voice.ts).
+ */
+export function VoiceOverlay({ el, palette, onEnd }: { el: VoiceEl; palette: Palette; onEnd: () => void }) {
+  const [at, setAt] = useState(0)
+  const end = useRef(onEnd)
+  useEffect(() => {
+    end.current = onEnd
+  })
+  useEffect(() => {
+    const a = voiceAudio()
+    let frame = 0
+    const tick = () => {
+      setAt(a.duration && Number.isFinite(a.duration) ? a.currentTime / a.duration : a.currentTime / Math.max(el.duration, 0.1))
+      frame = requestAnimationFrame(tick)
+    }
+    frame = requestAnimationFrame(tick)
+    const ended = () => end.current()
+    a.addEventListener('ended', ended)
+    return () => {
+      cancelAnimationFrame(frame)
+      a.removeEventListener('ended', ended)
+      stopVoice()
+    }
+  }, [el.duration])
+  return (
+    <g className="el" pointerEvents="none" data-testid="voice-playing" data-progress={Math.round(at * 100)}>
+      {voicePrims(el, palette, Math.min(1, Math.max(0, at))).map((p, i) => (
+        <PrimView key={i} p={p} />
+      ))}
+    </g>
+  )
+}
+
 /** Things that arrive by being drawn (strokes, lines, drawn shapes) don't need to land. */
 const LANDS = new Set(['sticky', 'image', 'link', 'swatch', 'font', 'voice', 'text'])
 
@@ -123,9 +160,14 @@ export function Canvas({ palette }: { palette: Palette }) {
   // an earlier version, while one is on show (Earlier versions)
   const elements = useStore((s) => s.earlier?.elements ?? s.doc.elements)
   const playing = useStore((s) => s.playing)
+  const playingVoice = playing ? (elements.find((e) => e.id === playing && e.type === 'voice') as VoiceEl | undefined) : undefined
   // font cards: their typefaces load when a board shows them
   useEffect(() => {
-    for (const el of elements) if (el.type === 'font') void loadFont(el.font)
+    for (const el of elements) {
+      if (el.type === 'font') void loadFont(el.font)
+      // voice notes load ahead, so a tap plays them straight away
+      else if (el.type === 'voice') preloadVoice(el.asset)
+    }
   }, [elements])
   const draft = useStore((s) => s.draft)
   const viewport = useStore((s) => s.viewport)
@@ -245,6 +287,7 @@ export function Canvas({ palette }: { palette: Palette }) {
             (p) => p.draft && <ElementView key={`peer-${p.id}`} el={p.draft} palette={palette} faded={false} editing={false} />,
           )}
           {draft && <ElementView el={draft} palette={palette} faded={false} editing={false} />}
+          {playingVoice && <VoiceOverlay key={playingVoice.id} el={playingVoice} palette={palette} onEnd={() => useStore.getState().setPlaying(null)} />}
         </g>
       </svg>
       <Embeds elements={elements} />

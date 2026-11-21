@@ -12,6 +12,7 @@ import { gridStep, guidesFor, snapMove, snapTargets, snapValues, type SnapOption
 import { choosePencil, HOLD_MS, HOLD_SLOP, menuCenter, pickAt } from './pencilMenu'
 import { linkLayout } from './layout'
 import { mediaOf } from './media'
+import { startVoice } from './voice'
 import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
@@ -998,7 +999,12 @@ export class CanvasController {
     // a voice note plays (or stops) with a tap anywhere on it
     if (hit?.type === 'voice') {
       s.select([])
-      s.setPlaying(s.playing === hit.id ? null : hit.id)
+      if (s.playing === hit.id) s.setPlaying(null)
+      else {
+        // the sound starts right here, in the tap (Safari needs that)
+        startVoice(hit.asset)
+        s.setPlaying(hit.id)
+      }
       return true
     }
     // (videos and music are their own players; a place card's map opens live)
