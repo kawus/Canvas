@@ -10,7 +10,7 @@ import { dotSpacing } from '../snap'
 import { useStore } from '../store'
 import type { Box } from '../types'
 import { ElementView } from './Canvas'
-import { artBox, Player } from './MediaPlayer'
+import { Player, playerBox } from './MediaPlayer'
 
 /**
  * Presentation mode. Each slide fills the screen; moving to the next one flies
@@ -348,7 +348,7 @@ export function Presenter({ palette }: { palette: Palette }) {
   const playingEl = playing && !moving && cam ? content.find((e) => e.id === playing) : undefined
   const playBox =
     playingEl?.type === 'link'
-      ? artBox(playingEl, (x, y) => [x * zoom + (vw() / 2 - cam![0] * zoom), y * zoom + (vh() / 2 - cam![1] * zoom)], zoom)
+      ? playerBox(playingEl, (x, y) => [x * zoom + (vw() / 2 - cam![0] * zoom), y * zoom + (vh() / 2 - cam![1] * zoom)], zoom)
       : null
 
   return (
@@ -376,7 +376,7 @@ export function Presenter({ palette }: { palette: Palette }) {
         <rect className="presenter-grid" width="100%" height="100%" fill="url(#present-dots)" />
         <g ref={world}>
           {content.map((el) => (
-            <ElementView key={el.id} el={el} palette={palette} faded={false} editing={false} />
+            <ElementView key={el.id} el={el} palette={palette} faded={false} editing={false} hide={el.id === playing && !moving} />
           ))}
         </g>
         <rect ref={veil} className="presenter-veil" width="100%" height="100%" mask="url(#present-spot)" fillOpacity={0} />

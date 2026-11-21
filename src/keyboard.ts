@@ -56,6 +56,11 @@ export function startKeyboard() {
       s.setPanel(s.panel === 'keys' ? null : 'keys')
       return
     }
+    // Esc stops a video or song (on any board)
+    if (e.key === 'Escape' && s.playing) {
+      s.setPlaying(null)
+      return
+    }
     // view-only (or looking at earlier versions): just zooming around
     if (!s.doc.key || s.versionsOpen) {
       if (mod && (key === '=' || key === '+' || key === '-' || key === '0')) {
@@ -115,7 +120,8 @@ export function startKeyboard() {
         s.deleteSelected()
         return
       case 'Escape':
-        if (s.focus) s.setFocus(false)
+        if (s.playing) s.setPlaying(null)
+        else if (s.focus) s.setFocus(false)
         else if (s.selectedIds.length) s.select([])
         else if (s.tool !== 'select') s.setTool('select')
         return

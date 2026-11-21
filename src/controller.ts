@@ -999,6 +999,8 @@ export class CanvasController {
     const art = linkLayout(hit).image
     const [x, y] = this.world(sx, sy)
     if (!art || x < art.x || x > art.x + art.w || y < art.y || y > art.y + art.h) return false
+    // its player takes the card's place (no selection frame around it)
+    s.select([])
     s.setPlaying(hit.id)
     return true
   }

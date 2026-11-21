@@ -51,6 +51,7 @@ export const ElementView = memo(function ElementView({
   lift,
   glide,
   exit,
+  hide,
 }: {
   el: El
   palette: Palette
@@ -65,6 +66,8 @@ export const ElementView = memo(function ElementView({
   glide?: boolean
   /** just removed: fades away */
   exit?: boolean
+  /** a video or song playing: its player takes the card's place */
+  hide?: boolean
 }) {
   const ref = useRef<SVGGElement>(null)
   const before = useRef<ReturnType<typeof getBounds> | null>(null)
@@ -94,7 +97,7 @@ export const ElementView = memo(function ElementView({
   const hash = el.type === 'image' ? el.asset : el.type === 'link' ? el.image : undefined
   if (hash) {
     return (
-      <g ref={ref} className={cls} opacity={faded ? 0.25 : 1}>
+      <g ref={ref} className={cls} opacity={hide ? 0 : faded ? 0.25 : 1}>
         <ImageView el={el} palette={palette} hash={hash} />
       </g>
     )
@@ -102,7 +105,7 @@ export const ElementView = memo(function ElementView({
   let prims = elementPrims(el, palette)
   if (editing) prims = el.type === 'text' ? [] : prims.filter((p) => p.tag !== 'text')
   return (
-    <g ref={ref} className={cls} opacity={faded ? 0.25 : 1}>
+    <g ref={ref} className={cls} opacity={hide ? 0 : faded ? 0.25 : 1}>
       {prims.map((p, i) => (
         <PrimView key={i} p={p} />
       ))}
@@ -117,6 +120,7 @@ export function Canvas({ palette }: { palette: Palette }) {
   const ref = useRef<HTMLDivElement>(null)
   // an earlier version, while one is on show (Earlier versions)
   const elements = useStore((s) => s.earlier?.elements ?? s.doc.elements)
+  const playing = useStore((s) => s.playing)
   const draft = useStore((s) => s.draft)
   const viewport = useStore((s) => s.viewport)
   const erasing = useStore((s) => s.erasing)
@@ -220,6 +224,7 @@ export function Canvas({ palette }: { palette: Palette }) {
               el={el}
               palette={palette}
               faded={erasingSet.has(el.id)}
+              hide={el.id === playing}
               editing={el.id === editingId}
               land={fresh.has(el.id)}
               // slide frames stay put: their numbers are drawn separately and would come apart from them

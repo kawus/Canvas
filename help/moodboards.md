@@ -51,7 +51,7 @@ Yes. Add the link the same way, with **+ → Link** or by pasting it onto the bo
 - **Videos:** YouTube (including Shorts), Vimeo, Loom and TikTok.
 - **Music and podcasts:** Spotify, Apple Music, Apple Podcasts, SoundCloud, YouTube Music, Bandcamp, Deezer and Mixcloud.
 
-Videos get a wide card with the video's picture, TikToks and YouTube Shorts a tall one, and music a square card with the cover. Short links from the apps' Share buttons work too. **Tap the picture** to play. The service's own player opens inside the card, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first; the **×** on the card's corner stops it too. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
+Videos get a wide card with the video's picture, TikToks and YouTube Shorts a tall one, and music a square card with the cover. Short links from the apps' Share buttons work too. **Tap the picture** to play. The card turns into the service's own full player, just as it looks on Spotify, YouTube or SoundCloud, and you can keep working while it plays. Only one thing plays at a time, so starting another stops the first. The **×** in the player's corner, or <kbd>Esc</kbd>, stops it and brings the card back. People with a View link can play them, and so can you while presenting (tap the picture instead of moving to the next slide).
 
 Spotify, Apple Music and Deezer play whole songs only for people who are signed in to them in that browser; everyone else hears a 30-second preview. Podcasts, YouTube, Vimeo, Loom, TikTok, SoundCloud, Bandcamp and Mixcloud play in full (on Bandcamp, as far as the artist allows).
 

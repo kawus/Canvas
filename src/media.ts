@@ -20,10 +20,18 @@ export interface Media {
   service: string
   /** the service's own player ('' while Bandcamp's number isn't known yet) */
   embed: string
+  /** the player's own size (its native design), in pixels */
+  size: [number, number]
 }
 
-const video = (service: string, embed: string, shape: MediaShape = 'wide'): Media => ({ kind: 'video', shape, service, embed })
-const audio = (service: string, embed: string): Media => ({ kind: 'audio', shape: 'square', service, embed })
+const video = (service: string, embed: string, shape: MediaShape = 'wide'): Media => ({
+  kind: 'video',
+  shape,
+  service,
+  embed,
+  size: shape === 'tall' ? [325, 578] : [512, 288],
+})
+const audio = (service: string, embed: string, size: [number, number] = [320, 352]): Media => ({ kind: 'audio', shape: 'square', service, embed, size })
 
 const ID = /^[\w-]{6,20}$/
 
@@ -32,7 +40,7 @@ function youtube(id: string | null | undefined, start: string | null, music: boo
   const t = start ? parseInt(start.replace(/s$/, ''), 10) : 0
   // youtube-nocookie: YouTube's privacy-enhanced mode
   const embed = `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&playsinline=1&rel=0${t > 0 ? `&start=${t}` : ''}`
-  return music ? audio('YouTube Music', embed) : video('YouTube', embed, short ? 'tall' : 'wide')
+  return music ? audio('YouTube Music', embed, [512, 288]) : video('YouTube', embed, short ? 'tall' : 'wide')
 }
 
 export function parseMedia(raw: string, player?: string): Media | null {
@@ -85,15 +93,16 @@ export function parseMedia(raw: string, player?: string): Media | null {
     const path = parts.map(encodeURIComponent).join('/')
     const i = u.searchParams.get('i')
     const query = i && /^\d+$/.test(i) ? `?i=${i}` : ''
+    const single = !!query || parts[1] === 'song'
     return host === 'music.apple.com'
-      ? audio('Apple Music', `https://embed.music.apple.com/${path}${query}`)
-      : audio('Apple Podcasts', `https://embed.podcasts.apple.com/${path}${query}`)
+      ? audio('Apple Music', `https://embed.music.apple.com/${path}${query}`, [360, single ? 175 : 450])
+      : audio('Apple Podcasts', `https://embed.podcasts.apple.com/${path}${query}`, [360, single ? 175 : 450])
   }
 
   // SoundCloud (soundcloud.com/artist/track or /artist/sets/playlist)
   if (host === 'soundcloud.com' && parts.length >= 2 && !['discover', 'search', 'you', 'upload', 'settings'].includes(parts[0])) {
     const clean = `https://soundcloud.com/${parts.slice(0, parts[1] === 'sets' ? 3 : 2).join('/')}`
-    return audio('SoundCloud', `https://w.soundcloud.com/player/?url=${encodeURIComponent(clean)}&auto_play=true&visual=true&hide_related=true&show_comments=false`)
+    return audio('SoundCloud', `https://w.soundcloud.com/player/?url=${encodeURIComponent(clean)}&auto_play=true&visual=true&hide_related=true&show_comments=false`, [320, 320])
   }
 
   // TikTok (tiktok.com/@name/video/123…): a tall card
@@ -107,7 +116,7 @@ export function parseMedia(raw: string, player?: string): Media | null {
   // Bandcamp (artist.bandcamp.com/album/… or /track/…): the player needs the number read when the link was added
   if (host.endsWith('.bandcamp.com') && (parts[0] === 'album' || parts[0] === 'track') && parts[1]) {
     const ok = player && /^(album|track)=\d{1,15}$/.test(player)
-    return audio('Bandcamp', ok ? `https://bandcamp.com/EmbeddedPlayer/${player}/size=large/bgcol=ffffff/linkcol=0687f5/minimal=true/transparent=true/` : '')
+    return audio('Bandcamp', ok ? `https://bandcamp.com/EmbeddedPlayer/${player}/size=large/bgcol=ffffff/linkcol=0687f5/tracklist=false/transparent=true/` : '', [350, 470])
   }
 
   // Deezer (deezer.com/track/123, also with a language part like /en/)
@@ -115,13 +124,14 @@ export function parseMedia(raw: string, player?: string): Media | null {
     const p = /^[a-z]{2}$/.test(parts[0] ?? '') ? parts.slice(1) : parts
     const [type, id] = p
     if (!['track', 'album', 'playlist', 'episode', 'show', 'artist'].includes(type) || !id || !/^\d{1,15}$/.test(id)) return null
-    return audio('Deezer', `https://widget.deezer.com/widget/auto/${type}/${id}`)
+    return audio('Deezer', `https://widget.deezer.com/widget/auto/${type}/${id}`, [340, type === 'track' ? 300 : 400])
   }
 
   // Mixcloud (mixcloud.com/name/show/)
   if (host === 'mixcloud.com' && parts.length >= 2 && !['discover', 'upload', 'search', 'live', 'select'].includes(parts[0])) {
-    const feed = `/${parts.slice(0, 2).map(encodeURIComponent).join('/')}/`
-    return audio('Mixcloud', `https://player-widget.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(feed)}&hide_cover=1&light=1&autoplay=1`)
+    const feed = `https://www.mixcloud.com/${parts.slice(0, 2).map(encodeURIComponent).join('/')}/`
+    // Mixcloud's own player, as its oEmbed gives it: a slim strip
+    return audio('Mixcloud', `https://www.mixcloud.com/widget/iframe/?feed=${encodeURIComponent(feed)}&hide_cover=1&autoplay=1`, [440, 120])
   }
   return null
 }
@@ -154,7 +164,7 @@ export const PLAYER_HOSTS = [
   'www.tiktok.com',
   'bandcamp.com',
   'widget.deezer.com',
-  'player-widget.mixcloud.com',
+  'www.mixcloud.com',
 ]
 
 const cache = new Map<string, Media | null>()

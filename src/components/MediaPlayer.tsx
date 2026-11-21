@@ -1,16 +1,25 @@
 import { X } from 'lucide-react'
 import { useEffect } from 'react'
-import { linkLayout } from '../layout'
 import { mediaOf } from '../media'
 import { useStore } from '../store'
 import type { LinkEl } from '../types'
 
-/** Where a media card's picture is on screen. */
-export function artBox(el: LinkEl, toScreen: (x: number, y: number) => [number, number], zoom: number) {
-  const art = linkLayout(el).image
-  if (!art) return null
-  const [left, top] = toScreen(art.x, art.y)
-  return { left, top, width: art.w * zoom, height: art.h * zoom }
+/**
+ * Where the player goes: the service's own full player at its native size,
+ * centred on the card (a little bigger or smaller with the zoom, never tiny),
+ * and kept inside the screen.
+ */
+export function playerBox(el: LinkEl, toScreen: (x: number, y: number) => [number, number], zoom: number) {
+  const media = mediaOf(el.url, el.player)
+  if (!media) return null
+  const scale = Math.min(1.5, Math.max(0.75, zoom))
+  let [w, h] = media.size.map((n) => n * scale)
+  // never bigger than the screen
+  const fit = Math.min(1, (window.innerWidth - 32) / w, (window.innerHeight - 32) / h)
+  w *= fit
+  h *= fit
+  const [cx, cy] = toScreen(el.x + el.w / 2, el.y + el.h / 2)
+  return { left: cx - w / 2, top: cy - h / 2, width: w, height: h }
 }
 
 /**
@@ -21,7 +30,7 @@ export function Player({ el, box, onStop }: { el: LinkEl; box: { left: number; t
   const media = mediaOf(el.url, el.player)
   if (!media) return null
   return (
-    <div className={`media-player is-${media.kind}`} style={box} data-testid="media-player" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
+    <div className={`media-player is-${media.kind} is-${media.service.toLowerCase().replace(/\s+/g, '-')}`} style={box} data-testid="media-player" onPointerDown={(e) => e.stopPropagation()} onPointerUp={(e) => e.stopPropagation()}>
       <iframe
         src={media.embed}
         title={`${el.title} (${media.service})`}
@@ -54,8 +63,8 @@ export function MediaLayer() {
   }, [id, el])
 
   if (!el || cropping) return null
-  const box = artBox(el, (x, y) => [x * v.zoom + v.x, y * v.zoom + v.y], v.zoom)
-  if (!box || box.width < 40 || box.height < 30) return null
+  const box = playerBox(el, (x, y) => [x * v.zoom + v.x, y * v.zoom + v.y], v.zoom)
+  if (!box) return null
   return (
     <div className="media-layer">
       <Player key={el.id} el={el} box={box} onStop={() => useStore.getState().setPlaying(null)} />
