@@ -12,6 +12,10 @@
  *
  * Feedback is kept apart from the board itself, so leaving a note never needs
  * (or touches) the edit key, and it disappears with the board.
+ *
+ * People are sent with their device's id, but what's stored and shown is a
+ * scrambled id that's different on every board (`publicId`): nobody reading a
+ * board's notes can act as someone else or recognise them on another board.
  */
 
 import { allowFeedback, tooMuch } from './_limits.js'
@@ -43,17 +47,35 @@ function person(by) {
   return { id, name, color }
 }
 
-/** All feedback on a board, as stored (field → JSON). */
+/** What a person's id becomes on one board: scrambled, and different on every board. @param {string} board @param {string} device */
+const publicId = async (board, device) => (await sha256(`canvas-fb:${board}:${device}`)).slice(0, 16)
+const PUBLIC_RE = /^[0-9a-f]{16}$/
+
+/** All feedback on a board, as stored (field → JSON). Older items, stored with the device's own id, are scrambled on the way. */
 async function itemsOf(/** @type {string} */ id) {
-  const flat = /** @type {string[] | null} */ (await redis(['HGETALL', `fb:${id}`])) ?? []
+  const key = `fb:${id}`
+  const flat = /** @type {string[] | null} */ (await redis(['HGETALL', key])) ?? []
   const out = []
+  let changed = false
   for (let i = 0; i + 1 < flat.length; i += 2) {
     try {
-      out.push(JSON.parse(flat[i + 1]))
+      const x = JSON.parse(flat[i + 1])
+      if (x.by && typeof x.by.id === 'string' && !PUBLIC_RE.test(x.by.id)) {
+        x.by = { ...x.by, id: await publicId(id, x.by.id) }
+        if (x.kind === 'like') {
+          await redis(['HDEL', key, flat[i]])
+          x.id = `l:${x.target}:${x.by.id}`
+        }
+        await redis(['HSET', key, x.id, JSON.stringify(x)])
+        changed = true
+      }
+      out.push(x)
     } catch {
       /* skip */
     }
   }
+  // open boards download again (they only do when the version changes)
+  if (changed) await redis(['INCR', `fbv:${id}`])
   return out.sort((a, b) => a.at - b.at)
 }
 
@@ -123,7 +145,9 @@ export async function handle(request) {
         } catch {
           return json({ error: 'invalid json' }, 400)
         }
-        const by = person(body?.by)
+        const sender = person(body?.by)
+        // what's stored and shown: the scrambled id for this board (the device's own id is only used to make it)
+        const by = sender && { ...sender, id: await publicId(id, sender.id) }
         let target = String(body?.target ?? '')
         /** @type {any} */
         let parent = null
@@ -141,11 +165,16 @@ export async function handle(request) {
         if (body.kind === 'like') {
           // one like per person per item: liking again takes it back
           const field = `l:${target}:${by.id}`
+          // (and any like stored before ids were scrambled; never for an id that looks scrambled,
+          // or the id shown on the board could be used to remove someone's like)
+          const raw = /** @type {{ id: string }} */ (sender).id
+          const fields = PUBLIC_RE.test(raw) ? [field] : [field, `l:${target}:${raw}`]
           if (body.on === false) {
-            await redis(['HDEL', key, field])
+            await redis(['HDEL', key, ...fields])
             await bump()
             return json({ removed: field })
           }
+          if (fields.length > 1) await redis(['HDEL', key, fields[1]])
           item = { id: field, kind: 'like', target, by, at: Date.now() }
         } else if (body.kind === 'note') {
           const text = clean(body.text, MAX_TEXT)

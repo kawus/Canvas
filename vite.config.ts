@@ -44,6 +44,8 @@ export default defineConfig({
         // template pages: a landing page per kind of project, each with a ready-made board
         templates: resolve(import.meta.dirname, 'templates/index.html'),
         changelog: resolve(import.meta.dirname, 'changelog/index.html'),
+        // take an email off the updates list and the Ideas board (not in the sitemap)
+        unsubscribe: resolve(import.meta.dirname, 'unsubscribe/index.html'),
         'template-room': resolve(import.meta.dirname, 'templates/room-makeover-moodboard/index.html'),
         'template-client': resolve(import.meta.dirname, 'templates/client-moodboard/index.html'),
         'template-brand': resolve(import.meta.dirname, 'templates/brand-identity-moodboard/index.html'),

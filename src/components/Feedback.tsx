@@ -148,7 +148,7 @@ export function FeedbackLayer({ palette }: { palette: Palette }) {
   }, [])
 
   if (!visible) return null
-  const mine = me().id
+  const mine = useFeedback.getState().mine
   const names = namesById(items)
   const likes = new Map<string, FbPerson[]>()
   const notes = new Map<string, FbItem[]>()

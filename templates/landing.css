@@ -132,11 +132,18 @@ p {
   gap: 8px;
   height: 52px;
   padding: 0 24px;
+  border: 0;
   border-radius: 999px;
+  font-family: inherit;
   font-size: 17px;
   font-weight: 600;
   letter-spacing: -0.01em;
+  cursor: pointer;
   transition: transform 0.15s ease, filter 0.15s ease, background-color 0.15s ease;
+}
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 .btn:active {
   transform: scale(0.97);
@@ -759,6 +766,19 @@ p {
   color: var(--text-3);
   font-size: 13px;
 }
+.idea-note a {
+  color: inherit;
+  text-decoration: underline;
+}
+/* /unsubscribe/: the same form, centred under the heading */
+.unsub {
+  padding-bottom: clamp(48px, 8vw, 96px);
+}
+.unsub .idea-form {
+  margin: 36px auto 0;
+  text-align: left;
+}
+
 /* the owner's view */
 .ideas-signin {
   margin-top: 24px;

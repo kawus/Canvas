@@ -47,6 +47,8 @@ interface FbState {
   /** a note being sent, or a failure to show */
   sending: boolean
   error: string | null
+  /** who I am on this board: notes and likes carry a scrambled id, different on every board */
+  mine: string
 }
 
 export const useFeedback = create<FbState>(() => ({
@@ -59,6 +61,7 @@ export const useFeedback = create<FbState>(() => ({
   panel: false,
   sending: false,
   error: null,
+  mine: '',
 }))
 
 const F = () => useFeedback.getState()
@@ -89,6 +92,19 @@ export function chooseName(name: string) {
 export function me(): FbPerson {
   const m = getMe()
   return { id: m.id, name: m.name, color: m.color }
+}
+
+/** My id as it shows on one board's notes and likes (the server makes the same from my device's id). */
+const publicIds = new Map<string, string>()
+export async function publicId(board: string, device = getMe().id) {
+  const key = `${board}:${device}`
+  let id = publicIds.get(key)
+  if (!id) {
+    const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`canvas-fb:${board}:${device}`))
+    id = [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
+    publicIds.set(key, id)
+  }
+  return id
 }
 
 /** Someone who only liked things before giving a name. */
@@ -127,7 +143,8 @@ export function loadFeedback() {
       if (data.unchanged) return
       if (typeof data.v === 'number') version = { board: id, v: data.v }
       const same = F().board === id
-      set({ board: id, on: data.on, items: data.items, ...(same ? {} : { target: null, compose: null, open: null, panel: false }) })
+      const mine = await publicId(id)
+      set({ board: id, mine, on: data.on, items: data.items, ...(same ? {} : { target: null, compose: null, open: null, panel: false }) })
     } catch {
       /* offline: keep what we have */
     } finally {
@@ -222,19 +239,20 @@ async function post(body: object): Promise<{ item?: FbItem; removed?: string } |
   }
 }
 
-export const myLike = (items: FbItem[], target: string, who = me().id) =>
+export const myLike = (items: FbItem[], target: string, who = F().mine) =>
   items.some((x) => x.kind === 'like' && x.target === target && x.by.id === who)
 
 /** Like an item, or take the like back. Shows at once; undone if it can't be sent. */
 export async function toggleLike(target: string) {
   // a like doesn't ask for a name; until there is one it's from "Someone", not the made-up live-editing name
   const by = hasChosenName() ? me() : { ...me(), name: SOMEONE }
-  const field = `l:${target}:${by.id}`
-  const liked = myLike(F().items, target, by.id)
+  const mine = F().mine
+  const field = `l:${target}:${mine}`
+  const liked = myLike(F().items, target, mine)
   const before = F().items
   set({
     error: null,
-    items: liked ? before.filter((x) => x.id !== field) : [...before, { id: field, kind: 'like', target, by, at: Date.now() }],
+    items: liked ? before.filter((x) => x.id !== field) : [...before, { id: field, kind: 'like', target, by: { ...by, id: mine }, at: Date.now() }],
   })
   const res = await post({ kind: 'like', target, by, on: !liked })
   if (!res) set({ items: before })
@@ -267,7 +285,7 @@ export async function sendReply(parent: string, text: string) {
 export const repliesOf = (items: FbItem[], note: string) => items.filter((x) => x.kind === 'reply' && x.parent === note).sort((a, b) => a.at - b.at)
 
 /** Whether a note, or a reply under it, came from someone else since `seen`. */
-export function isFresh(items: FbItem[], note: FbItem, seen: number, mine = me().id) {
+export function isFresh(items: FbItem[], note: FbItem, seen: number, mine = F().mine) {
   if (note.at > seen && note.by.id !== mine) return true
   return repliesOf(items, note.id).some((r) => r.at > seen && r.by.id !== mine)
 }

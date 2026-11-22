@@ -16,7 +16,7 @@ No. Canvas has no accounts, sign-ups or passwords, and never asks for your email
 - **Ideas you suggest:** on the [What's new](app:changelog/) page, the idea and, only if you add it, your email address, so you can hear when it's ready. Your email is never shown to anyone else. Votes are counted once per device, without knowing who you are.
 - **Earlier versions:** a copy of each board as it was, kept at most once an hour while people work on it, for 30 days, with the name of whoever saved it. Only people who can edit the board can see them, and they're deleted with the board.
 - **Voice notes:** recordings you add to a board are stored with it, like photos, and anyone with the board's link can play them. The microphone is only used while you record.
-- **Feedback:** likes and notes left on a shared board, with the name the person typed, kept next to that board and deleted with it.
+- **Feedback:** likes and notes left on a shared board, with the name the person typed, kept next to that board and deleted with it. Each person is told apart by a scrambled code that's different on every board, so nobody can recognise you from one board to the next.
 - **Your list of boards (My Canvas):** encrypted on your device with a secret that exists only in your My Canvas link, then backed up. Our server stores it but can't read it.
 
 Nothing is saved until you add something. When Canvas opens, it asks the server whether the board in the address bar already exists. That's only a lookup: a new, untouched board is never stored, neither in your list of boards nor in the cloud.
@@ -41,7 +41,9 @@ As long as you use them. A board that nobody has edited for a year is removed fr
 
 ## Do you have my email address?
 
-Only if you asked for updates. Under **Connect your devices → Email it to me** you can tick **Also send me rare updates about Canvas**. Then your email address, and nothing else, goes on a short list for occasional news (a few times a year at most). It isn't linked to your boards or your devices. Every update will have a way to unsubscribe.
+Only if you asked for updates. Under **Connect your devices → Email it to me** you can tick **Also send me rare updates about Canvas**. Then your email address, and nothing else, goes on a short list for occasional news (a few times a year at most). It isn't linked to your boards or your devices.
+
+You can take your email off at any time at [canvas.kawus.com/unsubscribe](app:unsubscribe/): type it in and it's removed from the updates list and from any idea you suggested. Every update links there too.
 
 Backing up your link by email doesn't share your address with Canvas: it opens your own email app, and the email goes from there.
 

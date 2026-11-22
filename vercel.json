@@ -71,5 +71,12 @@
       "source": "/made-with-canvas/",
       "destination": "/intro/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/unsubscribe",
+      "destination": "/unsubscribe/",
+      "permanent": true
+    }
   ]
 }

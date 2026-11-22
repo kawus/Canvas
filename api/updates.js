@@ -1,4 +1,4 @@
-import { allowSignup, tooMuch } from './_limits.js'
+import { allowFeedback, allowSignup, tooMuch } from './_limits.js'
 import { json, redis, redisConfig, sha256 } from './_redis.js'
 
 /**
@@ -8,7 +8,13 @@ import { json, redis, redisConfig, sha256 } from './_redis.js'
  * `updates:list` (field = hash of the address, value = { email, at }), where
  * it can be read in the Upstash console when it's time to send an update.
  *
- *   POST /api/updates  { email }   → { ok: true }
+ *   POST /api/updates           { email }   → { ok: true }
+ *   POST /api/updates?remove=1  { email }   → { ok: true }   take an address off
+ *
+ * Removing (from /unsubscribe/) takes the address off the updates list and off
+ * any idea it was left with on the Ideas board (api/ideas.js). The answer is
+ * the same whether or not the address was there, so nobody can use it to find
+ * out who's on the list.
  */
 
 const EMAIL_RE = /^[^\s@<>()[\]\\,;:"]{1,64}@[a-z0-9-]+(\.[a-z0-9-]+)*\.[a-z]{2,24}$/i
@@ -25,7 +31,24 @@ export async function handle(request) {
     return json({ error: 'bad request' }, 400)
   }
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : ''
-  if (email.length > 254 || !EMAIL_RE.test(email)) return json({ error: 'that email address looks wrong' }, 400)
+  const removing = !!new URL(request.url).searchParams.get('remove')
+  // (removing accepts any address the Ideas board did, which checks more loosely)
+  if (email.length > 254 || !(removing ? /^[^\s@]+@[^\s@]+\.[^\s@]+$/ : EMAIL_RE).test(email)) return json({ error: 'that email address looks wrong' }, 400)
+  if (removing) {
+    if (!(await allowFeedback(request))) return tooMuch()
+    await redis(['HDEL', 'updates:list', (await sha256(`canvas-updates:${email}`)).slice(0, 32)])
+    // and from any idea it was left with
+    const flat = /** @type {string[] | null} */ (await redis(['HGETALL', 'ideas'])) ?? []
+    for (let i = 0; i + 1 < flat.length; i += 2) {
+      try {
+        const { email: left, ...idea } = JSON.parse(flat[i + 1])
+        if (typeof left === 'string' && left.trim().toLowerCase() === email) await redis(['HSET', 'ideas', flat[i], JSON.stringify(idea)])
+      } catch {
+        /* skip */
+      }
+    }
+    return json({ ok: true })
+  }
   if (!(await allowSignup(request))) return tooMuch()
   const field = (await sha256(`canvas-updates:${email}`)).slice(0, 32)
   // signing up twice keeps the first date

@@ -22,5 +22,5 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "intro", "templates", "changelog"]
+  "include": ["src", "intro", "templates", "changelog", "unsubscribe"]
 }

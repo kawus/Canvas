@@ -54,15 +54,15 @@ Compare the two pages in **Vercel → Analytics → Pages** to see which kind of
 **For later (from the November 2026 review):**
 
 1. **A content security policy.** The site only sets `frame-ancestors`. A full policy (which scripts, frames and images may load) would be a safety net if an injection hole ever appeared; edit keys, the Pro pass and the My Canvas key all live in the browser. It needs the player services' frame addresses listed.
-2. **Commenter ids are public.** Feedback items carry each person's device id (`by.id`), so anyone reading a board's notes could remove that person's likes or Ideas votes, and recognise them across boards. Fix: keep a server-side scrambled id per board.
-3. **Boards aren't checked when they load.** Every field is used safely today (links open only http(s), players and maps come from the approved services, images only from Canvas's own storage), but a check on load would keep it that way.
-4. **Removal requests.** The updates list and Ideas emails need a way to unsubscribe or ask for removal.
+2. **Boards aren't checked when they load.** Every field is used safely today (links open only http(s), players and maps come from the approved services, images only from Canvas's own storage), but a check on load would keep it that way.
+
+*Done (22 November 2026):* feedback shows a scrambled id per person that's different on every board (`api/feedback.js`), and `/unsubscribe/` takes an email off the updates list and the Ideas board (`api/updates.js?remove=1`).
 
 ## Visitor analytics
 
 [Vercel Web Analytics](https://vercel.com/docs/analytics) counts visits to the app, the front page and the help centre (cookieless). Only the page is sent — everything after `?` or `#` is removed first (`src/analytics.ts`), so board ids, edit keys and My Canvas links never reach it. To start collecting, open the project in Vercel → **Analytics** → **Enable**, then redeploy.
 
-**Interest and the updates list.** Under **Connect your devices**, people can email themselves their My Canvas link (it opens their own email app via `mailto:`, so the link never reaches the server) and tick **Also send me rare updates about Canvas**. Only ticked addresses are stored, in the Redis hash `updates:list` (`api/updates.js`, at most 5 sign-ups per visitor per hour). Read the list in the Upstash console when you want to send an update, and include an unsubscribe link in whatever tool you send it with. The stats page (`/#stats`) shows how many people are on the list and how many backed up their link.
+**Interest and the updates list.** Under **Connect your devices**, people can email themselves their My Canvas link (it opens their own email app via `mailto:`, so the link never reaches the server) and tick **Also send me rare updates about Canvas**. Only ticked addresses are stored, in the Redis hash `updates:list` (`api/updates.js`, at most 5 sign-ups per visitor per hour). Read the list in the Upstash console when you want to send an update, and end every update with the unsubscribe link `https://canvas.kawus.com/unsubscribe/?email=<their address>` (the address is filled in; it's removed only when they press the button). `/unsubscribe/` also takes the address off any idea it was left with. The stats page (`/#stats`) shows how many people are on the list and how many backed up their link.
 
 **Made with Canvas.** People viewing a shared board see a small "Made with Canvas" link in the view-only bar, and PNG, PDF and SVG exports carry a quiet "Made with Canvas · canvas.kawus.com" line under the board (link-preview pictures don't; they have their own badge). The link goes to `/made-with-canvas/`, which shows the front page (a rewrite in `vercel.json`). Because it's its own address, **Analytics → Pages → /made-with-canvas/** shows how many visits shared boards bring in, without any tracking parameters.
 

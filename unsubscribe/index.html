@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Take your email off Canvas</title>
+    <meta name="description" content="Take your email address off Canvas's updates list and the Ideas board." />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#faf8f4" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#151412" media="(prefers-color-scheme: dark)" />
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
+    <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
+    <script type="module" src="../templates/landing.ts"></script>
+    <script type="module" src="./unsubscribe.ts"></script>
+  </head>
+  <body>
+    <header class="nav">
+      <div class="wrap">
+        <a class="brand" href="../intro/" aria-label="Canvas"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="1" y="1" width="22" height="22" rx="6.5" /><path d="M7 15.5c2.2-4.6 4.2-7 6-7 2.4 0-1.6 7 1.2 7 1.1 0 2-1 2.8-2.4" /></svg>Canvas</a>
+        <nav class="nav-links">
+          <a class="btn btn-primary btn-small" href="../?from=intro" data-open>Open Canvas</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero hero-compact wrap unsub">
+        <h1 data-reveal>Take your email off Canvas.</h1>
+        <p class="lead" data-reveal style="--i: 1">Canvas keeps an email address only when you ask it to: for rare updates, or to hear when an idea you suggested is ready. Type yours here and it’s gone from both.</p>
+        <form id="remove-form" class="idea-form">
+          <input class="idea-field" name="email" type="email" required maxlength="254" placeholder="Your email" aria-label="Your email" autocomplete="email" />
+          <div class="idea-form-foot">
+            <button type="submit" class="btn btn-primary btn-small">Remove my email</button>
+            <span class="idea-sent" role="status"></span>
+          </div>
+          <p class="idea-note">Your boards stay as they are; they never had your email. Questions about your data: see <a href="../help/privacy/">Privacy</a>.</p>
+        </form>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap">
+        <span>Canvas · a calm whiteboard</span>
+        <span><a href="../changelog/">What's new</a> · <a href="../help/">Help</a> · <a href="../help/privacy/">Privacy</a></span>
+      </div>
+    </footer>
+  </body>
+</html>

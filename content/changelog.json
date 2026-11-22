@@ -334,6 +334,22 @@
   ],
   "releases": [
     {
+      "date": "2026-11-22",
+      "title": "More privacy for your email and your notes",
+      "items": [
+        {
+          "text": "Take your email off at any time: canvas.kawus.com/unsubscribe removes it from the updates list and from any idea you suggested."
+        },
+        {
+          "text": "Likes and notes on a shared board no longer carry a code that could link you from one board to another, or let someone undo your likes.",
+          "feature": "feedback"
+        },
+        {
+          "text": "The Send idea button on this page now matches the site's other buttons."
+        }
+      ]
+    },
+    {
       "date": "2026-11-21",
       "title": "The launcher, videos, music, places, fonts and voice notes",
       "items": [

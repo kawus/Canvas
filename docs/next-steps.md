@@ -1,4 +1,4 @@
-# Canvas: where we left off (21 Nov 2026)
+# Canvas: where we left off (22 Nov 2026)
 
 Your to-do list, in order. Everything here is for you to do; nothing in this folder is shown on the site.
 
@@ -49,6 +49,7 @@ The What's new page has an **Ideas & requests** board: visitors suggest ideas an
 From the November security review:
 
 - **Owner key:** make sure `IDEAS_ADMIN_KEY` in Vercel is a long random value from your password manager, not a word or phrase. It now also guards your Pro numbers.
+- **When you send an update** to the updates list (or email someone about their idea), end it with: *Don't want these? canvas.kawus.com/unsubscribe*. Privacy law expects a way off the list in every email.
 - **Spending limit:** not needed on Vercel's free (Hobby) plan: it never charges, it pauses the site until the next month if a limit is reached. The fair-use limits are there to keep that from happening. If you move to Vercel Pro (needed before selling the Founder licence, as Hobby is for non-commercial use only), set a limit then under **Settings → Billing → Spend Management**. The same goes for Upstash and Liveblocks: free plans don't charge; set a budget if you ever upgrade.
 
 ## 2c. Mark "Board history" as Delivered (1 minute)
