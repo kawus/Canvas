@@ -23,6 +23,7 @@ What to expect: impressions show up in Search Console within one or two weeks; r
 
 Until this is done, the Founder licence is a "smoke test": people see the offer but nobody can pay. Full steps are in the README (section on Canvas Pro); in short:
 
+0. Move the Vercel project to the **Pro** plan first: the free Hobby plan is for non-commercial use only, and selling licences is commercial. Then set a monthly spending limit (**Settings → Billing → Spend Management**).
 1. Vercel → **Settings → Environment Variables** → add **`PRO_TOKEN_SECRET`**: a long random value from your password manager's generator (at least 32 characters; payments won't start without it). Never change it later.
 2. Add **`STRIPE_SECRET_KEY`** with your Stripe **test** key (`sk_test_…`), redeploy, and buy the licence with the test card `4242 4242 4242 4242`.
 3. In Stripe: **Settings → Customer emails → Successful payments** on, so buyers get a receipt.
@@ -48,7 +49,7 @@ The What's new page has an **Ideas & requests** board: visitors suggest ideas an
 From the November security review:
 
 - **Owner key:** make sure `IDEAS_ADMIN_KEY` in Vercel is a long random value from your password manager, not a word or phrase. It now also guards your Pro numbers.
-- **Spending limit:** Vercel → **Settings → Billing → Spend Management**: set a monthly limit and an alert, so a flood of traffic can never run up a surprise bill.
+- **Spending limit:** not needed on Vercel's free (Hobby) plan: it never charges, it pauses the site until the next month if a limit is reached. The fair-use limits are there to keep that from happening. If you move to Vercel Pro (needed before selling the Founder licence, as Hobby is for non-commercial use only), set a limit then under **Settings → Billing → Spend Management**. The same goes for Upstash and Liveblocks: free plans don't charge; set a budget if you ever upgrade.
 
 ## 2c. Mark "Board history" as Delivered (1 minute)
 
