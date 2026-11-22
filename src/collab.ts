@@ -2,6 +2,7 @@ import type { Client, Json, LiveList, LiveMap, LiveObject, Lson, Room } from '@l
 import { toWorld } from './handles'
 import { setHistoryDelegate, useStore, type Peer } from './store'
 import type { El } from './types'
+import { checkedElement, cleanTitle } from './sanitize'
 
 /**
  * Live collaboration through Liveblocks. Each shared board is a room holding
@@ -292,11 +293,15 @@ function readStorage(storage: Storage): El[] {
     const id = String(v)
     if (seen.has(id)) return
     seen.add(id)
-    const el = storage.elements.get(id) as unknown as El | undefined
+    // what others write is checked like any board from outside (sanitize.ts)
+    const el = checkedElement(storage.elements.get(id))
     if (el) out.push(el)
   })
   // anything in the map that lost its place in the order goes on top
-  for (const [id, el] of storage.elements.entries()) if (!seen.has(id)) out.push(el as unknown as El)
+  for (const [id, raw] of storage.elements.entries()) {
+    const el = seen.has(id) ? null : checkedElement(raw)
+    if (el) out.push(el)
+  }
   return out
 }
 
@@ -306,7 +311,7 @@ function applyFromStorage(storage: Storage, changed: Set<string>) {
   // keep our own objects where nothing changed, so React doesn't redraw them
   const next = readStorage(storage).map((el) => (changed.has(el.id) ? el : (local.get(el.id) ?? el)))
   const meta = storage.meta.toJSON()
-  s.applyRemote(next, meta.title, meta.updatedAt)
+  s.applyRemote(next, cleanTitle(meta.title), typeof meta.updatedAt === 'number' ? meta.updatedAt : 0)
 }
 
 /** First connection: whichever side is newer wins (e.g. edits made offline). */

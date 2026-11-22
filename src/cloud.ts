@@ -2,6 +2,7 @@ import { getMe } from './collab'
 import { editorId } from './library'
 import { proToken } from './pro'
 import type { BoardDoc } from './types'
+import { cleanElements, cleanTitle } from './sanitize'
 
 /**
  * Talks to the optional /api/board function (see api/board.ts). When the app
@@ -61,7 +62,8 @@ async function parseBoard(res: Response | 'offline', allowUnchanged = false): Pr
     const doc = (await res.json()) as BoardDoc & { unchanged?: boolean }
     if (allowUnchanged && doc?.unchanged) return { ok: true, value: 'unchanged' }
     if (!doc || !Array.isArray(doc.elements)) return { ok: false, reason: 'error' }
-    return { ok: true, value: doc }
+    // anyone can make a board: what's in it is checked before it's shown (sanitize.ts)
+    return { ok: true, value: { ...doc, title: cleanTitle(doc.title), elements: cleanElements(doc.elements) } }
   } catch {
     return { ok: false, reason: 'error' }
   }

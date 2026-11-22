@@ -138,7 +138,8 @@ function loadTopics(): Topic[] {
     .sort((a, b) => a.order - b.order)
 }
 
-const THEME_SCRIPT = `<script>try{var t=localStorage.getItem('canvas-theme');if(t==='light'||t==='dark')document.documentElement.dataset.theme=t}catch(e){}</script>`
+/** help/head.js: slash, theme and visit counts, first thing on every page (no inline scripts: see the security policy in vercel.json) */
+const HEAD_SCRIPT = `<script src="/help/head.js"></script>`
 
 function shell({ title, description, depth, body, path, search = true, data = [] }: { title: string; description: string; depth: number; body: string; path: string; search?: boolean; data?: object[] }) {
   const up = '../'.repeat(depth)
@@ -146,7 +147,7 @@ function shell({ title, description, depth, body, path, search = true, data = []
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<script>/* links inside are relative: make sure the address ends in a slash */if(!location.pathname.endsWith('/'))location.replace(location.pathname+'/'+location.search+location.hash)</script>
+${HEAD_SCRIPT}
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>${escape(title)}</title>
 <meta name="description" content="${escape(description)}" />
@@ -167,7 +168,6 @@ ${data.map((d) => `<script type="application/ld+json">${JSON.stringify(d).replac
 <link rel="apple-touch-icon" href="${up}../apple-touch-icon.png" />
 <link rel="preload" href="${up}geist.woff2" as="font" type="font/woff2" crossorigin />
 <link rel="stylesheet" href="${up}help.css" />
-${THEME_SCRIPT}
 </head>
 <body>
 <header class="top">
@@ -185,11 +185,6 @@ ${body}
   <a href="${up}../">Open Canvas</a>
 </footer>
 <script src="${up}help.js" defer></script>
-<script>
-  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments) }
-  // visit counts get the page only, not the #question or ?query
-  window.va('beforeSend', function (e) { var u = new URL(e.url); u.hash = ''; u.search = ''; e.url = u.toString(); return e })
-</script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
 </html>
@@ -297,6 +292,7 @@ export function buildHelp(): Map<string, string | Buffer> {
   files.set('help/search.json', JSON.stringify(index))
   files.set('help/help.css', fs.readFileSync(path.join(SRC, 'help.css'), 'utf8'))
   files.set('help/help.js', fs.readFileSync(path.join(SRC, 'help.js'), 'utf8'))
+  files.set('help/head.js', fs.readFileSync(path.join(SRC, 'head.js'), 'utf8'))
   files.set('help/geist.woff2', fs.readFileSync(FONT))
   return files
 }

@@ -87,11 +87,8 @@ export async function handle(request) {
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="theme-color" content="#faf8f4" />
 <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-<script>
-  // on to the board; an edit key in the #fragment comes along (it never reaches the server)
-  var key = location.hash.length > 1 ? '.' + location.hash.slice(1) : ''
-  location.replace(${JSON.stringify(target)} + (${valid ? 'true' : 'false'} ? key : ''))
-</script>
+<!-- on to the board; an edit key in the #fragment comes along (it never reaches the server) -->
+<script src="/open-board.js" data-target="${escape(target)}" data-board="${valid ? '1' : '0'}"></script>
 </head>
 <body style="font-family: system-ui, sans-serif; background: #fbfbfb">
 <p style="margin: 40vh auto; text-align: center"><a href="${target}">Open the board on Canvas</a></p>

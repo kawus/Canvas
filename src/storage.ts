@@ -2,6 +2,7 @@ import { createStore, del, get, set } from 'idb-keyval'
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string'
 import { customAlphabet } from 'nanoid'
 import type { BoardDoc, BoardMeta, El } from './types'
+import { cleanElements, cleanTitle } from './sanitize'
 
 /**
  * Boards live in this browser's IndexedDB, keyed by a short random id that is
@@ -154,16 +155,10 @@ export function decodeShare(data: string): { id: string; title: string; elements
     if (!json) return null
     const p = JSON.parse(json) as SharePayload
     if (p.v !== 1 || !Array.isArray(p.e)) return null
-    return { id: String(p.id || newId()), title: String(p.t || 'Untitled'), elements: p.e.filter(isElement) }
+    return { id: String(p.id || newId()), title: cleanTitle(p.t), elements: cleanElements(p.e) }
   } catch {
     return null
   }
-}
-
-export function isElement(e: unknown): e is El {
-  if (!e || typeof e !== 'object') return false
-  const t = (e as El).type
-  return ['freedraw', 'rect', 'ellipse', 'line', 'arrow', 'text', 'sticky', 'image', 'link', 'swatch', 'font', 'voice', 'slide'].includes(t) && typeof (e as El).id === 'string'
 }
 
 export function shareUrl(doc: BoardDoc) {

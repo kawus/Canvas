@@ -11,7 +11,6 @@ import {
   decodeShare,
   deleteBoard,
   emptyBoard,
-  isElement,
   lastBoardId,
   listBoards,
   loadBoard,
@@ -21,6 +20,7 @@ import {
   setLastBoardId,
 } from './storage'
 import type { BoardDoc, Viewport } from './types'
+import { cleanElements } from './sanitize'
 
 /**
  * Boards are saved on the device first (instant, works offline) and then, when
@@ -358,7 +358,7 @@ async function openTemplate(name: string) {
   const doc: BoardDoc = {
     id: newId(),
     title: typeof data.title === 'string' ? data.title.slice(0, 120) : 'Untitled',
-    elements: cloneWithNewIds(data.elements.filter(isElement), 0, 0),
+    elements: cloneWithNewIds(cleanElements(data.elements), 0, 0),
     createdAt: now,
     updatedAt: now,
     key: newKey(),

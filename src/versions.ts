@@ -1,6 +1,6 @@
 import { keepVersionOnNextSave } from './cloud'
 import { editorId } from './library'
-import { isElement } from './storage'
+import { cleanElements } from './sanitize'
 import { useStore } from './store'
 import type { El } from './types'
 
@@ -46,7 +46,7 @@ export async function loadHistory(id: string, key: string): Promise<History | nu
 
 export async function loadVersion(id: string, key: string, at: number): Promise<El[] | null> {
   const data = await get(id, key, `version=${at}`)
-  return Array.isArray(data?.elements) ? (data.elements as unknown[]).filter(isElement) : null
+  return Array.isArray(data?.elements) ? cleanElements(data.elements) : null
 }
 
 /** Whether a version was saved by you (on any of your connected devices): then only its time is shown. */

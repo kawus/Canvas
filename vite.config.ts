@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react'
-import { readdirSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import { helpPages, SITE } from './scripts/help.ts'
@@ -18,6 +18,19 @@ export default defineConfig({
     changelogPage(),
     // full addresses in the link-preview tags
     { name: 'site-url', transformIndexHtml: (html: string) => html.replaceAll('__SITE__', SITE) },
+    // every player and map service (media.ts) must be allowed as a frame by the security policy (vercel.json)
+    {
+      name: 'player-hosts-in-policy',
+      buildStart() {
+        const media = readFileSync(resolve(import.meta.dirname, 'src/media.ts'), 'utf8')
+        const list = /PLAYER_HOSTS = \[([^\]]*)\]/.exec(media)?.[1] ?? ''
+        const hosts = [...list.matchAll(/'([^']+)'/g)].map((m) => m[1])
+        const policy = readFileSync(resolve(import.meta.dirname, 'vercel.json'), 'utf8')
+        const frames = /frame-src ([^;"]*)/.exec(policy)?.[1].split(' ') ?? []
+        const missing = hosts.filter((h) => !frames.includes(`https://${h}`))
+        if (!hosts.length || missing.length) this.error(`Add these player hosts to frame-src in vercel.json: ${missing.join(', ') || '(none found)'}`)
+      },
+    },
     // a sitemap for search engines (needs the site's address, so only on Vercel or with SITE_URL)
     {
       name: 'sitemap',

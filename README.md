@@ -51,12 +51,11 @@ Compare the two pages in **Vercel → Analytics → Pages** to see which kind of
 
 **Fair-use limits** (`api/_limits.js`), so nobody can fill the database or run up costs: each visitor may add about **100 MB of new data a day** (boards, images, My Canvas; re-saving costs nothing) and fetch **200 link previews an hour** (a map picture counts as up to four), with **20,000 a day** for everyone together. Over the limit, saving pauses ("Couldn't sync — saved on this device, will retry") and resumes the next day; small saves that still fit keep going through. Change them with `LIMIT_STORAGE_MB`, `LIMIT_PREVIEWS_PER_HOUR` and `LIMIT_PREVIEWS_PER_DAY`. The smoke-test counters take at most 200 counts per visitor an hour. Visitors are told apart by a hashed internet address; nothing identifying is stored and the counters expire within a day.
 
-**For later (from the November 2026 review):**
+**Security policy** (`vercel.json`): the browser only runs Canvas's own scripts (no inline code anywhere: the help pages use `help/head.js`, board links `public/open-board.js`), connects only to Canvas and Liveblocks, and only frames the player and map services. Adding a player service means adding its address to `frame-src` too; the build stops with a message if one is missing (`vite.config.ts`).
 
-1. **A content security policy.** The site only sets `frame-ancestors`. A full policy (which scripts, frames and images may load) would be a safety net if an injection hole ever appeared; edit keys, the Pro pass and the My Canvas key all live in the browser. It needs the player services' frame addresses listed.
-2. **Boards aren't checked when they load.** Every field is used safely today (links open only http(s), players and maps come from the approved services, images only from Canvas's own storage), but a check on load would keep it that way.
+**Board check** (`src/sanitize.ts`): every board from outside the device (cloud, live editing, earlier versions, share links, templates, pasted copies) is checked before it's shown. It repairs rather than removes, keeps fields it doesn't know, and only leaves out pieces that can't be shown.
 
-*Done (22 November 2026):* feedback shows a scrambled id per person that's different on every board (`api/feedback.js`), and `/unsubscribe/` takes an email off the updates list and the Ideas board (`api/updates.js?remove=1`).
+*Done in the November 2026 review:* owner key and limits on the owner pages, link previews checked as each connection is made, the go-live guard for payments, per-board commenter ids, `/unsubscribe/`, the security policy and the board check.
 
 ## Visitor analytics
 

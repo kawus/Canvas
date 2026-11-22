@@ -6,6 +6,7 @@ import { toWorld } from './handles'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { BoxEl, El, StickyEl, TextEl } from './types'
+import { cleanElements } from './sanitize'
 
 const S = () => useStore.getState()
 
@@ -274,7 +275,8 @@ export function pasteText(text: string) {
   let els: El[] | null = null
   try {
     const parsed = JSON.parse(text)
-    if (parsed?.type === CLIP_MARK && Array.isArray(parsed.elements)) els = parsed.elements
+    // a copy can come from anywhere (another site can put text on the clipboard): checked like any board
+    if (parsed?.type === CLIP_MARK && Array.isArray(parsed.elements)) els = cleanElements(parsed.elements)
   } catch {
     /* plain text */
   }

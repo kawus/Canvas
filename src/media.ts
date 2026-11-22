@@ -171,7 +171,10 @@ export const SERVICES: { name: string; color: string }[] = [
   { name: 'Mixcloud', color: '#5000ff' },
 ]
 
-/** The player's address can only ever be one of these services. */
+/**
+ * The player's address can only ever be one of these services. Each must also be
+ * in `frame-src` in vercel.json (the site's security policy); the build checks.
+ */
 export const PLAYER_HOSTS = [
   'www.youtube-nocookie.com',
   'player.vimeo.com',
