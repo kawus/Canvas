@@ -490,15 +490,20 @@ export const useStore = create<State>((set, get) => ({
     }
     const vw = window.innerWidth
     const vh = window.innerHeight
-    const pad = 96
+    // margins that suit the screen: roomy on a computer, slim on a phone (where a fixed
+    // 96px margin left half the screen empty), with room for the bars at the top and bottom
+    const phone = vw <= 760
+    const side = Math.min(96, Math.max(16, vw * 0.06))
+    const top = phone ? 116 : 84
+    const bottom = phone ? 92 : 96
     const w = Math.max(b.maxX - b.minX, 1)
     const h = Math.max(b.maxY - b.minY, 1)
-    const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.min((vw - pad * 2) / w, (vh - pad * 2) / h, 2)))
+    const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Math.min((vw - side * 2) / w, (vh - top - bottom) / h, 2)))
     set({
       viewport: {
         zoom,
         x: vw / 2 - ((b.minX + b.maxX) / 2) * zoom,
-        y: vh / 2 - ((b.minY + b.maxY) / 2) * zoom,
+        y: top + (vh - top - bottom) / 2 - ((b.minY + b.maxY) / 2) * zoom,
       },
     })
   },

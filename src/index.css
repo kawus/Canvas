@@ -1047,13 +1047,13 @@ button:focus:not(:focus-visible) {
     justify-items: start;
     align-items: center;
   }
-  .bottom-left > :nth-child(1) {
+  .bottom-left > .history-cluster {
     grid-area: history;
   }
-  .bottom-left > :nth-child(2) {
+  .bottom-left > .zoom-cluster {
     grid-area: zoom;
   }
-  .bottom-left > :nth-child(3) {
+  .bottom-left > .help-wrap {
     grid-area: help;
   }
 }
@@ -5015,7 +5015,7 @@ button:focus:not(:focus-visible) {
 
 /* the board can't be edited meanwhile: the tools step aside */
 .app.is-versions :is(.top-left, .top-right, .bottom, .connect-card, .empty-hint, .fb-layer, .peer-layer),
-.app.is-versions .bottom-left > :first-child {
+.app.is-versions .bottom-left > .history-cluster {
   opacity: 0;
   pointer-events: none !important;
 }

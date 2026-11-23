@@ -9,8 +9,11 @@ export function HistoryControls() {
   const canRedo = useStore((s) => (s.collab.status !== 'off' ? s.collab.canRedo : s.future.length > 0))
   const undo = useStore((s) => s.undo)
   const redo = useStore((s) => s.redo)
+  // people with a View link can't change the board: no undo and redo for them
+  const viewOnly = useStore((s) => !s.doc.key)
+  if (viewOnly) return null
   return (
-    <div className="panel cluster">
+    <div className="panel cluster history-cluster">
       <IconButton label="Undo" kbd="⌘Z" disabled={!canUndo} onClick={undo} testId="undo">
         <Undo2 />
       </IconButton>

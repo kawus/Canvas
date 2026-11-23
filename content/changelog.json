@@ -359,6 +359,15 @@
         },
         {
           "text": "The buttons in the bottom-left corner no longer cover the toolbar on an iPad held upright or in a narrow window; with a mouse, every zoom button stays."
+        },
+        {
+          "text": "Shared boards open filling the screen on a phone, instead of small in the middle; Zoom to fit makes better use of a phone screen too."
+        },
+        {
+          "text": "The Share box now says that people with the View link can like things and leave notes."
+        },
+        {
+          "text": "People with a View link no longer see undo and redo buttons they can't use, and on a computer the hint says Click anything to react."
         }
       ]
     },

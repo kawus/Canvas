@@ -418,7 +418,7 @@ export function ShareButton() {
   let text: string
   if (snapshotOnly) text = 'Anyone with the link gets their own copy to keep. No sign‑in needed.'
   else if (editing) text = 'Anyone with this link can edit the board with you, live — you’ll see each other’s cursors.'
-  else if (editable) text = 'Anyone with the link can view this board as it changes, and make their own copy. No sign‑in needed.'
+  else if (editable) text = 'Anyone with the link can see this board as it changes, like things and leave notes. No sign‑in needed.'
   else text = 'This board is view-only for you. Share the view link, or make a copy you can edit.'
 
   return (

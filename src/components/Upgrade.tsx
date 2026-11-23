@@ -4,6 +4,7 @@ import { formatPrice, joinEarlyAccess, startCheckout, track } from '../pro'
 import { helpUrl } from '../help'
 import { useStore } from '../store'
 import { useFeedback } from '../feedback'
+import { touchFirst } from '../platform'
 
 /** Canvas Pro, sold as a one-time Founder licence (Stripe Checkout). */
 export function UpgradeDialog() {
@@ -149,8 +150,8 @@ export function ViewBar() {
       <span className="view-label" data-testid="view-label">
         {feedback ? (
           <>
-            <Heart /> <span className="view-label-long">Tap anything to react</span>
-            <span className="view-label-short">Tap to react</span>
+            <Heart /> <span className="view-label-long">{touchFirst ? 'Tap' : 'Click'} anything to react</span>
+            <span className="view-label-short">{touchFirst ? 'Tap' : 'Click'} to react</span>
           </>
         ) : (
           <>

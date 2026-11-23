@@ -7,7 +7,7 @@ order: 6
 
 ## How do I share a board?
 
-Tap **Share** (top right), then **Copy link**, and send the link to anyone. They don't need an account. With the **View** link, they see the board as it changes and can like things and leave short notes, but they can't change it, so nobody overwrites anyone.
+Tap **Share** (top right), then **Copy link**, and send the link to anyone. They don't need an account. With the **View** link, they see the board as it changes and can like things and leave short notes, but they can't change it, so nobody overwrites anyone. On a phone the board opens filling the screen, ready to read.
 
 ## How do people give feedback on my board?
 
