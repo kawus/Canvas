@@ -35,6 +35,14 @@ While you write a note, or with a note selected, press <kbd>Tab</kbd> and the ne
 A new note never lands on top of another: if something's already there, it goes neatly beside it. It also stays clear of the buttons at the edges of the screen, and if the screen is full, the view moves a little so you can see it.
 - **Text:** pick Text and tap anywhere, or double-click an empty spot on the board.
 
+## Can I make a checklist in a sticky note?
+
+Yes. Start a line with `[ ]` and a space, and it becomes a little checkbox; `- ` makes a bullet. Click or tap a box to tick it (and again to untick it); ticked items go quieter. The list lines up neatly, and long items wrap under their text. It works in shapes' labels too. People with a View link see the boxes but can't tick them.
+
+## Can I put a web address in a note?
+
+Yes. Type or paste it (`https://…` or `www.…`) and it gets a quiet underline. Click it on a selected note to open the page in a new tab (the first click just selects the note, so dragging a note never opens anything). People with a View link open it with one tap. It works in text and shapes' labels too.
+
 ## Can I turn a list into sticky notes?
 
 Yes. Paste a list (from Notes, an email or a document) and it lands as text, with **Make sticky notes** in the message at the bottom of the screen. Tap it and every line becomes its own note, in a tidy grid. Bullets and numbers are left off, and a heading above the list stays as text above the notes.

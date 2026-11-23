@@ -15,6 +15,7 @@ import { slideTagAt } from './slides'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { Box, El, FreedrawEl, LineEl, Point, StrokePoint, Tool, Viewport } from './types'
+import { checkboxAt, linkAt, toggledText } from './layout'
 
 type Action =
   | { kind: 'pan'; pointerId: number; sx: number; sy: number; vp: Viewport; touch: boolean; moved: boolean }
@@ -307,6 +308,12 @@ export class CanvasController {
 
     // view-only boards (and earlier versions) can only be looked around
     const readOnly = !s.doc.key || s.versionsOpen
+
+    // a checkbox in a note or label: a click or tap ticks it (or unticks it), nothing else
+    if (!readOnly && tool === 'select' && !this.space && e.button === 0 && this.tickAt(p)) {
+      this.lastDown = null
+      return
+    }
     // Apple Pencil draws even with Select or Hand picked (fingers select and move);
     // a tap still selects, and what's already selected can still be moved or resized
     if (!readOnly && e.pointerType === 'pen' && (tool === 'select' || tool === 'hand') && !this.space && !isDouble && !this.onSelection(sx, sy, p)) {
@@ -389,6 +396,33 @@ export class CanvasController {
   }
 
   /** Text, sticky or shape whose text should be edited at this point (inside empty shapes counts). */
+  /** The web address written under a screen point, in the topmost note, text or label there. */
+  private textLinkAt(sx: number, sy: number, pointerType: string) {
+    const s = useStore.getState()
+    const p = this.world(sx, sy)
+    const top = hitTopmost(s.doc.elements, p, this.tolerance(pointerType))
+    if (!top || (top.type !== 'sticky' && top.type !== 'text' && top.type !== 'rect' && top.type !== 'ellipse')) return null
+    return linkAt(top, p, 4 / s.viewport.zoom)
+  }
+
+  private openTextLink(sx: number, sy: number, pointerType: string) {
+    const url = this.textLinkAt(sx, sy, pointerType)
+    if (url) openLink(url)
+    return !!url
+  }
+
+  /** Tick or untick a checkbox under the point, if the topmost thing there has one. */
+  private tickAt(p: Point) {
+    const s = useStore.getState()
+    const top = hitTopmost(s.doc.elements, p, this.tolerance('touch'))
+    if (!top || (top.type !== 'sticky' && top.type !== 'rect' && top.type !== 'ellipse')) return false
+    const box = checkboxAt(top, p, 6 / s.viewport.zoom)
+    if (!box) return false
+    const text = toggledText(top.text ?? '', box.para)
+    s.commit(s.doc.elements.map((e) => (e.id === top.id ? ({ ...top, text } as El) : e)))
+    return true
+  }
+
   private editableAt(p: Point, pointerType: string) {
     const els = S().doc.elements
     const hit = hitTopmost(els, p, this.tolerance(pointerType))
@@ -924,6 +958,14 @@ export class CanvasController {
         if (!a.moved && a.touch && s.tool === 'select') s.select([])
         // a tap on a video or song's picture plays it (also on view-only boards and in earlier versions)
         if (!a.moved && this.playAt(a.sx, a.sy, e.pointerType)) break
+        // a tap on a web address in a note opens it (for people looking at a board, one tap)
+        if (!a.moved && !s.doc.key) {
+          const url = this.textLinkAt(a.sx, a.sy, e.pointerType)
+          if (url) {
+            openLink(url)
+            break
+          }
+        }
         // on a view-only board, tapping something offers Like / Note (or, without feedback, opens a link card)
         if (!a.moved && !s.doc.key) {
           const hit = hitTopmost(s.doc.elements, this.world(a.sx, a.sy), this.tolerance(e.pointerType))
@@ -970,6 +1012,8 @@ export class CanvasController {
           s.commit(s.doc.elements, a.before)
         } else if (!e.shiftKey && this.playAt(a.sx, a.sy, e.pointerType)) {
           // a click on a video or song's picture plays it
+        } else if (!e.shiftKey && a.wasSelected && s.selectedIds.length === 1 && this.openTextLink(a.sx, a.sy, e.pointerType)) {
+          // a click on a web address in a selected note opens it (the first click just selects)
         } else if (a.clickedId && a.wasSelected && !e.shiftKey && s.selectedIds.length > 1) {
           // a click (no drag) inside a selection narrows it to what was clicked (or its group)
           const unit = groupOf(s.doc.elements, a.clickedId)

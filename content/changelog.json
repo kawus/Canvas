@@ -26,7 +26,7 @@
         {
           "id": "notes",
           "name": "Sticky notes and text",
-          "text": "Sticky notes in soft paper colours, text, and labels inside shapes. Press N and just type, Tab for the next note, or paste a list to make several at once.",
+          "text": "Sticky notes in soft paper colours, text, and labels inside shapes, with checklists and links. Press N and just type, Tab for the next note, or paste a list to make several at once.",
           "added": "2026-10-29"
         },
         {
@@ -375,6 +375,17 @@
         },
         {
           "text": "Copied sticky notes now paste as readable text in other apps, one note per line, instead of computer code. In Canvas they still paste as notes."
+        },
+        {
+          "text": "Checklists in sticky notes: start a line with [ ] for a box you can tick with a click or tap, or - for a bullet.",
+          "feature": "notes"
+        },
+        {
+          "text": "Web addresses in notes, text and labels get a quiet underline and open in a new tab: click one on a selected note, or tap it on a shared board.",
+          "feature": "notes"
+        },
+        {
+          "text": "Undo shows what changed: if it's off screen, the board glides there."
         }
       ]
     },

@@ -44,7 +44,7 @@ Mostly, yes. On a computer, press <kbd>⌘K</kbd> (<kbd>Ctrl+K</kbd> on Windows)
 
 ## How do I undo something?
 
-Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <kbd>⇧⌘Z</kbd> (<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> on Windows). When you're editing together with someone, undo only undoes your own changes.
+Use the undo and redo arrows in the bottom-left corner, or <kbd>⌘Z</kbd> and <kbd>⇧⌘Z</kbd> (<kbd>Ctrl+Z</kbd> / <kbd>Ctrl+Shift+Z</kbd> on Windows). If what you undo is somewhere off screen, the board glides there, so you always see what changed. When you're editing together with someone, undo only undoes your own changes.
 
 ## Can I go back to an earlier version of a board?
 

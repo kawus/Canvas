@@ -13,9 +13,9 @@ import {
 } from './constants'
 import { fontById, fontFamily } from './fonts'
 import { isEmbed, mediaOf } from './media'
-import { boxTextLayout, CARD_INSET, linkLayout } from './layout'
+import { CARD_INSET, boxTextLayout, linkLayout, textLinks } from './layout'
 import { firstBaseline } from './textMetrics'
-import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint, VoiceEl } from './types'
+import type { BoxEl, El, FreedrawEl, StickyEl, StrokePoint, TextEl, VoiceEl } from './types'
 
 /**
  * A render primitive is a tiny, framework-free description of an SVG node.
@@ -169,10 +169,31 @@ export function freedrawPath(el: FreedrawEl, complete = true) {
   return d
 }
 
+/** A quiet underline under each web address in a note, text or label (a click opens it). */
+function underlines(el: BoxEl | StickyEl | TextEl, fill: string): Prim[] {
+  return textLinks(el).map((l) => ({ tag: 'rect', attrs: { x: l.x, y: l.y + l.fontSize * 0.12, width: l.w, height: Math.max(0.75, l.fontSize * 0.055), fill, fillOpacity: 0.55 } }))
+}
+
 function labelPrims(el: BoxEl | StickyEl, fill: string): Prim[] {
   if (!el.text) return []
   const l = boxTextLayout(el)
-  return [{ tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: l.fontSize, fill }, lines: l.lines }]
+  if (!l.marks) return [{ tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: l.fontSize, fill }, lines: l.lines }, ...underlines(el, fill)]
+  // a list: checkboxes and bullets drawn in front, ticked items quieter
+  const out: Prim[] = []
+  for (const m of l.marks) {
+    const s = m.size
+    if (m.kind === 'dot') out.push({ tag: 'circle', attrs: { cx: m.x + s * 0.35, cy: m.y + s / 2, r: l.fontSize * 0.11, fill } })
+    else if (m.kind === 'box') out.push({ tag: 'rect', attrs: { x: m.x, y: m.y, width: s, height: s, rx: s * 0.24, ry: s * 0.24, fill: 'none', stroke: fill, strokeOpacity: 0.7, strokeWidth: Math.max(1, s * 0.1) } })
+    else {
+      out.push({ tag: 'rect', attrs: { x: m.x, y: m.y, width: s, height: s, rx: s * 0.24, ry: s * 0.24, fill, fillOpacity: 0.75 } })
+      out.push({ tag: 'path', attrs: { d: `M${m.x + s * 0.25},${m.y + s * 0.53} L${m.x + s * 0.43},${m.y + s * 0.71} L${m.x + s * 0.76},${m.y + s * 0.32}`, fill: 'none', stroke: '#ffffff', strokeWidth: s * 0.14, strokeLinecap: 'round', strokeLinejoin: 'round' } })
+    }
+  }
+  const open = l.lines.filter((x) => !x.done)
+  const done = l.lines.filter((x) => x.done)
+  if (open.length) out.push({ tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: l.fontSize, fill }, lines: open })
+  if (done.length) out.push({ tag: 'text', attrs: { fontFamily: FONT_STACK, fontSize: l.fontSize, fill, fillOpacity: 0.45 }, lines: done })
+  return [...out, ...underlines(el, fill)]
 }
 
 /** Label colour on a shape: readable on solid fills, otherwise the shape's own colour. */
@@ -403,6 +424,7 @@ export function elementPrims(el: El, palette: Palette, assetUrl?: (hash: string)
           attrs: { fontFamily: FONT_STACK, fontSize: el.fontSize, fill: color },
           lines,
         },
+        ...underlines(el, color),
       ]
     }
   }

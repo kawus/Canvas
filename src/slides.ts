@@ -1,7 +1,8 @@
 import { toScreen, toWorld } from './handles'
 import { newElementId } from './storage'
-import { useStore } from './store'
+import { onHistoryStep, useStore } from './store'
 import type { Box, El, SlideEl, Viewport } from './types'
+import { geometricBounds } from './geometry'
 
 /**
  * Slides: 16:9 parts of the board, played one after another in presentation
@@ -219,3 +220,33 @@ export function stopPresenting(leaveFullscreen = true) {
   }
   wentFullscreen = false
 }
+
+/**
+ * Undo shows what changed: when what an undo or redo changed is entirely off screen,
+ * the view glides there (gently, as when presenting), so it never changes something
+ * you can't see. Changes you can already see, even partly, leave the view alone.
+ */
+function revealChange(before: El[], after: El[]) {
+  // with live editing the change arrives a moment later
+  requestAnimationFrame(() => {
+    const now = after === before ? S().doc.elements : after
+    const was = new Map(before.map((e) => [e.id, e]))
+    const changed: El[] = []
+    for (const e of now) {
+      if (was.get(e.id) !== e) changed.push(e)
+      was.delete(e.id)
+    }
+    for (const e of was.values()) changed.push(e) // removed: where it was
+    const shown = changed.filter((e) => e.type !== 'slide' || changed.length === 1)
+    if (!shown.length) return
+    const boxes = shown.map((e) => geometricBounds([e])).filter((b): b is Box => !!b)
+    if (!boxes.length) return
+    const b = { minX: Math.min(...boxes.map((x) => x.minX)), minY: Math.min(...boxes.map((x) => x.minY)), maxX: Math.max(...boxes.map((x) => x.maxX)), maxY: Math.max(...boxes.map((x) => x.maxY)) }
+    const v = S().viewport
+    const [x0, y0] = toWorld(v, 0, 0)
+    const [x1, y1] = toWorld(v, window.innerWidth, window.innerHeight)
+    const onScreen = b.maxX > x0 && b.minX < x1 && b.maxY > y0 && b.minY < y1
+    if (!onScreen) glideToBox(b)
+  })
+}
+onHistoryStep(revealChange)

@@ -189,6 +189,12 @@ interface State {
   deleteSelected: () => void
 }
 
+/** Called after each undo and redo with the board before and after (slides.ts shows what changed). */
+let afterHistory: ((before: El[], after: El[]) => void) | null = null
+export function onHistoryStep(fn: (before: El[], after: El[]) => void) {
+  afterHistory = fn
+}
+
 const HISTORY_LIMIT = 200
 
 function readTheme(): ThemePref {
@@ -357,8 +363,9 @@ export const useStore = create<State>((set, get) => ({
     ),
 
   undo: () => {
-    if (historyDelegate) return historyDelegate.undo()
-    set((s) => {
+    const before = get().doc.elements
+    if (historyDelegate) historyDelegate.undo()
+    else set((s) => {
       if (!s.past.length) return {}
       const prev = s.past[s.past.length - 1]
       const ids = new Set(prev.map((e) => e.id))
@@ -372,11 +379,13 @@ export const useStore = create<State>((set, get) => ({
         commitSeq: s.commitSeq + 1,
       }
     })
+    afterHistory?.(before, get().doc.elements)
   },
 
   redo: () => {
-    if (historyDelegate) return historyDelegate.redo()
-    set((s) => {
+    const before = get().doc.elements
+    if (historyDelegate) historyDelegate.redo()
+    else set((s) => {
       if (!s.future.length) return {}
       const next = s.future[0]
       const ids = new Set(next.map((e) => e.id))
@@ -390,6 +399,7 @@ export const useStore = create<State>((set, get) => ({
         commitSeq: s.commitSeq + 1,
       }
     })
+    afterHistory?.(before, get().doc.elements)
   },
 
   setTool: (tool) =>
