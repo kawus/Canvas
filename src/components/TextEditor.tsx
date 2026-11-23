@@ -1,4 +1,4 @@
-import { finishEditing, isEditable, registerEditor, updateEditingText } from '../actions'
+import { finishEditing, isEditable, nextNote, registerEditor, updateEditingText } from '../actions'
 import { FONT_STACK, LINE_HEIGHT, STICKY_INK, type Palette } from '../constants'
 import { toScreen } from '../handles'
 import { boxTextLayout } from '../layout'
@@ -69,6 +69,10 @@ export function TextEditor({ palette }: { palette: Palette }) {
         if (e.key === 'Escape' || (e.key === 'Enter' && (e.metaKey || e.ctrlKey))) {
           e.preventDefault()
           finishEditing()
+        } else if (e.key === 'Tab' && !e.shiftKey && el.type === 'sticky' && !e.nativeEvent.isComposing) {
+          // the next note, beside this one and joined by a line
+          e.preventDefault()
+          nextNote()
         }
       }}
     />

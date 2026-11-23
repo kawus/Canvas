@@ -96,6 +96,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
   {
     title: 'Edit',
     rows: [
+      [['Tab'], 'Next sticky note (while writing one)'],
       [['mod', 'Z'], 'Undo'],
       [['shift', 'mod', 'Z'], 'Redo'],
       [['mod', 'C'], 'Copy'],

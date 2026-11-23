@@ -37,6 +37,7 @@ It also understands what you type: paste a link and <kbd>Enter</kbd> adds it (vi
 | <kbd>⌫</kbd> | Delete |
 | <kbd>[</kbd> / <kbd>]</kbd> | Send to back / Bring to front |
 | <kbd>Enter</kbd> | Edit the selected text or label, or crop the selected image |
+| <kbd>Tab</kbd> (while writing a sticky note) | Start the next note beside it, joined by a line |
 | Arrow keys | Nudge the selection |
 | <kbd>⌘</kbd> while dragging | Don't snap |
 

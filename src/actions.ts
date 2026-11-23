@@ -5,7 +5,7 @@ import { center, geometricBounds, translateEl } from './geometry'
 import { toWorld } from './handles'
 import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
-import type { BoxEl, El, StickyEl, TextEl } from './types'
+import type { BoxEl, El, LineEl, StickyEl, TextEl } from './types'
 import { cleanElements } from './sanitize'
 import { settleBox, showBox } from './placement'
 
@@ -112,6 +112,17 @@ export function finishEditing() {
   }
   const text = (el.text ?? '').replace(/\s+$/, '')
 
+  // a note started with Tab and left empty goes again, with its line
+  if (el.type === 'sticky' && !text.trim() && tabbed.has(id)) {
+    tabbed.delete(id)
+    const without = s.doc.elements.filter((e) => e.id !== id && !((e.type === 'line' || e.type === 'arrow') && (e.start === id || e.end === id)))
+    s.setElementsLive(without)
+    s.setEditing(null)
+    s.setTool('select')
+    return
+  }
+  tabbed.delete(id)
+
   // Free text disappears when emptied; stickies and shapes stay.
   if (el.type === 'text' && !text.trim()) {
     const without = s.doc.elements.filter((e) => e.id !== id)
@@ -131,6 +142,31 @@ export function finishEditing() {
   s.setEditing(null)
   s.setTool('select')
   s.select([id])
+}
+
+/** Notes started with Tab that haven't been written in yet. */
+const tabbed = new Set<string>()
+
+/**
+ * Tab while writing a sticky note: it's done, and the next one starts right beside
+ * it (or wherever there's room nearby), joined by a line. Tab again to keep going,
+ * so a mind map grows just by typing. Leave the new note empty and it goes again.
+ */
+export function nextNote() {
+  const s = S()
+  const cur = s.doc.elements.find((e) => e.id === s.editingId)
+  if (!cur || cur.type !== 'sticky') return
+  finishEditing()
+  const gap = 72
+  const want = { minX: cur.x + cur.w + gap, minY: cur.y, maxX: cur.x + cur.w * 2 + gap, maxY: cur.y + cur.h }
+  const spot = settleBox(want, { onScreen: true })
+  const note: StickyEl = { id: newElementId(), type: 'sticky', color: cur.color, x: spot.minX, y: spot.minY, w: cur.w, h: cur.h, text: '', fontSize: cur.fontSize }
+  // the line's ends follow the two notes (bindings.ts works them out)
+  const line: LineEl = { id: newElementId(), type: 'line', color: 'gray', size: 's', x1: cur.x + cur.w, y1: cur.y + cur.h / 2, x2: note.x, y2: note.y + note.h / 2, start: cur.id, end: note.id }
+  const base = S().doc.elements
+  tabbed.add(note.id)
+  S().setElementsLive([...base, line, note])
+  startEditing(note.id, base)
 }
 
 /** "Just start typing": put the first key pressed into the note or text being edited. */
@@ -348,4 +384,48 @@ export function pasteText(text: string) {
   s.setTool('select')
   s.commit([...s.doc.elements, el])
   s.select([el.id])
+  // a list (from Notes, an email…): it lands as text, and can become one note per line
+  const lines = listLines(clean)
+  if (lines.items.length >= 2 && lines.items.length <= 60) s.showToast('Pasted as text', { label: 'Make sticky notes', run: () => listToNotes(el.id) })
+}
+
+const BULLET = /^\s*(?:[-*•–·]|\d{1,3}[.)]|\[[ xX]?\])\s+/
+
+/** The lines of a pasted list: a heading (a first line without a bullet, when the rest have one) and the items. */
+function listLines(text: string) {
+  const all = text.split('\n').map((l) => l.trim()).filter(Boolean)
+  const bulleted = (l: string) => BULLET.test(l)
+  const heading = all.length > 2 && !bulleted(all[0]) && all.slice(1).every(bulleted) ? all[0] : null
+  const items = (heading ? all.slice(1) : all).map((l) => l.replace(BULLET, '').trim()).filter(Boolean)
+  return { heading, items }
+}
+
+/** Turn a pasted list into sticky notes, one per line, in a tidy grid where the text was (a heading stays as text above). */
+function listToNotes(textId: string) {
+  const s = S()
+  const t = s.doc.elements.find((e) => e.id === textId)
+  if (!t || t.type !== 'text') return
+  const { heading, items } = listLines(t.text)
+  if (items.length < 2) return
+  const gap = 24
+  const cols = Math.min(5, Math.ceil(Math.sqrt(items.length * 2)))
+  const rows = Math.ceil(items.length / cols)
+  const top = heading ? t.y + t.fontSize * LINE_HEIGHT + gap : t.y
+  const want = { minX: t.x, minY: top, maxX: t.x + cols * STICKY_SIZE + (cols - 1) * gap, maxY: top + rows * STICKY_SIZE + (rows - 1) * gap }
+  const spot = settleBox(want, { ignore: new Set([textId]), onScreen: true })
+  const notes: StickyEl[] = items.map((text, i) => ({
+    id: newElementId(),
+    type: 'sticky',
+    color: s.style.stickyColor,
+    x: spot.minX + (i % cols) * (STICKY_SIZE + gap),
+    y: spot.minY + Math.floor(i / cols) * (STICKY_SIZE + gap),
+    w: STICKY_SIZE,
+    h: STICKY_SIZE,
+    text: text.slice(0, 500),
+    fontSize: t.fontSize,
+  }))
+  const kept: El[] = heading ? [{ ...t, text: heading, x: spot.minX, y: spot.minY - t.fontSize * LINE_HEIGHT - gap }] : []
+  const elements = [...s.doc.elements.filter((e) => e.id !== textId), ...kept, ...notes]
+  s.commit(elements)
+  s.select(notes.map((n) => n.id))
 }

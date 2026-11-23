@@ -26,7 +26,7 @@
         {
           "id": "notes",
           "name": "Sticky notes and text",
-          "text": "Sticky notes in soft paper colours, text, and labels inside shapes. Press N and just type; new notes find their own space.",
+          "text": "Sticky notes in soft paper colours, text, and labels inside shapes. Press N and just type, Tab for the next note, or paste a list to make several at once.",
           "added": "2026-10-29"
         },
         {
@@ -339,6 +339,14 @@
       "items": [
         {
           "text": "Press N and just start typing: the sticky note appears in the middle of the screen with your words in it. Esc, N and type again for the next one.",
+          "feature": "notes"
+        },
+        {
+          "text": "Mind maps by typing: while you write a sticky note, press Tab and the next one starts right beside it, joined by a soft line.",
+          "feature": "notes"
+        },
+        {
+          "text": "Paste a list and tap Make sticky notes: every line becomes its own note, in a tidy grid.",
           "feature": "notes"
         },
         {

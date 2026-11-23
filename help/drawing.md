@@ -30,8 +30,14 @@ Yes. Draw a rough line, circle or rectangle with the pen (mouse, finger or Apple
 - **Shapes:** pick Rectangle or Ellipse and drag on the board. Hold <kbd>Shift</kbd> for a perfect square or circle.
 - **Sticky notes:** pick Sticky note and tap where you want one, then type. Text wraps and shrinks to fit the note. On a computer you can also press <kbd>N</kbd> and just start typing: the note appears in the middle of the screen. <kbd>Esc</kbd>, <kbd>N</kbd> and type again for the next one.
 
+While you write a note, press <kbd>Tab</kbd> and the next note starts right beside it, joined by a soft line; <kbd>Tab</kbd> again to keep going. A mind map grows just by typing. To branch from an earlier note, select it, press <kbd>Enter</kbd> and then <kbd>Tab</kbd>. Leave a new note empty and it goes away again, line and all. The lines follow when you move the notes.
+
 A new note never lands on top of another: if something's already there, it goes neatly beside it. It also stays clear of the buttons at the edges of the screen, and if the screen is full, the view moves a little so you can see it.
 - **Text:** pick Text and tap anywhere, or double-click an empty spot on the board.
+
+## Can I turn a list into sticky notes?
+
+Yes. Paste a list (from Notes, an email or a document) and it lands as text, with **Make sticky notes** in the message at the bottom of the screen. Tap it and every line becomes its own note, in a tidy grid. Bullets and numbers are left off, and a heading above the list stays as text above the notes.
 
 ## Can I write inside a shape?
 
