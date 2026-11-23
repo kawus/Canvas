@@ -28,7 +28,9 @@ Yes. Draw a rough line, circle or rectangle with the pen (mouse, finger or Apple
 ## How do I add shapes, sticky notes and text?
 
 - **Shapes:** pick Rectangle or Ellipse and drag on the board. Hold <kbd>Shift</kbd> for a perfect square or circle.
-- **Sticky notes:** pick Sticky note and tap where you want one, then type. Text wraps and shrinks to fit the note.
+- **Sticky notes:** pick Sticky note and tap where you want one, then type. Text wraps and shrinks to fit the note. On a computer you can also press <kbd>N</kbd> and just start typing: the note appears in the middle of the screen. <kbd>Esc</kbd>, <kbd>N</kbd> and type again for the next one.
+
+A new note never lands on top of another: if something's already there, it goes neatly beside it. It also stays clear of the buttons at the edges of the screen, and if the screen is full, the view moves a little so you can see it.
 - **Text:** pick Text and tap anywhere, or double-click an empty spot on the board.
 
 ## Can I write inside a shape?
@@ -54,7 +56,7 @@ The **⋯** button holds Duplicate, Bring to front and Send to back.
 
 With the Select tool, click an item, or drag a box around several. Drag to move them; drag a corner handle to resize (hold <kbd>Shift</kbd> to keep the proportions). The arrow keys nudge a selection, and <kbd>⌫</kbd> deletes it.
 
-To copy, use <kbd>⌘C</kbd> / <kbd>⌘V</kbd>, <kbd>⌘D</kbd> to duplicate, or hold <kbd>⌥ Option</kbd> while dragging.
+To copy, use <kbd>⌘C</kbd> / <kbd>⌘V</kbd>, <kbd>⌘D</kbd> to duplicate, or hold <kbd>⌥ Option</kbd> while dragging. A duplicate goes right beside the original, lined up with it, so you can see it straight away.
 
 ## How do I group things?
 

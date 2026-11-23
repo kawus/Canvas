@@ -7,6 +7,7 @@ import { newElementId } from './storage'
 import { selectedElements, useStore } from './store'
 import type { BoxEl, El, StickyEl, TextEl } from './types'
 import { cleanElements } from './sanitize'
+import { settleBox, showBox } from './placement'
 
 const S = () => useStore.getState()
 
@@ -62,15 +63,21 @@ export function createTextAt(x: number, y: number, text = '') {
   startEditing(el.id, before)
 }
 
-/** Add a sticky note and start typing in it (or, given the words, just put them on it). */
+/**
+ * Add a sticky note and start typing in it (or, given the words, just put them on it).
+ * It goes where it was asked for, or beside whatever is already there, and never
+ * under the buttons at the edges of the screen (placement.ts).
+ */
 export function createStickyAt(x: number, y: number, text = '') {
   const s = S()
+  const half = STICKY_SIZE / 2
+  const spot = settleBox({ minX: x - half, minY: y - half, maxX: x + half, maxY: y + half }, { onScreen: true })
   const el: StickyEl = {
     id: newElementId(),
     type: 'sticky',
     color: s.style.stickyColor,
-    x: x - STICKY_SIZE / 2,
-    y: y - STICKY_SIZE / 2,
+    x: spot.minX,
+    y: spot.minY,
     w: STICKY_SIZE,
     h: STICKY_SIZE,
     text,
@@ -126,6 +133,18 @@ export function finishEditing() {
   s.select([id])
 }
 
+/** "Just start typing": put the first key pressed into the note or text being edited. */
+export function typeIntoEditor(chars: string) {
+  const s = S()
+  const el = s.doc.elements.find((e) => e.id === s.editingId)
+  if (!isEditable(el)) return
+  flushSync(() => updateEditingText((el.text ?? '') + chars))
+  if (editorEl) {
+    const len = editorEl.value.length
+    editorEl.setSelectionRange(len, len)
+  }
+}
+
 export function updateEditingText(text: string) {
   const s = S()
   const id = s.editingId
@@ -154,7 +173,19 @@ export function duplicateSelection() {
   const s = S()
   const sel = selectedElements(s)
   if (!sel.length) return
-  const clones = cloneWithNewIds(sel, 16, 16)
+  // the copy goes beside the original (to its right if there's room), not on top of it
+  const b = geometricBounds(sel)
+  let dx = 16
+  let dy = 16
+  if (b) {
+    const spot = settleBox(b, { ignore: new Set(sel.map((e) => e.id)), extra: [b] })
+    if (spot !== b) {
+      dx = spot.minX - b.minX
+      dy = spot.minY - b.minY
+      showBox(spot)
+    }
+  }
+  const clones = cloneWithNewIds(sel, dx, dy)
   s.commit([...s.doc.elements, ...clones])
   s.select(clones.map((c) => c.id))
 }

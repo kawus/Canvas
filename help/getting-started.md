@@ -32,7 +32,7 @@ Open the **board menu**. Your most recent boards are listed at the top. **All bo
 - **Scroll** with a mouse wheel or two fingers on a trackpad to move around. Hold <kbd>⌘</kbd> (or <kbd>Ctrl</kbd>) and scroll, or pinch, to zoom.
 - **Drag with the Hand tool**, or hold <kbd>Space</kbd> and drag.
 - On a **touchscreen**, drag with two fingers and pinch to zoom.
-- The buttons in the bottom-left corner zoom in and out; the last one fits everything on screen (<kbd>⇧1</kbd>).
+- The buttons in the bottom-left corner zoom in and out; the last one fits everything on screen (<kbd>⇧1</kbd>). On an iPad held upright (and in narrow windows) the corner keeps just **Zoom to fit**, so it never covers the toolbar: pinch to zoom.
 
 ## Is there a way to hide all the buttons?
 

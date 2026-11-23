@@ -4,6 +4,8 @@ import {
   distributeSelection,
   type AlignMode,
   copySelection,
+  createStickyAt,
+  typeIntoEditor,
   duplicateSelection,
   isEditable,
   nudge,
@@ -121,6 +123,18 @@ export function startKeyboard() {
         e.preventDefault()
         alignSelection(modes[e.code])
       }
+      return
+    }
+
+    // "just start typing": with the sticky tool picked, the first key makes the note (in the
+    // middle of the view, or beside what's there) and goes into it, so N, type, Esc, N, type…
+    // fills a board with notes. (A selected note still starts editing with Enter: letters on a
+    // selection stay shortcuts, or N right after finishing a note would type into that one.)
+    if (s.tool === 'sticky' && e.key.length === 1 && e.key !== ' ' && !e.isComposing) {
+      e.preventDefault()
+      const v = s.viewport
+      createStickyAt((window.innerWidth / 2 - v.x) / v.zoom, (window.innerHeight / 2.2 - v.y) / v.zoom)
+      typeIntoEditor(e.key)
       return
     }
 

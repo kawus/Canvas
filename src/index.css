@@ -1031,6 +1031,14 @@ button:focus:not(:focus-visible) {
   }
 }
 
+/* iPads held upright and narrow windows: the corner keeps undo, Zoom to fit and ?,
+   so it never runs into the toolbar (pinch or ⌘ + scroll still zoom) */
+@media (min-width: 761px) and (max-width: 1000px) {
+  .bottom-left .zoom-cluster > :not(:last-child) {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .bottom-left .zoom-cluster {
     display: none;

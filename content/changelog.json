@@ -26,7 +26,7 @@
         {
           "id": "notes",
           "name": "Sticky notes and text",
-          "text": "Sticky notes in soft paper colours, text, and labels inside shapes.",
+          "text": "Sticky notes in soft paper colours, text, and labels inside shapes. Press N and just type; new notes find their own space.",
           "added": "2026-10-29"
         },
         {
@@ -333,6 +333,27 @@
     }
   ],
   "releases": [
+    {
+      "date": "2026-11-23",
+      "title": "Calmer basics",
+      "items": [
+        {
+          "text": "Press N and just start typing: the sticky note appears in the middle of the screen with your words in it. Esc, N and type again for the next one.",
+          "feature": "notes"
+        },
+        {
+          "text": "New sticky notes and duplicates never land on top of something else: they go neatly beside it, lined up.",
+          "feature": "notes"
+        },
+        {
+          "text": "On a phone, new notes stay clear of the buttons at the top and bottom of the screen, and the view moves a little when the screen is full.",
+          "feature": "notes"
+        },
+        {
+          "text": "On an iPad held upright, the buttons in the bottom-left corner no longer cover the toolbar."
+        }
+      ]
+    },
     {
       "date": "2026-11-22",
       "title": "More privacy for your email and your notes",

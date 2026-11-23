@@ -21,7 +21,7 @@ It also understands what you type: paste a link and <kbd>Enter</kbd> adds it (vi
 | <kbd>E</kbd> | Eraser |
 | <kbd>R</kbd> / <kbd>O</kbd> | Rectangle / Ellipse |
 | <kbd>A</kbd> / <kbd>L</kbd> | Arrow / Line |
-| <kbd>N</kbd> | Sticky note |
+| <kbd>N</kbd> | Sticky note (then just start typing) |
 | <kbd>T</kbd> | Text (or double-click the board) |
 | <kbd>I</kbd> | Insert image |
 

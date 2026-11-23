@@ -88,7 +88,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['O'], 'Ellipse'],
       [['A'], 'Arrow'],
       [['L'], 'Line'],
-      [['N'], 'Sticky note'],
+      [['N'], 'Sticky note (then just type)'],
       [['T'], 'Text'],
       [['I'], 'Insert image'],
     ],
