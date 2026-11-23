@@ -8,6 +8,7 @@ import {
   typeIntoEditor,
   duplicateSelection,
   isEditable,
+  nextNote,
   nudge,
   pasteText,
   selectAll,
@@ -136,6 +137,16 @@ export function startKeyboard() {
       createStickyAt((window.innerWidth / 2 - v.x) / v.zoom, (window.innerHeight / 2.2 - v.y) / v.zoom)
       typeIntoEditor(e.key)
       return
+    }
+
+    // Tab with one sticky note selected: the next note, beside it and joined by a line
+    if (e.key === 'Tab' && !e.shiftKey && s.selectedIds.length === 1) {
+      const el = s.doc.elements.find((x) => x.id === s.selectedIds[0])
+      if (el?.type === 'sticky') {
+        e.preventDefault()
+        nextNote(el.id)
+        return
+      }
     }
 
     switch (e.key) {

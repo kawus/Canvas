@@ -148,15 +148,16 @@ export function finishEditing() {
 const tabbed = new Set<string>()
 
 /**
- * Tab while writing a sticky note: it's done, and the next one starts right beside
+ * Tab while writing a sticky note (or with one selected): it's done, and the next one starts right beside
  * it (or wherever there's room nearby), joined by a line. Tab again to keep going,
  * so a mind map grows just by typing. Leave the new note empty and it goes again.
  */
-export function nextNote() {
+export function nextNote(fromId?: string) {
   const s = S()
-  const cur = s.doc.elements.find((e) => e.id === s.editingId)
+  // from the note being written, or from a selected note
+  const cur = s.doc.elements.find((e) => e.id === (fromId ?? s.editingId))
   if (!cur || cur.type !== 'sticky') return
-  finishEditing()
+  if (s.editingId) finishEditing()
   const gap = 72
   const want = { minX: cur.x + cur.w + gap, minY: cur.y, maxX: cur.x + cur.w * 2 + gap, maxY: cur.y + cur.h }
   const spot = settleBox(want, { onScreen: true })
