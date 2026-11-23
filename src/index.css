@@ -1031,11 +1031,30 @@ button:focus:not(:focus-visible) {
   }
 }
 
-/* iPads held upright and narrow windows: the corner keeps undo, Zoom to fit and ?,
-   so it never runs into the toolbar (pinch or ⌘ + scroll still zoom) */
-@media (min-width: 761px) and (max-width: 1000px) {
+/* iPads held upright (761–1000px wide): the corner would run into the toolbar.
+   On touch screens it keeps undo, Zoom to fit and ? (people pinch to zoom); with a
+   mouse or trackpad every zoom button stays, in a row of its own above undo and ? */
+@media (min-width: 761px) and (max-width: 1000px) and (pointer: coarse) {
   .bottom-left .zoom-cluster > :not(:last-child) {
     display: none;
+  }
+}
+@media (min-width: 761px) and (max-width: 1000px) and (pointer: fine) {
+  .bottom-left {
+    display: grid;
+    grid-template-areas: 'zoom zoom' 'history help';
+    justify-content: start;
+    justify-items: start;
+    align-items: center;
+  }
+  .bottom-left > :nth-child(1) {
+    grid-area: history;
+  }
+  .bottom-left > :nth-child(2) {
+    grid-area: zoom;
+  }
+  .bottom-left > :nth-child(3) {
+    grid-area: help;
   }
 }
 

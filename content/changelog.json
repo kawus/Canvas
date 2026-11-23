@@ -350,7 +350,7 @@
           "feature": "notes"
         },
         {
-          "text": "On an iPad held upright, the buttons in the bottom-left corner no longer cover the toolbar."
+          "text": "The buttons in the bottom-left corner no longer cover the toolbar on an iPad held upright or in a narrow window; with a mouse, every zoom button stays."
         }
       ]
     },
