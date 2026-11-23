@@ -3,6 +3,7 @@ import {
   bringToFront,
   distributeSelection,
   type AlignMode,
+  canvasCopyIn,
   copySelection,
   createStickyAt,
   typeIntoEditor,
@@ -16,6 +17,7 @@ import {
   startEditing,
 } from './actions'
 import { isTyping } from './controller'
+import { copyPictureNow } from './export'
 import { importImages, openImagePicker } from './images'
 import { connectMyCanvas } from './boards'
 import { startCrop } from './crop'
@@ -77,7 +79,10 @@ export function startKeyboard() {
     }
     // view-only (or looking at earlier versions): just zooming around
     if (!s.doc.key || s.versionsOpen) {
-      if (mod && (key === '=' || key === '+' || key === '-' || key === '0')) {
+      if (mod && e.shiftKey && key === 'c') {
+        e.preventDefault()
+        copyPictureNow()
+      } else if (mod && (key === '=' || key === '+' || key === '-' || key === '0')) {
         e.preventDefault()
         s.zoomTo(key === '-' ? s.viewport.zoom / 1.25 : key === '0' ? 1 : s.viewport.zoom * 1.25)
       } else if (e.key === '!') s.zoomToFit()
@@ -95,6 +100,10 @@ export function startKeyboard() {
       } else if (key === 'a') {
         e.preventDefault()
         selectAll()
+      } else if (key === 'c' && e.shiftKey) {
+        // copy as picture: the selection, or the whole board
+        e.preventDefault()
+        copyPictureNow()
       } else if (key === 'd') {
         e.preventDefault()
         duplicateSelection()
@@ -232,6 +241,13 @@ export function startKeyboard() {
       return
     }
     if (!useStore.getState().doc.key || useStore.getState().versionsOpen) return
+    // things copied in Canvas (this board or another) come back as themselves
+    const own = canvasCopyIn(e.clipboardData)
+    if (own) {
+      e.preventDefault()
+      pasteText(own)
+      return
+    }
     const files = [...(e.clipboardData?.files ?? [])].filter((f) => f.type.startsWith('image/'))
     if (files.length) {
       e.preventDefault()

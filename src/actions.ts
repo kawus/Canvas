@@ -8,6 +8,7 @@ import { selectedElements, useStore } from './store'
 import type { BoxEl, El, LineEl, StickyEl, TextEl } from './types'
 import { cleanElements } from './sanitize'
 import { settleBox, showBox } from './placement'
+import { fontById } from './fonts'
 
 const S = () => useStore.getState()
 
@@ -323,19 +324,86 @@ export function distributeSelection(axis: 'x' | 'y') {
 const CLIP_MARK = 'canvas-board/elements'
 let pasteCount = 0
 
+/** Canvas's own copy on the clipboard (other apps ignore it; pasting back into Canvas uses it). */
+export const CLIP_TYPE = 'application/x-canvas-elements'
+
+/** What copied things say, in reading order (top to bottom, left to right), for pasting into other apps. */
+export function readableText(els: El[]): string[] {
+  const words = (e: El): string => {
+    switch (e.type) {
+      case 'sticky':
+      case 'text':
+      case 'rect':
+      case 'ellipse':
+        return (e.text ?? '').trim()
+      case 'link':
+        return e.title && e.title !== e.url ? `${e.title.trim()} (${e.url})` : e.url
+      case 'swatch':
+        return e.hex.toUpperCase()
+      case 'font': {
+        const name = fontById(e.font)?.name ?? e.font
+        return e.sample ? `${name}: ${e.sample}` : name
+      }
+      default:
+        return ''
+    }
+  }
+  const items = els.map((e) => ({ e, b: geometricBounds([e])! })).filter((x) => x.b && words(x.e))
+  // rows: things whose tops are close sit on the same line, read left to right
+  items.sort((a, b) => a.b.minY - b.b.minY)
+  const rows: (typeof items)[] = []
+  for (const it of items) {
+    const row = rows[rows.length - 1]
+    const h = it.b.maxY - it.b.minY
+    if (row && it.b.minY < Math.min(...row.map((r) => r.b.maxY)) - h * 0.4) row.push(it)
+    else rows.push([it])
+  }
+  return rows.flatMap((r) => r.sort((a, b) => a.b.minX - b.b.minX)).map((x) => words(x.e))
+}
+
+const escapeHtml = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+
+/**
+ * Copy: other apps get readable text (one item per line, in reading order), and
+ * Canvas gets its own copy back (as a type of its own, and inside the HTML version
+ * for browsers that drop types they don't know).
+ */
 export function copySelection(e?: ClipboardEvent) {
   const s = S()
   const sel = selectedElements(s)
   if (!sel.length) return false
   const payload = JSON.stringify({ type: CLIP_MARK, elements: sel })
+  const lines = readableText(sel)
+  const text = lines.join('\n')
+  const html = `<meta charset="utf-8"><div data-canvas-elements="${encodeURIComponent(payload)}">${lines.map((l) => `<p>${escapeHtml(l).replace(/\n/g, '<br>')}</p>`).join('')}</div>`
   pasteCount = 0
   if (e?.clipboardData) {
-    e.clipboardData.setData('text/plain', payload)
+    e.clipboardData.setData(CLIP_TYPE, payload)
+    e.clipboardData.setData('text/html', html)
+    e.clipboardData.setData('text/plain', text)
     e.preventDefault()
+  } else if (navigator.clipboard?.write && typeof ClipboardItem !== 'undefined') {
+    navigator.clipboard
+      .write([new ClipboardItem({ 'text/plain': new Blob([text], { type: 'text/plain' }), 'text/html': new Blob([html], { type: 'text/html' }) })])
+      .catch(() => {})
   } else {
-    navigator.clipboard?.writeText(payload).catch(() => {})
+    navigator.clipboard?.writeText(text).catch(() => {})
   }
   return true
+}
+
+/** Canvas's own copy from a paste, if it carries one (from this or another board). */
+export function canvasCopyIn(data: DataTransfer | null): string | null {
+  if (!data) return null
+  const own = data.getData(CLIP_TYPE)
+  if (own) return own
+  const m = /data-canvas-elements="([^"]+)"/.exec(data.getData('text/html'))
+  if (!m) return null
+  try {
+    return decodeURIComponent(m[1])
+  } catch {
+    return null
+  }
 }
 
 export function pasteText(text: string) {

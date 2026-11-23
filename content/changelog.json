@@ -194,7 +194,7 @@
         {
           "id": "export",
           "name": "Export",
-          "text": "A crisp PDF, PNG or SVG of the whole board or a selection.",
+          "text": "A crisp PDF, PNG or SVG of the whole board or a selection, or copy it as a picture to paste anywhere.",
           "added": "2026-10-29"
         },
         {
@@ -368,6 +368,13 @@
         },
         {
           "text": "People with a View link no longer see undo and redo buttons they can't use, and on a computer the hint says Click anything to react."
+        },
+        {
+          "text": "Copy as picture: press ⌘⇧C, or choose it under Export, and paste a picture of your board (or just the selection) straight into a chat, an email or a slide.",
+          "feature": "export"
+        },
+        {
+          "text": "Copied sticky notes now paste as readable text in other apps, one note per line, instead of computer code. In Canvas they still paste as notes."
         }
       ]
     },

@@ -101,6 +101,7 @@ const SHORTCUTS: { title: string; rows: Row[] }[] = [
       [['shift', 'mod', 'Z'], 'Redo'],
       [['mod', 'C'], 'Copy'],
       [['mod', 'V'], 'Paste'],
+      [['shift', 'mod', 'C'], 'Copy as picture'],
       [['mod', 'D'], 'Duplicate'],
       [['mod', 'G'], 'Group'],
       [['shift', 'mod', 'G'], 'Ungroup'],

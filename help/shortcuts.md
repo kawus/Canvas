@@ -30,7 +30,8 @@ It also understands what you type: paste a link and <kbd>Enter</kbd> adds it (vi
 | Key | Action |
 | --- | --- |
 | <kbd>⌘Z</kbd> / <kbd>⇧⌘Z</kbd> | Undo / Redo |
-| <kbd>⌘C</kbd> / <kbd>⌘V</kbd> | Copy / Paste |
+| <kbd>⌘C</kbd> / <kbd>⌘V</kbd> | Copy / Paste (copied notes paste as text in other apps) |
+| <kbd>⇧⌘C</kbd> | Copy as picture, to paste into a chat or an email |
 | <kbd>⌘D</kbd> | Duplicate |
 | <kbd>⌘G</kbd> / <kbd>⇧⌘G</kbd> | Group / Ungroup |
 | <kbd>⌥</kbd> + drag | Duplicate while dragging |

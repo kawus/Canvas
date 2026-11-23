@@ -33,9 +33,9 @@ import {
 import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { duplicateBoard, newBoard, openBoard, removeCurrentBoard, syncNow } from '../boards'
 import { collabAvailable, getMe, setMyName } from '../collab'
-import { exportPdf, exportPng, exportSvg } from '../export'
+import { copyPicture, exportPdf, exportPng, exportSvg } from '../export'
 import { previewSound } from '../sound'
-import { touchFirst } from '../platform'
+import { appleKeys, touchFirst } from '../platform'
 import { allBoards, onLibraryChange, pull, type BoardRow } from '../library'
 import { contentOf } from '../geometry'
 import { refreshPreview } from '../preview'
@@ -613,6 +613,30 @@ export function ExportButton() {
           </MenuItem>
           <MenuItem icon={<FileCode />} onClick={() => run(exportSvg)} hint="Vector">
             SVG
+          </MenuItem>
+          <div className="menu-sep" />
+          <MenuItem
+            icon={<Copy />}
+            onClick={() => {
+              if (!els.length) {
+                showToast('Nothing to copy yet')
+                return
+              }
+              // straight from the click (Safari only allows the clipboard during one)
+              const copying = copyPicture(els)
+              setBusy(true)
+              copying
+                .then(() => {
+                  setOpen(false)
+                  showToast('Picture copied. Paste it anywhere')
+                })
+                .catch(() => showToast('This browser can’t copy pictures. Use PNG instead'))
+                .finally(() => setBusy(false))
+            }}
+            hint={touchFirst ? undefined : `${appleKeys ? '⌘⇧' : 'Ctrl+Shift+'}C`}
+            testId="copy-picture"
+          >
+            Copy as picture
           </MenuItem>
           {markShown && (
             <button

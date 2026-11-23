@@ -30,7 +30,7 @@ import {
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { createStickyAt, createTextAt, finishEditing } from '../actions'
 import { duplicateBoard, newBoard } from '../boards'
-import { exportPdf, exportPng } from '../export'
+import { copyPictureNow, exportPdf, exportPng } from '../export'
 import { changelogUrl, openHelp } from '../help'
 import { openImagePicker } from '../images'
 import { allBoards, type BoardRow } from '../library'
@@ -112,6 +112,7 @@ function commands(boards: BoardRow[]): Command[] {
   if (content.length) {
     add({ id: 'pdf', label: 'Export as PDF', words: 'download save print', group: 'Board', icon: <FileText />, run: () => void exportPdf(S().doc.elements, S().doc.title) })
     add({ id: 'png', label: 'Export as image', words: 'download save png picture', group: 'Board', icon: <Image />, run: () => void exportPng(S().doc.elements, S().doc.title) })
+    add({ id: 'copy-picture', label: 'Copy as picture', words: 'clipboard image png paste screenshot', group: 'Board', icon: <Image />, run: () => copyPictureNow() })
   }
   add({ id: 'fit', label: 'Zoom to fit', words: 'whole board overview', group: 'Board', icon: <Maximize />, hint: '⇧ 1', run: () => S().zoomToFit() })
   add({ id: 'focus', label: 'Focus mode', words: 'hide tools distraction', group: 'Board', icon: <Focus />, hint: 'F', run: () => S().setFocus(true) })

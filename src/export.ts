@@ -177,9 +177,39 @@ export async function boardSnapshot(elements: El[]): Promise<string | null> {
 }
 
 export async function exportPng(elements: El[], title: string) {
+  download(await pngBlob(elements), fileName(title, 'png'))
+}
+
+/**
+ * Copy as picture (⌘⇧C, Export → Copy as picture): a picture of the selection, or of
+ * the whole board, ready to paste into a chat, an email or a slide. Call it straight
+ * from the click or key press: Safari only allows the clipboard during one, which is
+ * why the picture goes in as a promise and is drawn afterwards.
+ */
+export function copyPicture(elements: El[]): Promise<void> {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === 'undefined') return Promise.reject(new Error('no picture clipboard'))
+  return navigator.clipboard.write([new ClipboardItem({ 'image/png': pngBlob(elements, 2) })])
+}
+
+/** Copy as picture from the keyboard or the launcher: the selection, or else the whole board. */
+export function copyPictureNow() {
+  const s = useStore.getState()
+  const sel = s.doc.elements.filter((e) => s.selectedIds.includes(e.id))
+  const els = contentOf(sel.length ? sel : s.doc.elements)
+  if (!els.length) {
+    s.showToast('Nothing to copy yet')
+    return
+  }
+  copyPicture(els)
+    .then(() => s.showToast(sel.length ? 'Picture of the selection copied. Paste it anywhere' : 'Picture of the board copied. Paste it anywhere'))
+    .catch(() => s.showToast('This browser can’t copy pictures. Use Export → PNG instead'))
+}
+
+/** The board (or some of it) as a PNG picture, like the PNG export. `maxScale` 3 for downloads, 2 for the clipboard. */
+async function pngBlob(elements: El[], maxScale = 3): Promise<Blob> {
   const { svg, width, height } = await buildSvg(elements, { embedFont: true, background: true, mark: markExports() })
   // iPad Safari caps canvases at ~16.7M pixels
-  const scale = Math.min(3, Math.sqrt(16_000_000 / (width * height)), 8192 / Math.max(width, height))
+  const scale = Math.min(maxScale, Math.sqrt(16_000_000 / (width * height)), 8192 / Math.max(width, height))
   const img = new Image()
   const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }))
   try {
@@ -195,7 +225,7 @@ export async function exportPng(elements: El[], title: string) {
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
     const blob = await new Promise<Blob | null>((r) => canvas.toBlob(r, 'image/png'))
     if (!blob) throw new Error('Could not create PNG')
-    download(blob, fileName(title, 'png'))
+    return blob
   } finally {
     URL.revokeObjectURL(url)
   }
